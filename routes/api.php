@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\ApprovalController;
 use App\Http\Controllers\Api\BankAccountController;
 use App\Http\Controllers\Api\BankController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ReimbursementController;
@@ -21,6 +22,9 @@ Route::get('/user', function (Request $request) {
  * dan permission spesifik (Super Admin di-bypass Gate::before).
  */
 Route::middleware('auth:sanctum')->group(function () {
+
+    // ---- Dashboard (Phase 12) — konten menyesuaikan role -----------------
+    Route::get('dashboard', [DashboardController::class, 'index']);
 
     // ---- Department (permission: department.manage) ----------------------
     Route::middleware('permission:department.manage')->group(function () {
