@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
+use Database\Factories\BankAccountFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,8 +13,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class BankAccount extends Model
 {
-    /** @use HasFactory<\Database\Factories\BankAccountFactory> */
-    use HasFactory, SoftDeletes;
+    /** @use HasFactory<BankAccountFactory> */
+    use Auditable, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'user_id',

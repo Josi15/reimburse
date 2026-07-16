@@ -2,8 +2,13 @@
 
 namespace App\Providers;
 
+use App\Enums\AuditEvent;
+use App\Services\AuditLogger;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Vite;
@@ -24,6 +29,19 @@ class AppServiceProvider extends ServiceProvider
         $this->configureAuthorization();
         $this->configurePasswordPolicy();
         $this->configureRateLimiting();
+        $this->configureAuditLogging();
+    }
+
+    /** Catat login & logout ke audit log (Phase 15). */
+    private function configureAuditLogging(): void
+    {
+        Event::listen(Login::class, function (Login $event) {
+            app(AuditLogger::class)->log(AuditEvent::Login, userId: $event->user->getAuthIdentifier());
+        });
+
+        Event::listen(Logout::class, function (Logout $event) {
+            app(AuditLogger::class)->log(AuditEvent::Logout, userId: $event->user?->getAuthIdentifier());
+        });
     }
 
     /**

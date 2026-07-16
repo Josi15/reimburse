@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Enums\ReimbursementStatus;
+use App\Models\Concerns\Auditable;
 use App\Observers\ReimbursementObserver;
+use Database\Factories\ReimbursementFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -22,8 +24,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[ObservedBy([ReimbursementObserver::class])]
 class Reimbursement extends Model
 {
-    /** @use HasFactory<\Database\Factories\ReimbursementFactory> */
-    use HasFactory, SoftDeletes;
+    /** @use HasFactory<ReimbursementFactory> */
+    use Auditable, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'reimbursement_number',

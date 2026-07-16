@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\ApprovalAction;
 use App\Enums\ApprovalLevel;
+use App\Enums\AuditEvent;
 use App\Enums\ReimbursementStatus;
 use App\Models\Approval;
 use App\Models\Reimbursement;
@@ -94,10 +95,20 @@ class ApprovalService
                 'acted_at' => now(),
             ]);
 
-            $reimbursement->update(['status' => $target]);
+            // Status diubah tanpa auto-audit; dicatat sebagai event semantik.
+            Reimbursement::withoutAuditing(fn () => $reimbursement->update(['status' => $target]));
 
             return $reimbursement->refresh();
         });
+
+        // Catat event approve/reject ke audit log.
+        app(AuditLogger::class)->log(
+            $action === ApprovalAction::Approved ? AuditEvent::Approve : AuditEvent::Reject,
+            $reimbursement,
+            null,
+            ['status' => $target->value],
+            "{$level->label()} — {$action->label()}",
+        );
 
         // Notifikasi dikirim setelah commit.
         $this->notifier->actioned($reimbursement, $level, $action, $notes);

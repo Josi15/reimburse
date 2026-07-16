@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\AuditEvent;
 use App\Enums\PaymentStatus;
 use App\Enums\ReimbursementStatus;
 use App\Models\BankAccount;
@@ -66,14 +67,24 @@ class PaymentService
                 $this->attachments->store($proof, $payment, $finance);
             }
 
-            // Setelah pembayaran berhasil, status reimbursement menjadi Paid.
-            $locked->update([
+            // Setelah pembayaran berhasil, status reimbursement menjadi Paid
+            // (tanpa auto-audit; dicatat sebagai event "payment").
+            Reimbursement::withoutAuditing(fn () => $locked->update([
                 'status' => ReimbursementStatus::Paid,
                 'completed_at' => now(),
-            ]);
+            ]));
 
             return $payment;
         });
+
+        // Catat event pembayaran ke audit log.
+        app(AuditLogger::class)->log(
+            AuditEvent::Payment,
+            $payment,
+            null,
+            ['amount' => $payment->amount, 'reference_number' => $payment->reference_number],
+            "Pembayaran {$payment->payment_number}",
+        );
 
         // Notifikasi "Paid" ke pemilik setelah transaksi commit.
         $this->notifier->paid($reimbursement->refresh(), $payment);

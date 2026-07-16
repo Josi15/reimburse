@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\ApprovalController;
+use App\Http\Controllers\Api\AuditLogController;
 use App\Http\Controllers\Api\BankAccountController;
 use App\Http\Controllers\Api\BankController;
 use App\Http\Controllers\Api\CategoryController;
@@ -42,6 +43,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('permission:report.view')->group(function () {
         Route::get('reports/reimbursements/export', [ReportController::class, 'export']);
         Route::get('reports/reimbursements', [ReportController::class, 'reimbursements']);
+    });
+
+    // ---- Activity / Audit Log (Phase 15; read-only, permission: audit.view)
+    Route::middleware('permission:audit.view')->group(function () {
+        Route::get('audit-logs/export', [AuditLogController::class, 'export']);
+        Route::get('audit-logs', [AuditLogController::class, 'index']);
+        Route::get('audit-logs/{auditLog}', [AuditLogController::class, 'show']);
     });
 
     // ---- Department (permission: department.manage) ----------------------
