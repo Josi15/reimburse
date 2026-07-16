@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\ApprovalController;
+use App\Http\Controllers\Api\AttachmentController;
 use App\Http\Controllers\Api\AuditLogController;
 use App\Http\Controllers\Api\BankAccountController;
 use App\Http\Controllers\Api\BankController;
@@ -35,6 +36,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount']);
     Route::post('notifications/{id}/read', [NotificationController::class, 'markAsRead']);
     Route::post('notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+
+    // ---- File Management (Phase 16) — otorisasi via policy induk ---------
+    Route::get('attachments/{attachment}/download', [AttachmentController::class, 'download']);
+    Route::get('attachments/{attachment}/preview', [AttachmentController::class, 'preview']);
+    Route::post('attachments/{attachment}/replace', [AttachmentController::class, 'replace']);
+    Route::delete('attachments/{attachment}', [AttachmentController::class, 'destroy']);
 
     // ---- Global search (Phase 14) — scoped per role ----------------------
     Route::get('search', [SearchController::class, 'index']);

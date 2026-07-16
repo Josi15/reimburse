@@ -44,6 +44,26 @@ class AttachmentService
         return $stored;
     }
 
+    /** Ganti file pada attachment yang sama (hapus lama, simpan baru). */
+    public function replace(Attachment $attachment, UploadedFile $file, User $user): Attachment
+    {
+        $disk = $attachment->disk;
+        Storage::disk($disk)->delete($attachment->file_path);
+
+        $folder = dirname($attachment->file_path);
+        $path = $file->store($folder, $disk);
+
+        $attachment->update([
+            'uploaded_by' => $user->id,
+            'file_name' => $file->getClientOriginalName(),
+            'file_path' => $path,
+            'mime_type' => $file->getClientMimeType(),
+            'file_size' => $file->getSize(),
+        ]);
+
+        return $attachment;
+    }
+
     /** Hapus file fisik + record. */
     public function delete(Attachment $attachment): void
     {
