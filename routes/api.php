@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\DepartmentController;
+use App\Http\Controllers\Api\ReimbursementController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
@@ -41,4 +42,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('permission:role.manage')->group(function () {
         Route::apiResource('roles', RoleController::class);
     });
+
+    // ---- Reimbursement (Phase 9) — otorisasi via ReimbursementPolicy -----
+    Route::post('reimbursements/{reimbursement}/submit', [ReimbursementController::class, 'submit']);
+    Route::delete('reimbursements/{reimbursement}/attachments/{attachment}', [ReimbursementController::class, 'destroyAttachment']);
+    Route::apiResource('reimbursements', ReimbursementController::class);
 });
