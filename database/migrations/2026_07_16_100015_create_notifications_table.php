@@ -1,0 +1,31 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+/**
+ * Tabel `notifications` — database channel untuk Laravel Notification (Phase 13).
+ * Struktur standar Laravel: PK UUID, notifiable polymorphic, payload `data`,
+ * dan `read_at`. Dipakai untuk notifikasi in-app (submit, approve, reject,
+ * revisi, paid, reset password).
+ */
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('notifications', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('type');
+            $table->morphs('notifiable');                    // notifiable_type, notifiable_id (+index)
+            $table->jsonb('data');
+            $table->timestamp('read_at')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('notifications');
+    }
+};
