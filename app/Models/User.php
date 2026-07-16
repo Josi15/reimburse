@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -105,5 +106,18 @@ class User extends Authenticatable
     public function hasPermission(string $permission): bool
     {
         return $this->roles->flatMap->permissions->contains('name', $permission);
+    }
+
+    // ---- Scopes ----------------------------------------------------------
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
+    }
+
+    /** User yang memiliki salah satu role (slug). */
+    public function scopeWithRole(Builder $query, string ...$names): Builder
+    {
+        return $query->whereHas('roles', fn (Builder $q) => $q->whereIn('name', $names));
     }
 }

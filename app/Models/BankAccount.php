@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -37,5 +39,30 @@ class BankAccount extends Model
     public function bank(): BelongsTo
     {
         return $this->belongsTo(Bank::class);
+    }
+
+    // ---- Accessors -------------------------------------------------------
+
+    /** Nomor rekening tersamar untuk tampilan, mis. "******7890". */
+    protected function maskedNumber(): Attribute
+    {
+        return Attribute::get(function () {
+            $number = (string) $this->account_number;
+            $visible = substr($number, -4);
+
+            return str_repeat('*', max(0, strlen($number) - 4)).$visible;
+        });
+    }
+
+    // ---- Scopes ----------------------------------------------------------
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function scopePrimary(Builder $query): Builder
+    {
+        return $query->where('is_primary', true);
     }
 }
