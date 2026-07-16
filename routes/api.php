@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\ApprovalController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\ReimbursementController;
@@ -46,5 +47,12 @@ Route::middleware('auth:sanctum')->group(function () {
     // ---- Reimbursement (Phase 9) — otorisasi via ReimbursementPolicy -----
     Route::post('reimbursements/{reimbursement}/submit', [ReimbursementController::class, 'submit']);
     Route::delete('reimbursements/{reimbursement}/attachments/{attachment}', [ReimbursementController::class, 'destroyAttachment']);
+
+    // ---- Approval (Phase 10) — Manager → Finance -------------------------
+    Route::get('reimbursements/{reimbursement}/approvals', [ApprovalController::class, 'history']);
+    Route::post('reimbursements/{reimbursement}/approve', [ApprovalController::class, 'approve']);
+    Route::post('reimbursements/{reimbursement}/reject', [ApprovalController::class, 'reject']);
+    Route::post('reimbursements/{reimbursement}/revision', [ApprovalController::class, 'revision']);
+
     Route::apiResource('reimbursements', ReimbursementController::class);
 });
