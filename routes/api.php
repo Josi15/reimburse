@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\BankController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DepartmentController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ReimbursementController;
 use App\Http\Controllers\Api\RoleController;
@@ -25,6 +26,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // ---- Dashboard (Phase 12) — konten menyesuaikan role -----------------
     Route::get('dashboard', [DashboardController::class, 'index']);
+
+    // ---- Notifikasi in-app (Phase 13) ------------------------------------
+    Route::get('notifications', [NotificationController::class, 'index']);
+    Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount']);
+    Route::post('notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::post('notifications/read-all', [NotificationController::class, 'markAllAsRead']);
 
     // ---- Department (permission: department.manage) ----------------------
     Route::middleware('permission:department.manage')->group(function () {

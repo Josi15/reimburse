@@ -23,11 +23,14 @@ use Illuminate\Validation\ValidationException;
  */
 class PaymentService
 {
-    public function __construct(private readonly AttachmentService $attachments) {}
+    public function __construct(
+        private readonly AttachmentService $attachments,
+        private readonly ReimbursementNotifier $notifier,
+    ) {}
 
     public function process(Reimbursement $reimbursement, User $finance, array $data, ?UploadedFile $proof = null): Payment
     {
-        return DB::transaction(function () use ($reimbursement, $finance, $data, $proof) {
+        $payment = DB::transaction(function () use ($reimbursement, $finance, $data, $proof) {
             // Kunci baris reimbursement untuk mencegah race condition.
             $locked = Reimbursement::whereKey($reimbursement->id)->lockForUpdate()->firstOrFail();
 
@@ -71,6 +74,11 @@ class PaymentService
 
             return $payment;
         });
+
+        // Notifikasi "Paid" ke pemilik setelah transaksi commit.
+        $this->notifier->paid($reimbursement->refresh(), $payment);
+
+        return $payment;
     }
 
     /** Pastikan rekening tujuan valid: milik pengaju & aktif. */

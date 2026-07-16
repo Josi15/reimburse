@@ -14,7 +14,10 @@ use Illuminate\Validation\ValidationException;
  */
 class ReimbursementService
 {
-    public function __construct(private readonly AttachmentService $attachments) {}
+    public function __construct(
+        private readonly AttachmentService $attachments,
+        private readonly ReimbursementNotifier $notifier,
+    ) {}
 
     /** Buat draft baru milik user. */
     public function createDraft(User $user, array $data, iterable $files = []): Reimbursement
@@ -68,6 +71,8 @@ class ReimbursementService
             'status' => ReimbursementStatus::Submitted,
             'submitted_at' => now(),
         ]);
+
+        $this->notifier->submitted($reimbursement);
 
         return $reimbursement;
     }

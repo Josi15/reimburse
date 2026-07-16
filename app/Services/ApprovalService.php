@@ -18,6 +18,8 @@ use Illuminate\Validation\ValidationException;
  */
 class ApprovalService
 {
+    public function __construct(private readonly ReimbursementNotifier $notifier) {}
+
     public function approve(Reimbursement $reimbursement, User $approver, ?string $notes = null): Reimbursement
     {
         [$level, $target] = $this->resolveApprove($reimbursement->status);
@@ -82,7 +84,7 @@ class ApprovalService
             $this->fail("Transisi ke {$target->value} tidak diperbolehkan.");
         }
 
-        return DB::transaction(function () use ($reimbursement, $approver, $level, $action, $target, $notes) {
+        $reimbursement = DB::transaction(function () use ($reimbursement, $approver, $level, $action, $target, $notes) {
             Approval::create([
                 'reimbursement_id' => $reimbursement->id,
                 'approver_id' => $approver->id,
@@ -96,6 +98,15 @@ class ApprovalService
 
             return $reimbursement->refresh();
         });
+
+        // Notifikasi dikirim setelah commit.
+        $this->notifier->actioned($reimbursement, $level, $action, $notes);
+
+        if ($action === ApprovalAction::Approved && $target === ReimbursementStatus::ManagerApproved) {
+            $this->notifier->forwardedToFinance($reimbursement);
+        }
+
+        return $reimbursement;
     }
 
     private function fail(string $message): never
