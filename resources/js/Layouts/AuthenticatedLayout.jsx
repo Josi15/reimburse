@@ -6,7 +6,15 @@ import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function AuthenticatedLayout({ header, children }) {
-    const user = usePage().props.auth.user;
+    const page = usePage();
+    const user = page.props.auth.user;
+    const navigation = page.props.navigation ?? [];
+    const currentUrl = page.url;
+
+    const isActive = (href) =>
+        href === '/dashboard'
+            ? currentUrl.startsWith('/dashboard')
+            : currentUrl.startsWith(href);
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
@@ -24,12 +32,15 @@ export default function AuthenticatedLayout({ header, children }) {
                             </div>
 
                             <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                <NavLink
-                                    href={route('dashboard')}
-                                    active={route().current('dashboard')}
-                                >
-                                    Dashboard
-                                </NavLink>
+                                {navigation.map((item) => (
+                                    <NavLink
+                                        key={item.href}
+                                        href={item.href}
+                                        active={isActive(item.href)}
+                                    >
+                                        {item.label}
+                                    </NavLink>
+                                ))}
                             </div>
                         </div>
 
@@ -128,12 +139,15 @@ export default function AuthenticatedLayout({ header, children }) {
                     }
                 >
                     <div className="space-y-1 pb-3 pt-2">
-                        <ResponsiveNavLink
-                            href={route('dashboard')}
-                            active={route().current('dashboard')}
-                        >
-                            Dashboard
-                        </ResponsiveNavLink>
+                        {navigation.map((item) => (
+                            <ResponsiveNavLink
+                                key={item.href}
+                                href={item.href}
+                                active={isActive(item.href)}
+                            >
+                                {item.label}
+                            </ResponsiveNavLink>
+                        ))}
                     </div>
 
                     <div className="border-t border-gray-200 pb-1 pt-4 dark:border-gray-600">
