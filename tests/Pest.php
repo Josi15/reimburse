@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Department;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -53,6 +54,15 @@ function userWithRole(string $role): User
 {
     $user = User::factory()->create();
     $user->roles()->attach(Role::where('name', $role)->firstOrFail());
+
+    return $user->fresh();
+}
+
+/** Employee dengan department (department_id wajib pada reimbursement). */
+function employeeUser(): User
+{
+    $user = userWithRole('employee');
+    $user->update(['department_id' => Department::factory()->create()->id]);
 
     return $user->fresh();
 }

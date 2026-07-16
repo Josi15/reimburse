@@ -1,9 +1,7 @@
 <?php
 
 use App\Models\Category;
-use App\Models\Department;
 use App\Models\Reimbursement;
-use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -15,14 +13,7 @@ beforeEach(function () {
     $this->category = Category::factory()->create(['max_amount' => 2_000_000]);
 });
 
-/** Employee dengan department (department_id wajib pada reimbursement). */
-function employeeUser(): User
-{
-    $user = userWithRole('employee');
-    $user->update(['department_id' => Department::factory()->create()->id]);
-
-    return $user->fresh();
-}
+// (helper employeeUser() didefinisikan di tests/Pest.php)
 
 function draftPayload(array $overrides = []): array
 {

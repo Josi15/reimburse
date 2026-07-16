@@ -1,8 +1,11 @@
 <?php
 
 use App\Http\Controllers\Api\ApprovalController;
+use App\Http\Controllers\Api\BankAccountController;
+use App\Http\Controllers\Api\BankController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\DepartmentController;
+use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ReimbursementController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\UserController;
@@ -55,4 +58,22 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('reimbursements/{reimbursement}/revision', [ApprovalController::class, 'revision']);
 
     Route::apiResource('reimbursements', ReimbursementController::class);
+
+    // ---- Master Bank (permission: bank.manage) ---------------------------
+    Route::middleware('permission:bank.manage')->group(function () {
+        Route::apiResource('banks', BankController::class);
+        Route::post('banks/{id}/restore', [BankController::class, 'restore']);
+    });
+
+    // ---- Rekening karyawan (permission: bankaccount.manage; scoped ke diri)
+    Route::middleware('permission:bankaccount.manage')->group(function () {
+        Route::post('bank-accounts/{bank_account}/primary', [BankAccountController::class, 'setPrimary']);
+        Route::apiResource('bank-accounts', BankAccountController::class);
+    });
+
+    // ---- Payment (Phase 11) ----------------------------------------------
+    Route::get('payments', [PaymentController::class, 'index'])->middleware('permission:payment.view');
+    Route::get('payments/{payment}', [PaymentController::class, 'show'])->middleware('permission:payment.view');
+    // Proses pembayaran diotorisasi PaymentPolicy (permission payment.process + status).
+    Route::post('reimbursements/{reimbursement}/pay', [PaymentController::class, 'store']);
 });
