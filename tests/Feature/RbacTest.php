@@ -1,8 +1,6 @@
 <?php
 
 use App\Models\Reimbursement;
-use App\Models\Role;
-use App\Models\User;
 use App\Support\Navigation;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -14,14 +12,7 @@ beforeEach(function () {
     $this->seed(RolePermissionSeeder::class);
 });
 
-/** Buat user terverifikasi dengan role tertentu. */
-function userWithRole(string $role): User
-{
-    $user = User::factory()->create();
-    $user->roles()->attach(Role::where('name', $role)->firstOrFail());
-
-    return $user->fresh();
-}
+// (helper userWithRole() didefinisikan di tests/Pest.php)
 
 // ---- Middleware: role -----------------------------------------------------
 
