@@ -64,7 +64,9 @@ test('user can delete their account', function () {
         ->assertRedirect('/');
 
     $this->assertGuest();
-    $this->assertNull($user->fresh());
+    // User memakai SoftDeletes (menjaga jejak keuangan/audit), jadi akun
+    // yang "dihapus" tersimpan sebagai trashed, bukan hilang permanen.
+    $this->assertSoftDeleted($user);
 });
 
 test('correct password must be provided to delete account', function () {

@@ -2,22 +2,22 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
+/**
+ * Orkestrasi seeding. Urutan penting: RBAC & master data dulu, baru user
+ * (user membutuhkan role, department, dan bank).
+ */
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $this->call([
+            RolePermissionSeeder::class,
+            DepartmentSeeder::class,
+            CategorySeeder::class,
+            BankSeeder::class,
+            UserSeeder::class,
         ]);
     }
 }
