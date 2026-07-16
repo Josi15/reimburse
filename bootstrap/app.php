@@ -22,6 +22,9 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
+        // Sanctum SPA: request same-domain (React) terautentikasi via cookie sesi.
+        $middleware->statefulApi();
+
         // Alias RBAC & keamanan untuk proteksi route.
         $middleware->alias([
             'role' => EnsureUserHasRole::class,

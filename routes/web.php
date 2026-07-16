@@ -25,36 +25,47 @@ Route::middleware(['auth', 'active'])->group(function () {
 });
 
 /*
- * Placeholder modul — route sudah dilindungi RBAC sejak Phase 7. Halaman/
- * controller sesungguhnya menggantikan placeholder ini pada fase berikutnya
- * (Phase 8-16). Contoh proteksi role vs permission ada di sini.
+ * Halaman React (Phase 17). Data diambil client-side dari REST API (/api/*)
+ * via Sanctum SPA; route web hanya merender shell Inertia + proteksi RBAC.
  */
 Route::middleware(['auth', 'verified', 'active'])->group(function () {
-    $placeholder = fn (string $title, string $phase) => fn () => Inertia::render('Placeholder', [
-        'title' => $title,
-        'phase' => $phase,
-    ]);
-
-    Route::get('/reimbursements', $placeholder('Reimbursement', 'Phase 9'))
+    // Reimbursement
+    Route::get('/reimbursements', fn () => Inertia::render('Reimbursements/Index'))
         ->name('reimbursements.index');
+    Route::get('/reimbursements/create', fn () => Inertia::render('Reimbursements/Form'))
+        ->name('reimbursements.create');
+    Route::get('/reimbursements/{id}', fn (int $id) => Inertia::render('Reimbursements/Show', ['id' => $id]))
+        ->whereNumber('id')->name('reimbursements.show');
+    Route::get('/reimbursements/{id}/edit', fn (int $id) => Inertia::render('Reimbursements/Form', ['id' => $id]))
+        ->whereNumber('id')->name('reimbursements.edit');
 
-    Route::get('/approvals', $placeholder('Persetujuan', 'Phase 10'))
+    // Persetujuan (Manager/Finance)
+    Route::get('/approvals', fn () => Inertia::render('Approvals/Index'))
         ->middleware('role:manager,finance')->name('approvals.index');
 
-    Route::get('/payments', $placeholder('Pembayaran', 'Phase 11'))
+    // Pembayaran
+    Route::get('/payments', fn () => Inertia::render('Payments/Index'))
         ->middleware('permission:payment.view')->name('payments.index');
 
-    Route::get('/bank-accounts', $placeholder('Rekening Bank', 'Phase 11'))
+    // Rekening bank milik sendiri
+    Route::get('/bank-accounts', fn () => Inertia::render('BankAccounts/Index'))
         ->middleware('permission:bankaccount.manage')->name('bank-accounts.index');
 
-    Route::get('/master', $placeholder('Master Data', 'Phase 8'))
+    // Master data (tab per permission di halaman)
+    Route::get('/master', fn () => Inertia::render('Master/Index'))
         ->middleware('permission:user.view')->name('master.index');
 
-    Route::get('/reports', $placeholder('Laporan', 'Phase 14'))
+    // Laporan
+    Route::get('/reports', fn () => Inertia::render('Reports/Index'))
         ->middleware('permission:report.view')->name('reports.index');
 
-    Route::get('/audit-logs', $placeholder('Audit Log', 'Phase 15'))
+    // Activity log (Auditor/Admin)
+    Route::get('/audit-logs', fn () => Inertia::render('AuditLogs/Index'))
         ->middleware('permission:audit.view')->name('audit-logs.index');
+
+    // Notifikasi in-app
+    Route::get('/notifications', fn () => Inertia::render('Notifications/Index'))
+        ->name('notifications.index');
 });
 
 require __DIR__.'/auth.php';

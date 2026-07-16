@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\OptionsController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ReimbursementController;
 use App\Http\Controllers\Api\ReportController;
@@ -30,6 +31,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // ---- Dashboard (Phase 12) — konten menyesuaikan role -----------------
     Route::get('dashboard', [DashboardController::class, 'index']);
+
+    // ---- Opsi dropdown untuk form (Phase 17) ------------------------------
+    Route::get('options/categories', [OptionsController::class, 'categories']);
+    Route::get('options/departments', [OptionsController::class, 'departments']);
+    Route::get('options/banks', [OptionsController::class, 'banks']);
+    Route::get('options/roles', [OptionsController::class, 'roles'])->middleware('permission:user.view');
+    Route::get('options/permissions', [OptionsController::class, 'permissions'])->middleware('permission:role.manage');
 
     // ---- Notifikasi in-app (Phase 13) ------------------------------------
     Route::get('notifications', [NotificationController::class, 'index']);
