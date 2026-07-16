@@ -9,7 +9,9 @@ use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ReimbursementController;
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -32,6 +34,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount']);
     Route::post('notifications/{id}/read', [NotificationController::class, 'markAsRead']);
     Route::post('notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+
+    // ---- Global search (Phase 14) — scoped per role ----------------------
+    Route::get('search', [SearchController::class, 'index']);
+
+    // ---- Report & Export (Phase 14; permission: report.view) -------------
+    Route::middleware('permission:report.view')->group(function () {
+        Route::get('reports/reimbursements/export', [ReportController::class, 'export']);
+        Route::get('reports/reimbursements', [ReportController::class, 'reimbursements']);
+    });
 
     // ---- Department (permission: department.manage) ----------------------
     Route::middleware('permission:department.manage')->group(function () {
