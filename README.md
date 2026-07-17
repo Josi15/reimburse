@@ -1,66 +1,57 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Reimbursement Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi manajemen reimbursement modern: pengajuan → persetujuan berjenjang (Manager → Finance) → pembayaran — lengkap dengan RBAC 6 role, notifikasi multi-channel, audit trail, laporan + export, dan REST API terdokumentasi.
 
-## About Laravel
+**Stack:** Laravel 12 · React (Inertia + Breeze) · Vite · Tailwind CSS · PostgreSQL · Sanctum
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Fitur Utama
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Reimbursement lifecycle** dengan state machine eksplisit: `draft → submitted → manager_approved → finance_approved → paid` (+ reject & revisi/resubmit)
+- **RBAC penuh** — Super Admin, Admin, Employee, Manager, Finance, Auditor; menu & aksi dinamis per role
+- **Payment management** — master bank, rekening karyawan (satu rekening utama), pembayaran race-safe (`lockForUpdate` + partial unique index anti double-pay), bukti transfer
+- **Notifikasi** in-app + email (queue) pada submit/approve/reject/revisi/paid
+- **Audit log generik** — login/logout/CRUD/approve/reject/payment dengan old/new data, IP, browser; read-only untuk Auditor
+- **Laporan & export** PDF/Excel/CSV, global search, dashboard analitik per role
+- **File management** terpusat — multi-upload, preview, download, replace, deep MIME check
+- **API docs** OpenAPI 3.1 auto-generated di `/docs/api` (49 endpoint)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Quickstart (Development)
 
-## Learning Laravel
+```bash
+composer install && npm install
+cp .env.example .env               # isi kredensial PostgreSQL
+php artisan key:generate
+php artisan migrate --seed         # role, permission, master data, akun demo
+npm run dev                        # terminal 1 — Vite
+php artisan serve                  # terminal 2 — http://127.0.0.1:8000
+php artisan queue:work             # terminal 3 — email notifikasi
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+**Akun demo** (password: `password`): `super@rms.test`, `admin@rms.test`, `manager@rms.test`, `employee@rms.test`, `finance@rms.test`, `auditor@rms.test`
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Test
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+php artisan test        # 159 test / 483 assertion (butuh DB reimbursement_testing)
+./vendor/bin/pint       # code style
+```
 
-## Laravel Sponsors
+## Deployment
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Docker single-host (app, nginx, postgres, redis, queue, scheduler) — lihat [docs/22-deployment.md](docs/22-deployment.md). CI/CD: `.github/workflows/ci.yml` (lint → audit → build → test → docker image).
 
-### Premium Partners
+## Dokumentasi
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+| Dokumen | Isi |
+|---|---|
+| [docs/01-project-planning.md](docs/01-project-planning.md) | Perencanaan: role, use case, requirement, state machine |
+| [docs/02-database-design.md](docs/02-database-design.md) | ERD, relasi, constraint, index, normalisasi 3NF |
+| [docs/03-setup-project.md](docs/03-setup-project.md) | Setup environment & strategi konfigurasi |
+| [docs/19-security-checklist.md](docs/19-security-checklist.md) | Review keamanan & checklist pra-production |
+| [docs/20-optimization.md](docs/20-optimization.md) | Optimasi query, index, cache |
+| [docs/21-testing-summary.md](docs/21-testing-summary.md) | Piramida pengujian |
+| [docs/22-deployment.md](docs/22-deployment.md) | Panduan production |
+| [docs/openapi.json](docs/openapi.json) | Spesifikasi OpenAPI (bisa diimpor ke Postman) |
 
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+Dibangun mengikuti roadmap 22 fase — planning → database → auth/RBAC → modul inti → notifikasi → laporan → audit → UI → docs → hardening → optimasi → testing → deployment.

@@ -1,0 +1,99 @@
+# =========================================================================
+# CI/CD — Reimbursement Management System (Phase 22, dari outline Phase 3)
+# Tahap: lint -> audit -> build asset -> test (PostgreSQL) -> build image.
+# Catatan: asset dibangun SEBELUM test karena feature test merender halaman
+# Inertia yang membutuhkan manifest Vite.
+# =========================================================================
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lint-test-build:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: reimbursement_testing   # sesuai phpunit.xml
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: '5432'
+      DB_DATABASE: reimbursement_testing
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ---- PHP ----------------------------------------------------------
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_pgsql, pgsql, mbstring, fileinfo, intl, zip, gd, bcmath
+          coverage: none
+
+      - name: Install composer dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      # ---- 1) LINT ------------------------------------------------------
+      - name: Pint (PHP code style)
+        run: ./vendor/bin/pint --test
+
+      # ---- 2) SECURITY AUDIT ---------------------------------------------
+      - name: Composer audit (known CVEs)
+        run: composer audit
+
+      # ---- Node ----------------------------------------------------------
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: ESLint (React)
+        run: npm run lint --if-present
+
+      - name: npm audit (critical only, non-blocking)
+        run: npm audit --audit-level=critical || true
+
+      # ---- 3) BUILD ASSET -------------------------------------------------
+      - name: Vite production build
+        run: npm run build
+
+      # ---- 4) TEST --------------------------------------------------------
+      - name: Prepare app
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Run test suite (Pest)
+        run: php artisan test
+
+  # Validasi image production dapat dibangun (deploy push ke registry
+  # ditambahkan saat infrastruktur target tersedia).
+  docker-image:
+    runs-on: ubuntu-latest
+    needs: lint-test-build
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build production image
+        run: docker build -t rms:${{ github.sha }} .

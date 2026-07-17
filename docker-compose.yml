@@ -1,0 +1,80 @@
+# =========================================================================
+# Reimbursement Management System — single-host production stack (Phase 22)
+# Jalankan dari root repo di server: docker compose up -d --build
+# Langkah pasca-boot (sekali): lihat docs/22-deployment.md
+# =========================================================================
+
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - storage-data:/var/www/html/storage/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  # Worker antrean (email notifikasi, dsb.) — pengganti Supervisor di Docker.
+  queue:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    volumes:
+      - storage-data:/var/www/html/storage/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  # Scheduler (schedule:work) — untuk backup terjadwal, dsb.
+  scheduler:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    command: php artisan schedule:work
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./public:/var/www/html/public:ro
+    depends_on:
+      - app
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-reimbursement}
+      POSTGRES_USER: ${DB_USERNAME:-rms_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+      - ./backups:/backups
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-rms_user} -d ${DB_DATABASE:-reimbursement}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+
+volumes:
+  pg-data:
+  redis-data:
+  storage-data:
