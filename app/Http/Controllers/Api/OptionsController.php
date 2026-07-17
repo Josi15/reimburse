@@ -9,6 +9,7 @@ use App\Models\Department;
 use App\Models\Permission;
 use App\Models\Role;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Opsi dropdown ringan untuk form (Phase 17). Berbeda dari endpoint master
@@ -17,24 +18,30 @@ use Illuminate\Http\JsonResponse;
  */
 class OptionsController extends Controller
 {
+    /** TTL cache opsi (master data jarang berubah). */
+    private const CACHE_SECONDS = 60;
+
     public function categories(): JsonResponse
     {
         return response()->json([
-            'data' => Category::active()->orderBy('name')->get(['id', 'name', 'max_amount']),
+            'data' => Cache::remember('options.categories', self::CACHE_SECONDS,
+                fn () => Category::active()->orderBy('name')->get(['id', 'name', 'max_amount'])),
         ]);
     }
 
     public function departments(): JsonResponse
     {
         return response()->json([
-            'data' => Department::active()->orderBy('name')->get(['id', 'name', 'code']),
+            'data' => Cache::remember('options.departments', self::CACHE_SECONDS,
+                fn () => Department::active()->orderBy('name')->get(['id', 'name', 'code'])),
         ]);
     }
 
     public function banks(): JsonResponse
     {
         return response()->json([
-            'data' => Bank::active()->orderBy('name')->get(['id', 'name', 'code']),
+            'data' => Cache::remember('options.banks', self::CACHE_SECONDS,
+                fn () => Bank::active()->orderBy('name')->get(['id', 'name', 'code'])),
         ]);
     }
 

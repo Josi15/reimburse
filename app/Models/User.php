@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Collection;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -99,16 +100,30 @@ class User extends Authenticatable
 
     // ---- Role helpers (RBAC) --------------------------------------------
 
+    /** Memo per-instance: daftar nama permission user (Phase 20). */
+    protected ?Collection $memoizedPermissions = null;
+
     /** True bila user memiliki salah satu role (slug). */
     public function hasRole(string ...$names): bool
     {
         return $this->roles->whereIn('name', $names)->isNotEmpty();
     }
 
+    /**
+     * Nama-nama permission user. Dimuat sekali per instance (memo) —
+     * hasPermission() dipanggil berulang oleh middleware/policy/menu dalam
+     * satu request, jadi ini menghindari query permissions per role per panggilan.
+     */
+    public function permissionNames(): Collection
+    {
+        return $this->memoizedPermissions ??= $this->loadMissing('roles.permissions')
+            ->roles->flatMap->permissions->pluck('name')->unique()->values();
+    }
+
     /** True bila user memiliki permission tertentu lewat salah satu role-nya. */
     public function hasPermission(string $permission): bool
     {
-        return $this->roles->flatMap->permissions->contains('name', $permission);
+        return $this->permissionNames()->contains($permission);
     }
 
     // ---- Scopes ----------------------------------------------------------
