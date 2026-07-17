@@ -18,6 +18,7 @@ class PaymentStoreRequest extends FormRequest
     {
         $maxKb = config('reimbursement.max_file_size_kb');
         $mimes = implode(',', config('reimbursement.allowed_mimes'));
+        $mimetypes = implode(',', config('reimbursement.allowed_mimetypes'));
 
         return [
             'method' => ['required', new Enum(PaymentMethod::class)],
@@ -25,7 +26,7 @@ class PaymentStoreRequest extends FormRequest
             'notes' => ['nullable', 'string', 'max:1000'],
             'amount' => ['nullable', 'integer', 'min:1'],
             'bank_account_id' => ['nullable', 'integer', Rule::exists('bank_accounts', 'id')],
-            'proof' => ['nullable', 'file', "mimes:{$mimes}", "max:{$maxKb}"],
+            'proof' => ['nullable', 'file', "mimes:{$mimes}", "mimetypes:{$mimetypes}", "max:{$maxKb}"],
         ];
     }
 }

@@ -18,6 +18,7 @@ class StoreReimbursementRequest extends FormRequest
     {
         $maxKb = config('reimbursement.max_file_size_kb');
         $mimes = implode(',', config('reimbursement.allowed_mimes'));
+        $mimetypes = implode(',', config('reimbursement.allowed_mimetypes'));
         $maxFiles = config('reimbursement.max_files_per_request');
 
         return [
@@ -34,7 +35,7 @@ class StoreReimbursementRequest extends FormRequest
                     ->where('is_active', true)],
             // Bukti opsional (pengajuan tanpa bukti diizinkan).
             'attachments' => ['nullable', 'array', "max:{$maxFiles}"],
-            'attachments.*' => ['file', "mimes:{$mimes}", "max:{$maxKb}"],
+            'attachments.*' => ['file', "mimes:{$mimes}", "mimetypes:{$mimetypes}", "max:{$maxKb}"],
         ];
     }
 

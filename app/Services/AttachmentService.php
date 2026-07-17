@@ -28,7 +28,8 @@ class AttachmentService
             'file_name' => $file->getClientOriginalName(),
             'file_path' => $path,
             'disk' => $disk,
-            'mime_type' => $file->getClientMimeType(),
+            // MIME asli dari konten file (finfo) — bukan klaim client yang bisa dipalsukan.
+            'mime_type' => $file->getMimeType(),
             'file_size' => $file->getSize(),
         ]);
     }
@@ -57,7 +58,7 @@ class AttachmentService
             'uploaded_by' => $user->id,
             'file_name' => $file->getClientOriginalName(),
             'file_path' => $path,
-            'mime_type' => $file->getClientMimeType(),
+            'mime_type' => $file->getMimeType(),
             'file_size' => $file->getSize(),
         ]);
 

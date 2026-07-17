@@ -15,9 +15,10 @@ class ReplaceAttachmentRequest extends FormRequest
     {
         $maxKb = config('reimbursement.max_file_size_kb');
         $mimes = implode(',', config('reimbursement.allowed_mimes'));
+        $mimetypes = implode(',', config('reimbursement.allowed_mimetypes'));
 
         return [
-            'file' => ['required', 'file', "mimes:{$mimes}", "max:{$maxKb}"],
+            'file' => ['required', 'file', "mimes:{$mimes}", "mimetypes:{$mimetypes}", "max:{$maxKb}"],
         ];
     }
 }

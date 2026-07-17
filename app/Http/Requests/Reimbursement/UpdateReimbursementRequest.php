@@ -18,6 +18,7 @@ class UpdateReimbursementRequest extends FormRequest
     {
         $maxKb = config('reimbursement.max_file_size_kb');
         $mimes = implode(',', config('reimbursement.allowed_mimes'));
+        $mimetypes = implode(',', config('reimbursement.allowed_mimetypes'));
         $maxFiles = config('reimbursement.max_files_per_request');
 
         return [
@@ -32,7 +33,7 @@ class UpdateReimbursementRequest extends FormRequest
                     ->where('user_id', $this->user()->id)
                     ->where('is_active', true)],
             'attachments' => ['nullable', 'array', "max:{$maxFiles}"],
-            'attachments.*' => ['file', "mimes:{$mimes}", "max:{$maxKb}"],
+            'attachments.*' => ['file', "mimes:{$mimes}", "mimetypes:{$mimetypes}", "max:{$maxKb}"],
             'delete_attachment_ids' => ['nullable', 'array'],
             'delete_attachment_ids.*' => ['integer'],
         ];

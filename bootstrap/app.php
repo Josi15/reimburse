@@ -4,6 +4,7 @@ use App\Http\Middleware\EnsureUserHasPermission;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -24,6 +25,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Sanctum SPA: request same-domain (React) terautentikasi via cookie sesi.
         $middleware->statefulApi();
+
+        // Header keamanan di semua response (Phase 19).
+        $middleware->append(SecurityHeaders::class);
 
         // Alias RBAC & keamanan untuk proteksi route.
         $middleware->alias([

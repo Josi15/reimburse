@@ -120,5 +120,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('payments', [PaymentController::class, 'index'])->middleware('permission:payment.view');
     Route::get('payments/{payment}', [PaymentController::class, 'show'])->middleware('permission:payment.view');
     // Proses pembayaran diotorisasi PaymentPolicy (permission payment.process + status).
-    Route::post('reimbursements/{reimbursement}/pay', [PaymentController::class, 'store']);
+    // Rate limit ketat (Phase 19): limiter "payment" = 10 aksi/menit per user.
+    Route::post('reimbursements/{reimbursement}/pay', [PaymentController::class, 'store'])
+        ->middleware('throttle:payment');
 });
