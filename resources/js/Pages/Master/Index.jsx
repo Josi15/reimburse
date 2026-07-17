@@ -53,7 +53,9 @@ function CrudSection({ endpoint, columns, fields, emptyTitle, transform }) {
 
     function blank() {
         const f = {};
-        fields.forEach((fd) => (f[fd.key] = fd.type === 'checkbox' ? true : ''));
+        fields.forEach(
+            (fd) => (f[fd.key] = fd.type === 'checkbox' ? true : ''),
+        );
         return f;
     }
 
@@ -69,7 +71,9 @@ function CrudSection({ endpoint, columns, fields, emptyTitle, transform }) {
         const f = {};
         fields.forEach((fd) => {
             if (fd.createOnly) return;
-            f[fd.key] = fd.fromRow ? fd.fromRow(row) : (row[fd.key] ?? (fd.type === 'checkbox' ? false : ''));
+            f[fd.key] = fd.fromRow
+                ? fd.fromRow(row)
+                : (row[fd.key] ?? (fd.type === 'checkbox' ? false : ''));
         });
         setForm(f);
         setErrors({});
@@ -79,7 +83,9 @@ function CrudSection({ endpoint, columns, fields, emptyTitle, transform }) {
     async function save() {
         setBusy(true);
         setErrors({});
-        const payload = transform ? transform({ ...form }, !!editing) : { ...form };
+        const payload = transform
+            ? transform({ ...form }, !!editing)
+            : { ...form };
         try {
             if (editing) {
                 await api.put(`${endpoint}/${editing.id}`, payload);
@@ -146,15 +152,26 @@ function CrudSection({ endpoint, columns, fields, emptyTitle, transform }) {
                             {rows.map((row) => (
                                 <TR key={row.id}>
                                     {columns.map((c) => (
-                                        <TD key={c.key}>{c.render ? c.render(row) : (row[c.key] ?? '-')}</TD>
+                                        <TD key={c.key}>
+                                            {c.render
+                                                ? c.render(row)
+                                                : (row[c.key] ?? '-')}
+                                        </TD>
                                     ))}
                                     <TD>
                                         <span className="flex gap-3 text-sm">
-                                            <button onClick={() => openEdit(row)} className="text-indigo-600 hover:underline">
+                                            <button
+                                                onClick={() => openEdit(row)}
+                                                className="text-indigo-600 hover:underline"
+                                            >
                                                 Edit
                                             </button>
                                             <button
-                                                onClick={() => setModal({ deleteId: row.id })}
+                                                onClick={() =>
+                                                    setModal({
+                                                        deleteId: row.id,
+                                                    })
+                                                }
                                                 className="text-red-600 hover:underline"
                                             >
                                                 Hapus
@@ -170,7 +187,11 @@ function CrudSection({ endpoint, columns, fields, emptyTitle, transform }) {
             )}
 
             {/* Modal form */}
-            <Modal show={modal === 'form'} onClose={() => setModal(null)} maxWidth="md">
+            <Modal
+                show={modal === 'form'}
+                onClose={() => setModal(null)}
+                maxWidth="md"
+            >
                 <div className="p-6">
                     <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
                         {editing ? 'Edit Data' : 'Tambah Data'}
@@ -186,7 +207,13 @@ function CrudSection({ endpoint, columns, fields, emptyTitle, transform }) {
                                                 type="checkbox"
                                                 className="rounded border-gray-300"
                                                 checked={!!form[fd.key]}
-                                                onChange={(e) => setForm((f) => ({ ...f, [fd.key]: e.target.checked }))}
+                                                onChange={(e) =>
+                                                    setForm((f) => ({
+                                                        ...f,
+                                                        [fd.key]:
+                                                            e.target.checked,
+                                                    }))
+                                                }
                                             />
                                             {fd.label}
                                         </label>
@@ -196,11 +223,22 @@ function CrudSection({ endpoint, columns, fields, emptyTitle, transform }) {
                                             <SelectInput
                                                 className="mt-1 block w-full"
                                                 value={form[fd.key] ?? ''}
-                                                onChange={(e) => setForm((f) => ({ ...f, [fd.key]: e.target.value }))}
+                                                onChange={(e) =>
+                                                    setForm((f) => ({
+                                                        ...f,
+                                                        [fd.key]:
+                                                            e.target.value,
+                                                    }))
+                                                }
                                             >
-                                                <option value="">— pilih —</option>
+                                                <option value="">
+                                                    — pilih —
+                                                </option>
                                                 {(fd.options ?? []).map((o) => (
-                                                    <option key={o.value} value={o.value}>
+                                                    <option
+                                                        key={o.value}
+                                                        value={o.value}
+                                                    >
                                                         {o.label}
                                                     </option>
                                                 ))}
@@ -213,16 +251,27 @@ function CrudSection({ endpoint, columns, fields, emptyTitle, transform }) {
                                                 type={fd.type ?? 'text'}
                                                 className="mt-1 block w-full"
                                                 value={form[fd.key] ?? ''}
-                                                onChange={(e) => setForm((f) => ({ ...f, [fd.key]: e.target.value }))}
+                                                onChange={(e) =>
+                                                    setForm((f) => ({
+                                                        ...f,
+                                                        [fd.key]:
+                                                            e.target.value,
+                                                    }))
+                                                }
                                             />
                                         </>
                                     )}
-                                    <InputError message={errors[fd.key]?.[0]} className="mt-1" />
+                                    <InputError
+                                        message={errors[fd.key]?.[0]}
+                                        className="mt-1"
+                                    />
                                 </div>
                             ))}
                     </div>
                     <div className="mt-6 flex justify-end gap-3">
-                        <SecondaryButton onClick={() => setModal(null)}>Batal</SecondaryButton>
+                        <SecondaryButton onClick={() => setModal(null)}>
+                            Batal
+                        </SecondaryButton>
                         <PrimaryButton onClick={save} disabled={busy}>
                             {busy ? 'Menyimpan…' : 'Simpan'}
                         </PrimaryButton>
@@ -252,7 +301,12 @@ function RolesSection() {
     const [loading, setLoading] = useState(true);
     const [modal, setModal] = useState(null);
     const [editing, setEditing] = useState(null);
-    const [form, setForm] = useState({ name: '', display_name: '', description: '', permission_ids: [] });
+    const [form, setForm] = useState({
+        name: '',
+        display_name: '',
+        description: '',
+        permission_ids: [],
+    });
     const [errors, setErrors] = useState({});
     const [busy, setBusy] = useState(false);
 
@@ -266,19 +320,28 @@ function RolesSection() {
 
     useEffect(() => {
         reload();
-        api.get('/api/options/permissions').then((d) => setPermissions(d.data)).catch(() => {});
+        api.get('/api/options/permissions')
+            .then((d) => setPermissions(d.data))
+            .catch(() => {});
     }, [reload]);
 
     function openCreate() {
         setEditing(null);
-        setForm({ name: '', display_name: '', description: '', permission_ids: [] });
+        setForm({
+            name: '',
+            display_name: '',
+            description: '',
+            permission_ids: [],
+        });
         setErrors({});
         setModal('form');
     }
 
     function openEdit(role) {
         setEditing(role);
-        const permIds = permissions.filter((p) => role.permissions?.includes(p.name)).map((p) => p.id);
+        const permIds = permissions
+            .filter((p) => role.permissions?.includes(p.name))
+            .map((p) => p.id);
         setForm({
             name: role.name,
             display_name: role.display_name,
@@ -327,8 +390,12 @@ function RolesSection() {
     return (
         <Card>
             <div className="flex items-center justify-between border-b border-gray-100 p-4 dark:border-gray-700">
-                <p className="text-sm text-gray-500">Role inti sistem tidak dapat dihapus.</p>
-                <PrimaryButton onClick={openCreate}>+ Tambah Role</PrimaryButton>
+                <p className="text-sm text-gray-500">
+                    Role inti sistem tidak dapat dihapus.
+                </p>
+                <PrimaryButton onClick={openCreate}>
+                    + Tambah Role
+                </PrimaryButton>
             </div>
 
             {loading ? (
@@ -357,11 +424,16 @@ function RolesSection() {
                                 </TD>
                                 <TD>
                                     <span className="flex gap-3 text-sm">
-                                        <button onClick={() => openEdit(r)} className="text-indigo-600 hover:underline">
+                                        <button
+                                            onClick={() => openEdit(r)}
+                                            className="text-indigo-600 hover:underline"
+                                        >
                                             Edit
                                         </button>
                                         <button
-                                            onClick={() => setModal({ deleteId: r.id })}
+                                            onClick={() =>
+                                                setModal({ deleteId: r.id })
+                                            }
                                             className="text-red-600 hover:underline"
                                         >
                                             Hapus
@@ -374,10 +446,16 @@ function RolesSection() {
                 </Table>
             )}
 
-            <Modal show={modal === 'form'} onClose={() => setModal(null)} maxWidth="2xl">
+            <Modal
+                show={modal === 'form'}
+                onClose={() => setModal(null)}
+                maxWidth="2xl"
+            >
                 <div className="p-6">
                     <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                        {editing ? `Edit Role: ${editing.display_name}` : 'Tambah Role'}
+                        {editing
+                            ? `Edit Role: ${editing.display_name}`
+                            : 'Tambah Role'}
                     </h3>
                     <div className="mt-4 grid gap-4 sm:grid-cols-2">
                         <div>
@@ -385,35 +463,61 @@ function RolesSection() {
                             <TextInput
                                 className="mt-1 block w-full"
                                 value={form.name}
-                                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                                onChange={(e) =>
+                                    setForm((f) => ({
+                                        ...f,
+                                        name: e.target.value,
+                                    }))
+                                }
                             />
-                            <InputError message={errors.name?.[0]} className="mt-1" />
+                            <InputError
+                                message={errors.name?.[0]}
+                                className="mt-1"
+                            />
                         </div>
                         <div>
                             <InputLabel value="Nama Tampilan *" />
                             <TextInput
                                 className="mt-1 block w-full"
                                 value={form.display_name}
-                                onChange={(e) => setForm((f) => ({ ...f, display_name: e.target.value }))}
+                                onChange={(e) =>
+                                    setForm((f) => ({
+                                        ...f,
+                                        display_name: e.target.value,
+                                    }))
+                                }
                             />
-                            <InputError message={errors.display_name?.[0]} className="mt-1" />
+                            <InputError
+                                message={errors.display_name?.[0]}
+                                className="mt-1"
+                            />
                         </div>
                     </div>
                     <div className="mt-4">
                         <InputLabel value="Permissions" />
-                        <div className="mt-2 grid max-h-64 grid-cols-2 gap-1 overflow-y-auto rounded-md border border-gray-200 p-3 text-sm dark:border-gray-700 sm:grid-cols-3">
+                        <div className="mt-2 grid max-h-64 grid-cols-2 gap-1 overflow-y-auto rounded-md border border-gray-200 p-3 text-sm sm:grid-cols-3 dark:border-gray-700">
                             {permissions.map((p) => (
-                                <label key={p.id} className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                                <label
+                                    key={p.id}
+                                    className="flex items-center gap-2 text-gray-600 dark:text-gray-300"
+                                >
                                     <input
                                         type="checkbox"
                                         className="rounded border-gray-300"
-                                        checked={form.permission_ids.includes(p.id)}
+                                        checked={form.permission_ids.includes(
+                                            p.id,
+                                        )}
                                         onChange={(e) =>
                                             setForm((f) => ({
                                                 ...f,
                                                 permission_ids: e.target.checked
-                                                    ? [...f.permission_ids, p.id]
-                                                    : f.permission_ids.filter((x) => x !== p.id),
+                                                    ? [
+                                                          ...f.permission_ids,
+                                                          p.id,
+                                                      ]
+                                                    : f.permission_ids.filter(
+                                                          (x) => x !== p.id,
+                                                      ),
                                             }))
                                         }
                                     />
@@ -425,7 +529,9 @@ function RolesSection() {
                         </div>
                     </div>
                     <div className="mt-6 flex justify-end gap-3">
-                        <SecondaryButton onClick={() => setModal(null)}>Batal</SecondaryButton>
+                        <SecondaryButton onClick={() => setModal(null)}>
+                            Batal
+                        </SecondaryButton>
                         <PrimaryButton onClick={save} disabled={busy}>
                             {busy ? 'Menyimpan…' : 'Simpan'}
                         </PrimaryButton>
@@ -470,14 +576,20 @@ export default function Index() {
 
     useEffect(() => {
         if (can('user.view')) {
-            api.get('/api/options/departments').then((d) => setDepartments(d.data)).catch(() => {});
-            api.get('/api/options/roles').then((d) => setRoleOptions(d.data)).catch(() => {});
+            api.get('/api/options/departments')
+                .then((d) => setDepartments(d.data))
+                .catch(() => {});
+            api.get('/api/options/roles')
+                .then((d) => setRoleOptions(d.data))
+                .catch(() => {});
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const activeBadge = (row) => (
-        <Badge color={row.is_active ? 'green' : 'gray'}>{row.is_active ? 'Aktif' : 'Nonaktif'}</Badge>
+        <Badge color={row.is_active ? 'green' : 'gray'}>
+            {row.is_active ? 'Aktif' : 'Nonaktif'}
+        </Badge>
     );
 
     return (
@@ -517,13 +629,21 @@ export default function Index() {
                             { key: 'code', label: 'Kode' },
                             { key: 'name', label: 'Nama' },
                             { key: 'users_count', label: 'Users' },
-                            { key: 'is_active', label: 'Status', render: activeBadge },
+                            {
+                                key: 'is_active',
+                                label: 'Status',
+                                render: activeBadge,
+                            },
                         ]}
                         fields={[
                             { key: 'name', label: 'Nama *' },
                             { key: 'code', label: 'Kode *' },
                             { key: 'description', label: 'Deskripsi' },
-                            { key: 'is_active', label: 'Aktif', type: 'checkbox' },
+                            {
+                                key: 'is_active',
+                                label: 'Aktif',
+                                type: 'checkbox',
+                            },
                         ]}
                     />
                 )}
@@ -538,18 +658,37 @@ export default function Index() {
                             {
                                 key: 'max_amount',
                                 label: 'Plafon',
-                                render: (r) => (r.max_amount ? rupiah(r.max_amount) : 'Tanpa batas'),
+                                render: (r) =>
+                                    r.max_amount
+                                        ? rupiah(r.max_amount)
+                                        : 'Tanpa batas',
                             },
-                            { key: 'is_active', label: 'Status', render: activeBadge },
+                            {
+                                key: 'is_active',
+                                label: 'Status',
+                                render: activeBadge,
+                            },
                         ]}
                         fields={[
                             { key: 'name', label: 'Nama *' },
                             { key: 'code', label: 'Kode *' },
                             { key: 'description', label: 'Deskripsi' },
-                            { key: 'max_amount', label: 'Plafon (Rp, kosongkan bila tanpa batas)', type: 'number' },
-                            { key: 'is_active', label: 'Aktif', type: 'checkbox' },
+                            {
+                                key: 'max_amount',
+                                label: 'Plafon (Rp, kosongkan bila tanpa batas)',
+                                type: 'number',
+                            },
+                            {
+                                key: 'is_active',
+                                label: 'Aktif',
+                                type: 'checkbox',
+                            },
                         ]}
-                        transform={(f) => ({ ...f, max_amount: f.max_amount === '' ? null : f.max_amount })}
+                        transform={(f) => ({
+                            ...f,
+                            max_amount:
+                                f.max_amount === '' ? null : f.max_amount,
+                        })}
                     />
                 )}
 
@@ -562,13 +701,21 @@ export default function Index() {
                             { key: 'name', label: 'Nama' },
                             { key: 'swift_code', label: 'SWIFT' },
                             { key: 'bank_accounts_count', label: 'Rekening' },
-                            { key: 'is_active', label: 'Status', render: activeBadge },
+                            {
+                                key: 'is_active',
+                                label: 'Status',
+                                render: activeBadge,
+                            },
                         ]}
                         fields={[
                             { key: 'name', label: 'Nama *' },
                             { key: 'code', label: 'Kode *' },
                             { key: 'swift_code', label: 'SWIFT Code' },
-                            { key: 'is_active', label: 'Aktif', type: 'checkbox' },
+                            {
+                                key: 'is_active',
+                                label: 'Aktif',
+                                type: 'checkbox',
+                            },
                         ]}
                     />
                 )}
@@ -583,15 +730,29 @@ export default function Index() {
                             {
                                 key: 'roles',
                                 label: 'Role',
-                                render: (r) => (r.roles ?? []).join(', ') || '-',
+                                render: (r) =>
+                                    (r.roles ?? []).join(', ') || '-',
                             },
-                            { key: 'department', label: 'Department', render: (r) => r.department?.name ?? '-' },
-                            { key: 'is_active', label: 'Status', render: activeBadge },
+                            {
+                                key: 'department',
+                                label: 'Department',
+                                render: (r) => r.department?.name ?? '-',
+                            },
+                            {
+                                key: 'is_active',
+                                label: 'Status',
+                                render: activeBadge,
+                            },
                         ]}
                         fields={[
                             { key: 'name', label: 'Nama *' },
                             { key: 'email', label: 'Email *' },
-                            { key: 'password', label: 'Password *', type: 'password', createOnly: true },
+                            {
+                                key: 'password',
+                                label: 'Password *',
+                                type: 'password',
+                                createOnly: true,
+                            },
                             {
                                 key: 'password_confirmation',
                                 label: 'Konfirmasi Password *',
@@ -603,23 +764,36 @@ export default function Index() {
                                 key: 'department_id',
                                 label: 'Department',
                                 type: 'select',
-                                options: departments.map((d) => ({ value: d.id, label: d.name })),
+                                options: departments.map((d) => ({
+                                    value: d.id,
+                                    label: d.name,
+                                })),
                             },
                             {
                                 key: 'role_id',
                                 label: 'Role *',
                                 type: 'select',
-                                options: roleOptions.map((r) => ({ value: r.id, label: r.display_name })),
+                                options: roleOptions.map((r) => ({
+                                    value: r.id,
+                                    label: r.display_name,
+                                })),
                                 fromRow: () => '',
                             },
-                            { key: 'is_active', label: 'Aktif', type: 'checkbox' },
+                            {
+                                key: 'is_active',
+                                label: 'Aktif',
+                                type: 'checkbox',
+                            },
                         ]}
                         transform={(f, isEdit) => {
                             const payload = { ...f };
-                            if (payload.role_id) payload.role_ids = [Number(payload.role_id)];
+                            if (payload.role_id)
+                                payload.role_ids = [Number(payload.role_id)];
                             delete payload.role_id;
-                            if (payload.department_id === '') payload.department_id = null;
-                            if (isEdit && !payload.role_ids) delete payload.role_ids;
+                            if (payload.department_id === '')
+                                payload.department_id = null;
+                            if (isEdit && !payload.role_ids)
+                                delete payload.role_ids;
                             return payload;
                         }}
                     />

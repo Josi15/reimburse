@@ -4,11 +4,12 @@ namespace Database\Factories;
 
 use App\Models\Category;
 use App\Models\Department;
+use App\Models\Reimbursement;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Reimbursement>
+ * @extends Factory<Reimbursement>
  */
 class ReimbursementFactory extends Factory
 {

@@ -1,6 +1,9 @@
 import { forwardRef } from 'react';
 
-export default forwardRef(function TextareaInput({ className = '', ...props }, ref) {
+export default forwardRef(function TextareaInput(
+    { className = '', ...props },
+    ref,
+) {
     return (
         <textarea
             ref={ref}

@@ -63,7 +63,9 @@ export default function Index() {
                     <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                         Notifikasi
                     </h2>
-                    <SecondaryButton onClick={markAll}>Tandai semua dibaca</SecondaryButton>
+                    <SecondaryButton onClick={markAll}>
+                        Tandai semua dibaca
+                    </SecondaryButton>
                 </div>
             }
         >
@@ -83,19 +85,23 @@ export default function Index() {
                                         key={n.id}
                                         className={cn(
                                             'flex items-start gap-3 px-5 py-4',
-                                            !n.read_at && 'bg-indigo-50/50 dark:bg-indigo-900/10',
+                                            !n.read_at &&
+                                                'bg-indigo-50/50 dark:bg-indigo-900/10',
                                         )}
                                     >
                                         <span className="mt-1 text-lg">
-                                            {n.data?.type === 'reimbursement_paid'
+                                            {n.data?.type ===
+                                            'reimbursement_paid'
                                                 ? '💸'
-                                                : n.data?.type === 'reimbursement_submitted'
+                                                : n.data?.type ===
+                                                    'reimbursement_submitted'
                                                   ? '📥'
                                                   : '🔔'}
                                         </span>
                                         <div className="min-w-0 flex-1">
                                             <p className="text-sm text-gray-700 dark:text-gray-200">
-                                                {n.data?.message ?? 'Notifikasi'}
+                                                {n.data?.message ??
+                                                    'Notifikasi'}
                                             </p>
                                             <p className="mt-0.5 text-xs text-gray-400">
                                                 {formatDate(n.created_at, true)}
@@ -112,7 +118,9 @@ export default function Index() {
                                             )}
                                             {!n.read_at && (
                                                 <button
-                                                    onClick={() => markRead(n.id)}
+                                                    onClick={() =>
+                                                        markRead(n.id)
+                                                    }
                                                     className="text-gray-400 hover:underline"
                                                 >
                                                     Tandai dibaca

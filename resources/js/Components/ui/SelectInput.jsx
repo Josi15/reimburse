@@ -1,6 +1,9 @@
 import { forwardRef } from 'react';
 
-export default forwardRef(function SelectInput({ className = '', children, ...props }, ref) {
+export default forwardRef(function SelectInput(
+    { className = '', children, ...props },
+    ref,
+) {
     return (
         <select
             ref={ref}

@@ -17,7 +17,12 @@ import { toast } from '@/lib/toast';
 import { Head } from '@inertiajs/react';
 import { useCallback, useEffect, useState } from 'react';
 
-const EMPTY = { bank_id: '', account_number: '', account_holder_name: '', is_primary: false };
+const EMPTY = {
+    bank_id: '',
+    account_number: '',
+    account_holder_name: '',
+    is_primary: false,
+};
 
 export default function Index() {
     const [accounts, setAccounts] = useState(null);
@@ -39,7 +44,9 @@ export default function Index() {
 
     useEffect(() => {
         reload();
-        api.get('/api/options/banks').then((d) => setBanks(d.data)).catch(() => {});
+        api.get('/api/options/banks')
+            .then((d) => setBanks(d.data))
+            .catch(() => {});
     }, [reload]);
 
     function openCreate() {
@@ -112,7 +119,9 @@ export default function Index() {
                     <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                         Rekening Bank Saya
                     </h2>
-                    <PrimaryButton onClick={openCreate}>+ Tambah Rekening</PrimaryButton>
+                    <PrimaryButton onClick={openCreate}>
+                        + Tambah Rekening
+                    </PrimaryButton>
                 </div>
             }
         >
@@ -148,9 +157,21 @@ export default function Index() {
                                         <TD>{a.account_holder_name}</TD>
                                         <TD>
                                             <span className="flex gap-1.5">
-                                                {a.is_primary && <Badge color="indigo">Utama</Badge>}
-                                                <Badge color={a.is_active ? 'green' : 'gray'}>
-                                                    {a.is_active ? 'Aktif' : 'Nonaktif'}
+                                                {a.is_primary && (
+                                                    <Badge color="indigo">
+                                                        Utama
+                                                    </Badge>
+                                                )}
+                                                <Badge
+                                                    color={
+                                                        a.is_active
+                                                            ? 'green'
+                                                            : 'gray'
+                                                    }
+                                                >
+                                                    {a.is_active
+                                                        ? 'Aktif'
+                                                        : 'Nonaktif'}
                                                 </Badge>
                                             </span>
                                         </TD>
@@ -158,7 +179,9 @@ export default function Index() {
                                             <span className="flex gap-3 text-sm">
                                                 {!a.is_primary && (
                                                     <button
-                                                        onClick={() => setPrimary(a.id)}
+                                                        onClick={() =>
+                                                            setPrimary(a.id)
+                                                        }
                                                         className="text-indigo-600 hover:underline"
                                                     >
                                                         Jadikan Utama
@@ -171,7 +194,9 @@ export default function Index() {
                                                     Edit
                                                 </button>
                                                 <button
-                                                    onClick={() => setModal(a.id)}
+                                                    onClick={() =>
+                                                        setModal(a.id)
+                                                    }
                                                     className="text-red-600 hover:underline"
                                                 >
                                                     Hapus
@@ -187,7 +212,11 @@ export default function Index() {
             </div>
 
             {/* Form modal */}
-            <Modal show={modal === 'form'} onClose={() => setModal(null)} maxWidth="md">
+            <Modal
+                show={modal === 'form'}
+                onClose={() => setModal(null)}
+                maxWidth="md"
+            >
                 <div className="p-6">
                     <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
                         {editing ? 'Edit Rekening' : 'Tambah Rekening'}
@@ -198,7 +227,12 @@ export default function Index() {
                             <SelectInput
                                 className="mt-1 block w-full"
                                 value={form.bank_id}
-                                onChange={(e) => setForm((f) => ({ ...f, bank_id: e.target.value }))}
+                                onChange={(e) =>
+                                    setForm((f) => ({
+                                        ...f,
+                                        bank_id: e.target.value,
+                                    }))
+                                }
                             >
                                 <option value="">— pilih bank —</option>
                                 {banks.map((b) => (
@@ -207,38 +241,64 @@ export default function Index() {
                                     </option>
                                 ))}
                             </SelectInput>
-                            <InputError message={errors.bank_id?.[0]} className="mt-1" />
+                            <InputError
+                                message={errors.bank_id?.[0]}
+                                className="mt-1"
+                            />
                         </div>
                         <div>
                             <InputLabel value="Nomor Rekening * (6–30 digit)" />
                             <TextInput
                                 className="mt-1 block w-full"
                                 value={form.account_number}
-                                onChange={(e) => setForm((f) => ({ ...f, account_number: e.target.value }))}
+                                onChange={(e) =>
+                                    setForm((f) => ({
+                                        ...f,
+                                        account_number: e.target.value,
+                                    }))
+                                }
                             />
-                            <InputError message={errors.account_number?.[0]} className="mt-1" />
+                            <InputError
+                                message={errors.account_number?.[0]}
+                                className="mt-1"
+                            />
                         </div>
                         <div>
                             <InputLabel value="Nama Pemilik Rekening *" />
                             <TextInput
                                 className="mt-1 block w-full"
                                 value={form.account_holder_name}
-                                onChange={(e) => setForm((f) => ({ ...f, account_holder_name: e.target.value }))}
+                                onChange={(e) =>
+                                    setForm((f) => ({
+                                        ...f,
+                                        account_holder_name: e.target.value,
+                                    }))
+                                }
                             />
-                            <InputError message={errors.account_holder_name?.[0]} className="mt-1" />
+                            <InputError
+                                message={errors.account_holder_name?.[0]}
+                                className="mt-1"
+                            />
                         </div>
                         <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                             <input
                                 type="checkbox"
                                 className="rounded border-gray-300"
                                 checked={form.is_primary}
-                                onChange={(e) => setForm((f) => ({ ...f, is_primary: e.target.checked }))}
+                                onChange={(e) =>
+                                    setForm((f) => ({
+                                        ...f,
+                                        is_primary: e.target.checked,
+                                    }))
+                                }
                             />
                             Jadikan rekening utama
                         </label>
                     </div>
                     <div className="mt-6 flex justify-end gap-3">
-                        <SecondaryButton onClick={() => setModal(null)}>Batal</SecondaryButton>
+                        <SecondaryButton onClick={() => setModal(null)}>
+                            Batal
+                        </SecondaryButton>
                         <PrimaryButton onClick={save} disabled={busy}>
                             {busy ? 'Menyimpan…' : 'Simpan'}
                         </PrimaryButton>

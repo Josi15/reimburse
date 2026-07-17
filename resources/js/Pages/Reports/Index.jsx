@@ -56,8 +56,12 @@ export default function Index() {
     };
 
     useEffect(() => {
-        api.get('/api/options/departments').then((d) => setDepartments(d.data)).catch(() => {});
-        api.get('/api/options/categories').then((d) => setCategories(d.data)).catch(() => {});
+        api.get('/api/options/departments')
+            .then((d) => setDepartments(d.data))
+            .catch(() => {});
+        api.get('/api/options/categories')
+            .then((d) => setCategories(d.data))
+            .catch(() => {});
     }, []);
 
     useEffect(() => {
@@ -100,16 +104,33 @@ export default function Index() {
                 <Card className="p-4">
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
                         <div>
-                            <InputLabel value="Dari Tanggal" className="text-xs" />
-                            <TextInput type="date" className="mt-1 w-full text-sm" value={filters.date_from} onChange={set('date_from')} />
+                            <InputLabel
+                                value="Dari Tanggal"
+                                className="text-xs"
+                            />
+                            <TextInput
+                                type="date"
+                                className="mt-1 w-full text-sm"
+                                value={filters.date_from}
+                                onChange={set('date_from')}
+                            />
                         </div>
                         <div>
                             <InputLabel value="Sampai" className="text-xs" />
-                            <TextInput type="date" className="mt-1 w-full text-sm" value={filters.date_to} onChange={set('date_to')} />
+                            <TextInput
+                                type="date"
+                                className="mt-1 w-full text-sm"
+                                value={filters.date_to}
+                                onChange={set('date_to')}
+                            />
                         </div>
                         <div>
                             <InputLabel value="Status" className="text-xs" />
-                            <SelectInput className="mt-1 w-full text-sm" value={filters.status} onChange={set('status')}>
+                            <SelectInput
+                                className="mt-1 w-full text-sm"
+                                value={filters.status}
+                                onChange={set('status')}
+                            >
                                 {STATUSES.map(([v, l]) => (
                                     <option key={v} value={v}>
                                         {l}
@@ -118,8 +139,15 @@ export default function Index() {
                             </SelectInput>
                         </div>
                         <div>
-                            <InputLabel value="Department" className="text-xs" />
-                            <SelectInput className="mt-1 w-full text-sm" value={filters.department_id} onChange={set('department_id')}>
+                            <InputLabel
+                                value="Department"
+                                className="text-xs"
+                            />
+                            <SelectInput
+                                className="mt-1 w-full text-sm"
+                                value={filters.department_id}
+                                onChange={set('department_id')}
+                            >
                                 <option value="">Semua</option>
                                 {departments.map((d) => (
                                     <option key={d.id} value={d.id}>
@@ -130,7 +158,11 @@ export default function Index() {
                         </div>
                         <div>
                             <InputLabel value="Kategori" className="text-xs" />
-                            <SelectInput className="mt-1 w-full text-sm" value={filters.category_id} onChange={set('category_id')}>
+                            <SelectInput
+                                className="mt-1 w-full text-sm"
+                                value={filters.category_id}
+                                onChange={set('category_id')}
+                            >
                                 <option value="">Semua</option>
                                 {categories.map((c) => (
                                     <option key={c.id} value={c.id}>
@@ -140,23 +172,45 @@ export default function Index() {
                             </SelectInput>
                         </div>
                         <div>
-                            <InputLabel value="Kata Kunci" className="text-xs" />
-                            <TextInput className="mt-1 w-full text-sm" placeholder="Nomor / judul" value={filters.q} onChange={set('q')} />
+                            <InputLabel
+                                value="Kata Kunci"
+                                className="text-xs"
+                            />
+                            <TextInput
+                                className="mt-1 w-full text-sm"
+                                placeholder="Nomor / judul"
+                                value={filters.q}
+                                onChange={set('q')}
+                            />
                         </div>
                     </div>
 
                     <div className="mt-4 flex flex-wrap gap-2 border-t border-gray-100 pt-4 dark:border-gray-700">
-                        <SecondaryButton onClick={() => exportAs('pdf')}>⬇ PDF</SecondaryButton>
-                        <SecondaryButton onClick={() => exportAs('xlsx')}>⬇ Excel</SecondaryButton>
-                        <SecondaryButton onClick={() => exportAs('csv')}>⬇ CSV</SecondaryButton>
+                        <SecondaryButton onClick={() => exportAs('pdf')}>
+                            ⬇ PDF
+                        </SecondaryButton>
+                        <SecondaryButton onClick={() => exportAs('xlsx')}>
+                            ⬇ Excel
+                        </SecondaryButton>
+                        <SecondaryButton onClick={() => exportAs('csv')}>
+                            ⬇ CSV
+                        </SecondaryButton>
                     </div>
                 </Card>
 
                 {/* Ringkasan */}
                 {summary && (
                     <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                        <StatCard label="Jumlah Pengajuan" value={summary.count} accent="gray" />
-                        <StatCard label="Total Nominal" value={rupiah(summary.total_amount)} accent="indigo" />
+                        <StatCard
+                            label="Jumlah Pengajuan"
+                            value={summary.count}
+                            accent="gray"
+                        />
+                        <StatCard
+                            label="Total Nominal"
+                            value={rupiah(summary.total_amount)}
+                            accent="indigo"
+                        />
                         <StatCard
                             label="Dibayar"
                             value={summary.by_status?.paid?.count ?? 0}
@@ -166,8 +220,10 @@ export default function Index() {
                         <StatCard
                             label="Ditolak"
                             value={
-                                (summary.by_status?.manager_rejected?.count ?? 0) +
-                                (summary.by_status?.finance_rejected?.count ?? 0)
+                                (summary.by_status?.manager_rejected?.count ??
+                                    0) +
+                                (summary.by_status?.finance_rejected?.count ??
+                                    0)
                             }
                             accent="red"
                         />
@@ -198,14 +254,18 @@ export default function Index() {
                                 <TBody>
                                     {rows.map((r) => (
                                         <TR key={r.id}>
-                                            <TD className="font-medium">{r.reimbursement_number}</TD>
+                                            <TD className="font-medium">
+                                                {r.reimbursement_number}
+                                            </TD>
                                             <TD>{r.title}</TD>
                                             <TD>{r.user?.name ?? '-'}</TD>
                                             <TD>{r.department?.name ?? '-'}</TD>
                                             <TD>{r.category?.name ?? '-'}</TD>
                                             <TD>{r.formatted_amount}</TD>
                                             <TD>
-                                                <Badge color={r.status.color}>{r.status.label}</Badge>
+                                                <Badge color={r.status.color}>
+                                                    {r.status.label}
+                                                </Badge>
                                             </TD>
                                             <TD>{formatDate(r.created_at)}</TD>
                                         </TR>

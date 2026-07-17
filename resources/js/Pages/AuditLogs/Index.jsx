@@ -39,7 +39,12 @@ const EVENT_COLORS = {
 };
 
 export default function Index() {
-    const [filters, setFilters] = useState({ event: '', date_from: '', date_to: '', q: '' });
+    const [filters, setFilters] = useState({
+        event: '',
+        date_from: '',
+        date_to: '',
+        q: '',
+    });
     const [rows, setRows] = useState(null);
     const [meta, setMeta] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -96,7 +101,11 @@ export default function Index() {
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         <div>
                             <InputLabel value="Event" className="text-xs" />
-                            <SelectInput className="mt-1 w-full text-sm" value={filters.event} onChange={set('event')}>
+                            <SelectInput
+                                className="mt-1 w-full text-sm"
+                                value={filters.event}
+                                onChange={set('event')}
+                            >
                                 {EVENTS.map(([v, l]) => (
                                     <option key={v} value={v}>
                                         {l}
@@ -105,21 +114,46 @@ export default function Index() {
                             </SelectInput>
                         </div>
                         <div>
-                            <InputLabel value="Dari Tanggal" className="text-xs" />
-                            <TextInput type="date" className="mt-1 w-full text-sm" value={filters.date_from} onChange={set('date_from')} />
+                            <InputLabel
+                                value="Dari Tanggal"
+                                className="text-xs"
+                            />
+                            <TextInput
+                                type="date"
+                                className="mt-1 w-full text-sm"
+                                value={filters.date_from}
+                                onChange={set('date_from')}
+                            />
                         </div>
                         <div>
                             <InputLabel value="Sampai" className="text-xs" />
-                            <TextInput type="date" className="mt-1 w-full text-sm" value={filters.date_to} onChange={set('date_to')} />
+                            <TextInput
+                                type="date"
+                                className="mt-1 w-full text-sm"
+                                value={filters.date_to}
+                                onChange={set('date_to')}
+                            />
                         </div>
                         <div>
-                            <InputLabel value="Kata Kunci" className="text-xs" />
-                            <TextInput className="mt-1 w-full text-sm" placeholder="Deskripsi / IP / URL" value={filters.q} onChange={set('q')} />
+                            <InputLabel
+                                value="Kata Kunci"
+                                className="text-xs"
+                            />
+                            <TextInput
+                                className="mt-1 w-full text-sm"
+                                placeholder="Deskripsi / IP / URL"
+                                value={filters.q}
+                                onChange={set('q')}
+                            />
                         </div>
                     </div>
                     <div className="mt-4 flex gap-2 border-t border-gray-100 pt-4 dark:border-gray-700">
-                        <SecondaryButton onClick={() => exportAs('xlsx')}>⬇ Excel</SecondaryButton>
-                        <SecondaryButton onClick={() => exportAs('csv')}>⬇ CSV</SecondaryButton>
+                        <SecondaryButton onClick={() => exportAs('xlsx')}>
+                            ⬇ Excel
+                        </SecondaryButton>
+                        <SecondaryButton onClick={() => exportAs('csv')}>
+                            ⬇ CSV
+                        </SecondaryButton>
                     </div>
                 </Card>
 
@@ -145,15 +179,28 @@ export default function Index() {
                                 <TBody>
                                     {rows.map((l) => (
                                         <TR key={l.id}>
-                                            <TD className="whitespace-nowrap">{formatDate(l.created_at, true)}</TD>
+                                            <TD className="whitespace-nowrap">
+                                                {formatDate(l.created_at, true)}
+                                            </TD>
                                             <TD>{l.user?.name ?? 'Sistem'}</TD>
                                             <TD>
-                                                <Badge color={EVENT_COLORS[l.event] ?? 'gray'}>{l.event_label}</Badge>
+                                                <Badge
+                                                    color={
+                                                        EVENT_COLORS[l.event] ??
+                                                        'gray'
+                                                    }
+                                                >
+                                                    {l.event_label}
+                                                </Badge>
                                             </TD>
                                             <TD>
-                                                {l.auditable_type ? `${l.auditable_type} #${l.auditable_id}` : '-'}
+                                                {l.auditable_type
+                                                    ? `${l.auditable_type} #${l.auditable_id}`
+                                                    : '-'}
                                             </TD>
-                                            <TD className="max-w-xs truncate">{l.description ?? '-'}</TD>
+                                            <TD className="max-w-xs truncate">
+                                                {l.description ?? '-'}
+                                            </TD>
                                             <TD>{l.ip_address ?? '-'}</TD>
                                             <TD>
                                                 <button
@@ -174,7 +221,11 @@ export default function Index() {
             </div>
 
             {/* Detail modal */}
-            <Modal show={!!detail} onClose={() => setDetail(null)} maxWidth="2xl">
+            <Modal
+                show={!!detail}
+                onClose={() => setDetail(null)}
+                maxWidth="2xl"
+            >
                 {detail && (
                     <div className="p-6">
                         <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
@@ -195,33 +246,56 @@ export default function Index() {
                             </div>
                             <div>
                                 <dt className="text-gray-400">IP / Browser</dt>
-                                <dd className="truncate" title={detail.user_agent}>
+                                <dd
+                                    className="truncate"
+                                    title={detail.user_agent}
+                                >
                                     {detail.ip_address ?? '-'}
                                 </dd>
                             </div>
                             <div className="col-span-2">
                                 <dt className="text-gray-400">URL</dt>
-                                <dd className="truncate">{detail.url ?? '-'}</dd>
+                                <dd className="truncate">
+                                    {detail.url ?? '-'}
+                                </dd>
                             </div>
                         </dl>
 
                         <div className="mt-4 grid gap-4 sm:grid-cols-2">
                             <div>
-                                <div className="text-xs font-semibold uppercase text-gray-400">Data Lama</div>
+                                <div className="text-xs font-semibold uppercase text-gray-400">
+                                    Data Lama
+                                </div>
                                 <pre className="mt-1 max-h-48 overflow-auto rounded bg-gray-50 p-3 text-xs dark:bg-gray-900/50">
-                                    {detail.old_values ? JSON.stringify(detail.old_values, null, 2) : '—'}
+                                    {detail.old_values
+                                        ? JSON.stringify(
+                                              detail.old_values,
+                                              null,
+                                              2,
+                                          )
+                                        : '—'}
                                 </pre>
                             </div>
                             <div>
-                                <div className="text-xs font-semibold uppercase text-gray-400">Data Baru</div>
+                                <div className="text-xs font-semibold uppercase text-gray-400">
+                                    Data Baru
+                                </div>
                                 <pre className="mt-1 max-h-48 overflow-auto rounded bg-gray-50 p-3 text-xs dark:bg-gray-900/50">
-                                    {detail.new_values ? JSON.stringify(detail.new_values, null, 2) : '—'}
+                                    {detail.new_values
+                                        ? JSON.stringify(
+                                              detail.new_values,
+                                              null,
+                                              2,
+                                          )
+                                        : '—'}
                                 </pre>
                             </div>
                         </div>
 
                         <div className="mt-6 flex justify-end">
-                            <SecondaryButton onClick={() => setDetail(null)}>Tutup</SecondaryButton>
+                            <SecondaryButton onClick={() => setDetail(null)}>
+                                Tutup
+                            </SecondaryButton>
                         </div>
                     </div>
                 )}

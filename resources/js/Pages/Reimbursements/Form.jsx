@@ -34,11 +34,16 @@ export default function Form({ id = null }) {
         attachments: [],
     });
 
-    const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+    const set = (key) => (e) =>
+        setForm((f) => ({ ...f, [key]: e.target.value }));
 
     useEffect(() => {
-        api.get('/api/options/categories').then((d) => setCategories(d.data)).catch(() => {});
-        api.get('/api/bank-accounts').then((d) => setAccounts(d.data.filter((a) => a.is_active))).catch(() => {});
+        api.get('/api/options/categories')
+            .then((d) => setCategories(d.data))
+            .catch(() => {});
+        api.get('/api/bank-accounts')
+            .then((d) => setAccounts(d.data.filter((a) => a.is_active)))
+            .catch(() => {});
 
         if (isEdit) {
             api.get(`/api/reimbursements/${id}`)
@@ -61,7 +66,9 @@ export default function Form({ id = null }) {
         }
     }, [id, isEdit]);
 
-    const selectedCategory = categories.find((c) => String(c.id) === String(form.category_id));
+    const selectedCategory = categories.find(
+        (c) => String(c.id) === String(form.category_id),
+    );
 
     async function submit(e) {
         e.preventDefault();
@@ -69,10 +76,20 @@ export default function Form({ id = null }) {
         setErrors({});
 
         const fd = new FormData();
-        ['title', 'category_id', 'amount', 'expense_date', 'bank_account_id', 'reason', 'description'].forEach((k) => {
+        [
+            'title',
+            'category_id',
+            'amount',
+            'expense_date',
+            'bank_account_id',
+            'reason',
+            'description',
+        ].forEach((k) => {
             if (form[k] !== '' && form[k] !== null) fd.append(k, form[k]);
         });
-        [...form.attachments].forEach((file) => fd.append('attachments[]', file));
+        [...form.attachments].forEach((file) =>
+            fd.append('attachments[]', file),
+        );
         deleteIds.forEach((did) => fd.append('delete_attachment_ids[]', did));
 
         try {
@@ -111,8 +128,16 @@ export default function Form({ id = null }) {
                         <form onSubmit={submit} className="space-y-5">
                             <div>
                                 <InputLabel value="Judul *" />
-                                <TextInput className="mt-1 block w-full" value={form.title} onChange={set('title')} required />
-                                <InputError message={errors.title?.[0]} className="mt-1" />
+                                <TextInput
+                                    className="mt-1 block w-full"
+                                    value={form.title}
+                                    onChange={set('title')}
+                                    required
+                                />
+                                <InputError
+                                    message={errors.title?.[0]}
+                                    className="mt-1"
+                                />
                             </div>
 
                             <div className="grid gap-5 sm:grid-cols-2">
@@ -124,7 +149,9 @@ export default function Form({ id = null }) {
                                         onChange={set('category_id')}
                                         required
                                     >
-                                        <option value="">— pilih kategori —</option>
+                                        <option value="">
+                                            — pilih kategori —
+                                        </option>
                                         {categories.map((c) => (
                                             <option key={c.id} value={c.id}>
                                                 {c.name}
@@ -133,10 +160,16 @@ export default function Form({ id = null }) {
                                     </SelectInput>
                                     {selectedCategory?.max_amount && (
                                         <p className="mt-1 text-xs text-gray-400">
-                                            Plafon: {rupiah(selectedCategory.max_amount)}
+                                            Plafon:{' '}
+                                            {rupiah(
+                                                selectedCategory.max_amount,
+                                            )}
                                         </p>
                                     )}
-                                    <InputError message={errors.category_id?.[0]} className="mt-1" />
+                                    <InputError
+                                        message={errors.category_id?.[0]}
+                                        className="mt-1"
+                                    />
                                 </div>
 
                                 <div>
@@ -149,7 +182,10 @@ export default function Form({ id = null }) {
                                         onChange={set('amount')}
                                         required
                                     />
-                                    <InputError message={errors.amount?.[0]} className="mt-1" />
+                                    <InputError
+                                        message={errors.amount?.[0]}
+                                        className="mt-1"
+                                    />
                                 </div>
 
                                 <div>
@@ -160,7 +196,10 @@ export default function Form({ id = null }) {
                                         value={form.expense_date}
                                         onChange={set('expense_date')}
                                     />
-                                    <InputError message={errors.expense_date?.[0]} className="mt-1" />
+                                    <InputError
+                                        message={errors.expense_date?.[0]}
+                                        className="mt-1"
+                                    />
                                 </div>
 
                                 <div>
@@ -170,17 +209,24 @@ export default function Form({ id = null }) {
                                         value={form.bank_account_id}
                                         onChange={set('bank_account_id')}
                                     >
-                                        <option value="">— pilih rekening —</option>
+                                        <option value="">
+                                            — pilih rekening —
+                                        </option>
                                         {accounts.map((a) => (
                                             <option key={a.id} value={a.id}>
-                                                {a.bank?.code} · {a.masked_number} ({a.account_holder_name})
+                                                {a.bank?.code} ·{' '}
+                                                {a.masked_number} (
+                                                {a.account_holder_name})
                                             </option>
                                         ))}
                                     </SelectInput>
                                     <p className="mt-1 text-xs text-gray-400">
                                         Kelola rekening di menu Rekening Bank.
                                     </p>
-                                    <InputError message={errors.bank_account_id?.[0]} className="mt-1" />
+                                    <InputError
+                                        message={errors.bank_account_id?.[0]}
+                                        className="mt-1"
+                                    />
                                 </div>
                             </div>
 
@@ -193,7 +239,10 @@ export default function Form({ id = null }) {
                                     onChange={set('reason')}
                                     required
                                 />
-                                <InputError message={errors.reason?.[0]} className="mt-1" />
+                                <InputError
+                                    message={errors.reason?.[0]}
+                                    className="mt-1"
+                                />
                             </div>
 
                             <div>
@@ -211,26 +260,47 @@ export default function Form({ id = null }) {
                                     <InputLabel value="Lampiran Tersimpan" />
                                     <ul className="mt-2 space-y-1 text-sm">
                                         {existingFiles.map((f) => (
-                                            <li key={f.id} className="flex items-center gap-2">
+                                            <li
+                                                key={f.id}
+                                                className="flex items-center gap-2"
+                                            >
                                                 <input
                                                     type="checkbox"
                                                     className="rounded border-gray-300"
-                                                    checked={deleteIds.includes(f.id)}
+                                                    checked={deleteIds.includes(
+                                                        f.id,
+                                                    )}
                                                     onChange={(e) =>
                                                         setDeleteIds((prev) =>
                                                             e.target.checked
-                                                                ? [...prev, f.id]
-                                                                : prev.filter((x) => x !== f.id),
+                                                                ? [
+                                                                      ...prev,
+                                                                      f.id,
+                                                                  ]
+                                                                : prev.filter(
+                                                                      (x) =>
+                                                                          x !==
+                                                                          f.id,
+                                                                  ),
                                                         )
                                                     }
                                                 />
-                                                <span className={deleteIds.includes(f.id) ? 'line-through text-gray-400' : ''}>
-                                                    {f.file_name} ({f.human_size})
+                                                <span
+                                                    className={
+                                                        deleteIds.includes(f.id)
+                                                            ? 'text-gray-400 line-through'
+                                                            : ''
+                                                    }
+                                                >
+                                                    {f.file_name} (
+                                                    {f.human_size})
                                                 </span>
                                             </li>
                                         ))}
                                     </ul>
-                                    <p className="mt-1 text-xs text-gray-400">Centang untuk menghapus saat disimpan.</p>
+                                    <p className="mt-1 text-xs text-gray-400">
+                                        Centang untuk menghapus saat disimpan.
+                                    </p>
                                 </div>
                             )}
 
@@ -241,13 +311,27 @@ export default function Form({ id = null }) {
                                     multiple
                                     accept=".jpg,.jpeg,.png,.pdf"
                                     className="mt-1 block w-full text-sm text-gray-500 file:mr-3 file:rounded-md file:border-0 file:bg-indigo-50 file:px-3 file:py-2 file:text-indigo-700 hover:file:bg-indigo-100"
-                                    onChange={(e) => setForm((f) => ({ ...f, attachments: e.target.files }))}
+                                    onChange={(e) =>
+                                        setForm((f) => ({
+                                            ...f,
+                                            attachments: e.target.files,
+                                        }))
+                                    }
                                 />
-                                <InputError message={errors['attachments.0']?.[0] ?? errors.attachments?.[0]} className="mt-1" />
+                                <InputError
+                                    message={
+                                        errors['attachments.0']?.[0] ??
+                                        errors.attachments?.[0]
+                                    }
+                                    className="mt-1"
+                                />
                             </div>
 
                             <div className="flex justify-end gap-3 border-t border-gray-100 pt-5 dark:border-gray-700">
-                                <SecondaryButton type="button" onClick={() => window.history.back()}>
+                                <SecondaryButton
+                                    type="button"
+                                    onClick={() => window.history.back()}
+                                >
                                     Batal
                                 </SecondaryButton>
                                 <PrimaryButton disabled={busy}>

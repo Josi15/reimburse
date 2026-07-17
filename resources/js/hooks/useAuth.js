@@ -6,7 +6,8 @@ export default function useAuth() {
     const user = auth?.user;
 
     const hasRole = (...roles) => roles.some((r) => user?.roles?.includes(r));
-    const can = (permission) => hasRole('super_admin') || user?.permissions?.includes(permission);
+    const can = (permission) =>
+        hasRole('super_admin') || user?.permissions?.includes(permission);
 
     return { user, can, hasRole };
 }

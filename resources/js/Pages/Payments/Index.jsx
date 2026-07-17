@@ -33,9 +33,13 @@ export default function Index() {
 
         if (can('payment.process')) {
             tasks.push(
-                api.get('/api/reimbursements?status=finance_approved&per_page=50').then((d) => {
-                    if (active) setQueue(d.data);
-                }),
+                api
+                    .get(
+                        '/api/reimbursements?status=finance_approved&per_page=50',
+                    )
+                    .then((d) => {
+                        if (active) setQueue(d.data);
+                    }),
             );
         }
 
@@ -71,7 +75,8 @@ export default function Index() {
                                 </h3>
                                 {queue.length === 0 ? (
                                     <p className="px-5 pb-5 pt-2 text-sm text-gray-400">
-                                        Tidak ada reimbursement yang siap dibayar.
+                                        Tidak ada reimbursement yang siap
+                                        dibayar.
                                     </p>
                                 ) : (
                                     <div className="mt-2">
@@ -88,10 +93,19 @@ export default function Index() {
                                             <TBody>
                                                 {queue.map((r) => (
                                                     <TR key={r.id}>
-                                                        <TD>{r.reimbursement_number}</TD>
+                                                        <TD>
+                                                            {
+                                                                r.reimbursement_number
+                                                            }
+                                                        </TD>
                                                         <TD>{r.title}</TD>
-                                                        <TD>{r.user?.name ?? '-'}</TD>
-                                                        <TD>{r.formatted_amount}</TD>
+                                                        <TD>
+                                                            {r.user?.name ??
+                                                                '-'}
+                                                        </TD>
+                                                        <TD>
+                                                            {r.formatted_amount}
+                                                        </TD>
                                                         <TD>
                                                             <Link
                                                                 href={`/reimbursements/${r.id}`}
@@ -133,20 +147,41 @@ export default function Index() {
                                         <TBody>
                                             {payments.map((p) => (
                                                 <TR key={p.id}>
-                                                    <TD className="font-medium">{p.payment_number}</TD>
+                                                    <TD className="font-medium">
+                                                        {p.payment_number}
+                                                    </TD>
                                                     <TD>{p.method.label}</TD>
                                                     <TD>
                                                         {p.bank_account
                                                             ? `${p.bank_account.bank?.code ?? ''} · ${p.bank_account.masked_number}`
                                                             : '-'}
                                                     </TD>
-                                                    <TD>{p.formatted_amount}</TD>
-                                                    <TD>{p.reference_number ?? '-'}</TD>
                                                     <TD>
-                                                        <Badge color={p.status.color}>{p.status.label}</Badge>
+                                                        {p.formatted_amount}
                                                     </TD>
-                                                    <TD>{formatDate(p.paid_at, true)}</TD>
-                                                    <TD>{p.processor?.name ?? '-'}</TD>
+                                                    <TD>
+                                                        {p.reference_number ??
+                                                            '-'}
+                                                    </TD>
+                                                    <TD>
+                                                        <Badge
+                                                            color={
+                                                                p.status.color
+                                                            }
+                                                        >
+                                                            {p.status.label}
+                                                        </Badge>
+                                                    </TD>
+                                                    <TD>
+                                                        {formatDate(
+                                                            p.paid_at,
+                                                            true,
+                                                        )}
+                                                    </TD>
+                                                    <TD>
+                                                        {p.processor?.name ??
+                                                            '-'}
+                                                    </TD>
                                                 </TR>
                                             ))}
                                         </TBody>

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Observers\PaymentObserver;
+use Database\Factories\PaymentFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -21,7 +22,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[ObservedBy([PaymentObserver::class])]
 class Payment extends Model
 {
-    /** @use HasFactory<\Database\Factories\PaymentFactory> */
+    /** @use HasFactory<PaymentFactory> */
     use HasFactory, SoftDeletes;
 
     protected $fillable = [

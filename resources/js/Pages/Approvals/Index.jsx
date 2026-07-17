@@ -19,12 +19,16 @@ export default function Index() {
     const [page, setPage] = useState(1);
 
     // Manager memproses "submitted"; Finance memproses "manager_approved".
-    const status = can('reimbursement.approve.finance') ? 'manager_approved' : 'submitted';
+    const status = can('reimbursement.approve.finance')
+        ? 'manager_approved'
+        : 'submitted';
 
     useEffect(() => {
         let active = true;
         setLoading(true);
-        api.get(`/api/reimbursements?status=${status}&page=${page}&sort=submitted_at&direction=asc`)
+        api.get(
+            `/api/reimbursements?status=${status}&page=${page}&sort=submitted_at&direction=asc`,
+        )
             .then((d) => {
                 if (!active) return;
                 setRows(d.data);
@@ -50,13 +54,17 @@ export default function Index() {
             <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <Card>
                     <div className="border-b border-gray-100 p-4 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
-                        Pengajuan yang menunggu keputusan Anda. Klik nomor untuk melihat detail & mengambil aksi.
+                        Pengajuan yang menunggu keputusan Anda. Klik nomor untuk
+                        melihat detail & mengambil aksi.
                     </div>
 
                     {loading ? (
                         <Loading />
                     ) : rows?.length === 0 ? (
-                        <EmptyState title="Tidak ada antrean" description="Semua pengajuan sudah diproses. 🎉" />
+                        <EmptyState
+                            title="Tidak ada antrean"
+                            description="Semua pengajuan sudah diproses. 🎉"
+                        />
                     ) : (
                         <>
                             <Table>
@@ -87,9 +95,16 @@ export default function Index() {
                                             <TD>{r.category?.name ?? '-'}</TD>
                                             <TD>{r.formatted_amount}</TD>
                                             <TD>
-                                                <Badge color={r.status.color}>{r.status.label}</Badge>
+                                                <Badge color={r.status.color}>
+                                                    {r.status.label}
+                                                </Badge>
                                             </TD>
-                                            <TD>{formatDate(r.submitted_at, true)}</TD>
+                                            <TD>
+                                                {formatDate(
+                                                    r.submitted_at,
+                                                    true,
+                                                )}
+                                            </TD>
                                         </TR>
                                     ))}
                                 </TBody>

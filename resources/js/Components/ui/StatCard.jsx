@@ -12,8 +12,14 @@ export default function StatCard({ label, value, hint, accent = 'blue' }) {
 
     return (
         <Card className="p-5">
-            <div className="text-sm text-gray-500 dark:text-gray-400">{label}</div>
-            <div className={`mt-1 text-2xl font-bold ${accents[accent] ?? accents.blue}`}>{value}</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+                {label}
+            </div>
+            <div
+                className={`mt-1 text-2xl font-bold ${accents[accent] ?? accents.blue}`}
+            >
+                {value}
+            </div>
             {hint && <div className="mt-1 text-xs text-gray-400">{hint}</div>}
         </Card>
     );

@@ -38,7 +38,11 @@ export default function Index() {
     useEffect(() => {
         let active = true;
         setLoading(true);
-        const params = new URLSearchParams({ page, ...(status && { status }), ...(q && { q }) });
+        const params = new URLSearchParams({
+            page,
+            ...(status && { status }),
+            ...(q && { q }),
+        });
         api.get(`/api/reimbursements?${params}`)
             .then((d) => {
                 if (!active) return;
@@ -101,7 +105,10 @@ export default function Index() {
                     {loading ? (
                         <Loading />
                     ) : rows?.length === 0 ? (
-                        <EmptyState title="Belum ada pengajuan" description="Buat pengajuan reimbursement pertama Anda." />
+                        <EmptyState
+                            title="Belum ada pengajuan"
+                            description="Buat pengajuan reimbursement pertama Anda."
+                        />
                     ) : (
                         <>
                             <Table>
@@ -132,7 +139,9 @@ export default function Index() {
                                             <TD>{r.user?.name ?? '-'}</TD>
                                             <TD>{r.formatted_amount}</TD>
                                             <TD>
-                                                <Badge color={r.status.color}>{r.status.label}</Badge>
+                                                <Badge color={r.status.color}>
+                                                    {r.status.label}
+                                                </Badge>
                                             </TD>
                                             <TD>{formatDate(r.created_at)}</TD>
                                         </TR>

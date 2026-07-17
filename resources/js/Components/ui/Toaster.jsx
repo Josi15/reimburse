@@ -26,7 +26,11 @@ export default function Toaster() {
                     key={t.id}
                     className={cn(
                         'pointer-events-auto rounded-lg px-4 py-3 text-sm text-white shadow-lg',
-                        t.type === 'error' ? 'bg-red-600' : t.type === 'info' ? 'bg-blue-600' : 'bg-green-600',
+                        t.type === 'error'
+                            ? 'bg-red-600'
+                            : t.type === 'info'
+                              ? 'bg-blue-600'
+                              : 'bg-green-600',
                     )}
                 >
                     {t.message}

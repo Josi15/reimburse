@@ -14,7 +14,7 @@ import TextareaInput from '@/Components/ui/TextareaInput';
 import useAuth from '@/hooks/useAuth';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { api, handleApiError } from '@/lib/api';
-import { formatDate, rupiah } from '@/lib/format';
+import { formatDate } from '@/lib/format';
 import { toast } from '@/lib/toast';
 import { Head, Link, router } from '@inertiajs/react';
 import { useCallback, useEffect, useState } from 'react';
@@ -25,17 +25,36 @@ function ActionModal({ show, action, claimId, onClose, onDone }) {
     const [busy, setBusy] = useState(false);
     const [errors, setErrors] = useState({});
 
-    const config = {
-        approve: { title: 'Setujui Pengajuan', label: 'Catatan (opsional)', button: 'Setujui', required: false },
-        reject: { title: 'Tolak Pengajuan', label: 'Alasan penolakan *', button: 'Tolak', required: true },
-        revision: { title: 'Minta Revisi', label: 'Catatan revisi *', button: 'Minta Revisi', required: true },
-    }[action] ?? {};
+    const config =
+        {
+            approve: {
+                title: 'Setujui Pengajuan',
+                label: 'Catatan (opsional)',
+                button: 'Setujui',
+                required: false,
+            },
+            reject: {
+                title: 'Tolak Pengajuan',
+                label: 'Alasan penolakan *',
+                button: 'Tolak',
+                required: true,
+            },
+            revision: {
+                title: 'Minta Revisi',
+                label: 'Catatan revisi *',
+                button: 'Minta Revisi',
+                required: true,
+            },
+        }[action] ?? {};
 
     async function submit() {
         setBusy(true);
         setErrors({});
         try {
-            await api.post(`/api/reimbursements/${claimId}/${action}`, notes ? { notes } : {});
+            await api.post(
+                `/api/reimbursements/${claimId}/${action}`,
+                notes ? { notes } : {},
+            );
             toast(`Berhasil: ${config.button}.`);
             onDone();
         } catch (e) {
@@ -48,7 +67,9 @@ function ActionModal({ show, action, claimId, onClose, onDone }) {
     return (
         <Modal show={show} onClose={onClose} maxWidth="md">
             <div className="p-6">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">{config.title}</h3>
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                    {config.title}
+                </h3>
                 <div className="mt-4">
                     <InputLabel value={config.label} />
                     <TextareaInput
@@ -61,7 +82,10 @@ function ActionModal({ show, action, claimId, onClose, onDone }) {
                 </div>
                 <div className="mt-6 flex justify-end gap-3">
                     <SecondaryButton onClick={onClose}>Batal</SecondaryButton>
-                    <PrimaryButton onClick={submit} disabled={busy || (config.required && !notes.trim())}>
+                    <PrimaryButton
+                        onClick={submit}
+                        disabled={busy || (config.required && !notes.trim())}
+                    >
                         {busy ? 'Memproses…' : config.button}
                     </PrimaryButton>
                 </div>
@@ -72,7 +96,12 @@ function ActionModal({ show, action, claimId, onClose, onDone }) {
 
 /** Modal pembayaran (Finance). */
 function PayModal({ show, claim, onClose, onDone }) {
-    const [form, setForm] = useState({ method: 'bank_transfer', reference_number: '', notes: '', proof: null });
+    const [form, setForm] = useState({
+        method: 'bank_transfer',
+        reference_number: '',
+        notes: '',
+        proof: null,
+    });
     const [busy, setBusy] = useState(false);
     const [errors, setErrors] = useState({});
 
@@ -81,7 +110,8 @@ function PayModal({ show, claim, onClose, onDone }) {
         setErrors({});
         const fd = new FormData();
         fd.append('method', form.method);
-        if (form.reference_number) fd.append('reference_number', form.reference_number);
+        if (form.reference_number)
+            fd.append('reference_number', form.reference_number);
         if (form.notes) fd.append('notes', form.notes);
         if (form.proof) fd.append('proof', form.proof);
 
@@ -99,7 +129,9 @@ function PayModal({ show, claim, onClose, onDone }) {
     return (
         <Modal show={show} onClose={onClose} maxWidth="md">
             <div className="p-6">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Proses Pembayaran</h3>
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                    Proses Pembayaran
+                </h3>
                 <p className="mt-1 text-sm text-gray-500">
                     {claim?.reimbursement_number} · {claim?.formatted_amount}
                 </p>
@@ -110,7 +142,12 @@ function PayModal({ show, claim, onClose, onDone }) {
                         <SelectInput
                             className="mt-1 block w-full"
                             value={form.method}
-                            onChange={(e) => setForm((f) => ({ ...f, method: e.target.value }))}
+                            onChange={(e) =>
+                                setForm((f) => ({
+                                    ...f,
+                                    method: e.target.value,
+                                }))
+                            }
                         >
                             <option value="bank_transfer">Transfer Bank</option>
                             <option value="cash">Tunai</option>
@@ -122,7 +159,12 @@ function PayModal({ show, claim, onClose, onDone }) {
                         <TextInput
                             className="mt-1 block w-full"
                             value={form.reference_number}
-                            onChange={(e) => setForm((f) => ({ ...f, reference_number: e.target.value }))}
+                            onChange={(e) =>
+                                setForm((f) => ({
+                                    ...f,
+                                    reference_number: e.target.value,
+                                }))
+                            }
                         />
                     </div>
                     <div>
@@ -131,7 +173,12 @@ function PayModal({ show, claim, onClose, onDone }) {
                             rows={2}
                             className="mt-1 block w-full"
                             value={form.notes}
-                            onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+                            onChange={(e) =>
+                                setForm((f) => ({
+                                    ...f,
+                                    notes: e.target.value,
+                                }))
+                            }
                         />
                     </div>
                     <div>
@@ -140,9 +187,17 @@ function PayModal({ show, claim, onClose, onDone }) {
                             type="file"
                             accept=".jpg,.jpeg,.png,.pdf"
                             className="mt-1 block w-full text-sm text-gray-500"
-                            onChange={(e) => setForm((f) => ({ ...f, proof: e.target.files[0] ?? null }))}
+                            onChange={(e) =>
+                                setForm((f) => ({
+                                    ...f,
+                                    proof: e.target.files[0] ?? null,
+                                }))
+                            }
                         />
-                        <InputError message={errors.proof?.[0] ?? errors.payment?.[0]} className="mt-1" />
+                        <InputError
+                            message={errors.proof?.[0] ?? errors.payment?.[0]}
+                            className="mt-1"
+                        />
                     </div>
                 </div>
 
@@ -158,7 +213,7 @@ function PayModal({ show, claim, onClose, onDone }) {
 }
 
 export default function Show({ id }) {
-    const { user, can, hasRole } = useAuth();
+    const { user, can } = useAuth();
     const [claim, setClaim] = useState(null);
     const [timeline, setTimeline] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -183,9 +238,12 @@ export default function Show({ id }) {
     const isOwner = claim && user && claim.user?.id === user.id;
     const status = claim?.status?.value;
 
-    const canSubmit = isOwner && claim?.is_editable && can('reimbursement.submit');
-    const canEdit = isOwner && claim?.is_editable && can('reimbursement.update');
-    const canDelete = isOwner && status === 'draft' && can('reimbursement.delete');
+    const canSubmit =
+        isOwner && claim?.is_editable && can('reimbursement.submit');
+    const canEdit =
+        isOwner && claim?.is_editable && can('reimbursement.update');
+    const canDelete =
+        isOwner && status === 'draft' && can('reimbursement.delete');
     const canApprove =
         (status === 'submitted' && can('reimbursement.approve.manager')) ||
         (status === 'manager_approved' && can('reimbursement.approve.finance'));
@@ -237,51 +295,84 @@ export default function Show({ id }) {
                             <Card className="p-6">
                                 <div className="flex flex-wrap items-start justify-between gap-3">
                                     <div>
-                                        <div className="text-sm text-gray-400">{claim.reimbursement_number}</div>
+                                        <div className="text-sm text-gray-400">
+                                            {claim.reimbursement_number}
+                                        </div>
                                         <h3 className="mt-0.5 text-lg font-bold text-gray-800 dark:text-gray-100">
                                             {claim.title}
                                         </h3>
                                     </div>
-                                    <Badge color={claim.status.color}>{claim.status.label}</Badge>
+                                    <Badge color={claim.status.color}>
+                                        {claim.status.label}
+                                    </Badge>
                                 </div>
 
                                 <dl className="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-3">
                                     <div>
-                                        <dt className="text-gray-400">Nominal</dt>
+                                        <dt className="text-gray-400">
+                                            Nominal
+                                        </dt>
                                         <dd className="font-semibold text-gray-800 dark:text-gray-100">
                                             {claim.formatted_amount}
                                         </dd>
                                     </div>
                                     <div>
-                                        <dt className="text-gray-400">Kategori</dt>
-                                        <dd className="text-gray-700 dark:text-gray-200">{claim.category?.name ?? '-'}</dd>
-                                    </div>
-                                    <div>
-                                        <dt className="text-gray-400">Department</dt>
-                                        <dd className="text-gray-700 dark:text-gray-200">{claim.department?.name ?? '-'}</dd>
-                                    </div>
-                                    <div>
-                                        <dt className="text-gray-400">Pengaju</dt>
-                                        <dd className="text-gray-700 dark:text-gray-200">{claim.user?.name ?? '-'}</dd>
-                                    </div>
-                                    <div>
-                                        <dt className="text-gray-400">Tgl Pengeluaran</dt>
-                                        <dd className="text-gray-700 dark:text-gray-200">{formatDate(claim.expense_date)}</dd>
-                                    </div>
-                                    <div>
-                                        <dt className="text-gray-400">Diajukan</dt>
+                                        <dt className="text-gray-400">
+                                            Kategori
+                                        </dt>
                                         <dd className="text-gray-700 dark:text-gray-200">
-                                            {formatDate(claim.submitted_at, true)}
+                                            {claim.category?.name ?? '-'}
+                                        </dd>
+                                    </div>
+                                    <div>
+                                        <dt className="text-gray-400">
+                                            Department
+                                        </dt>
+                                        <dd className="text-gray-700 dark:text-gray-200">
+                                            {claim.department?.name ?? '-'}
+                                        </dd>
+                                    </div>
+                                    <div>
+                                        <dt className="text-gray-400">
+                                            Pengaju
+                                        </dt>
+                                        <dd className="text-gray-700 dark:text-gray-200">
+                                            {claim.user?.name ?? '-'}
+                                        </dd>
+                                    </div>
+                                    <div>
+                                        <dt className="text-gray-400">
+                                            Tgl Pengeluaran
+                                        </dt>
+                                        <dd className="text-gray-700 dark:text-gray-200">
+                                            {formatDate(claim.expense_date)}
+                                        </dd>
+                                    </div>
+                                    <div>
+                                        <dt className="text-gray-400">
+                                            Diajukan
+                                        </dt>
+                                        <dd className="text-gray-700 dark:text-gray-200">
+                                            {formatDate(
+                                                claim.submitted_at,
+                                                true,
+                                            )}
                                         </dd>
                                     </div>
                                 </dl>
 
                                 <div className="mt-5 border-t border-gray-100 pt-4 dark:border-gray-700">
-                                    <div className="text-sm text-gray-400">Alasan</div>
-                                    <p className="mt-1 text-sm text-gray-700 dark:text-gray-200">{claim.reason}</p>
+                                    <div className="text-sm text-gray-400">
+                                        Alasan
+                                    </div>
+                                    <p className="mt-1 text-sm text-gray-700 dark:text-gray-200">
+                                        {claim.reason}
+                                    </p>
                                     {claim.description && (
                                         <>
-                                            <div className="mt-3 text-sm text-gray-400">Deskripsi</div>
+                                            <div className="mt-3 text-sm text-gray-400">
+                                                Deskripsi
+                                            </div>
                                             <p className="mt-1 text-sm text-gray-700 dark:text-gray-200">
                                                 {claim.description}
                                             </p>
@@ -292,27 +383,59 @@ export default function Show({ id }) {
                                 {/* Aksi */}
                                 <div className="mt-6 flex flex-wrap gap-3 border-t border-gray-100 pt-5 dark:border-gray-700">
                                     {canSubmit && (
-                                        <PrimaryButton onClick={() => setModal('submit')}>Kirim Pengajuan</PrimaryButton>
+                                        <PrimaryButton
+                                            onClick={() => setModal('submit')}
+                                        >
+                                            Kirim Pengajuan
+                                        </PrimaryButton>
                                     )}
                                     {canEdit && (
-                                        <Link href={`/reimbursements/${id}/edit`}>
-                                            <SecondaryButton>Edit</SecondaryButton>
+                                        <Link
+                                            href={`/reimbursements/${id}/edit`}
+                                        >
+                                            <SecondaryButton>
+                                                Edit
+                                            </SecondaryButton>
                                         </Link>
                                     )}
                                     {canDelete && (
-                                        <DangerButton onClick={() => setModal('delete')}>Hapus Draft</DangerButton>
+                                        <DangerButton
+                                            onClick={() => setModal('delete')}
+                                        >
+                                            Hapus Draft
+                                        </DangerButton>
                                     )}
                                     {canApprove && (
                                         <>
-                                            <PrimaryButton onClick={() => setModal('approve')}>Setujui</PrimaryButton>
-                                            <DangerButton onClick={() => setModal('reject')}>Tolak</DangerButton>
-                                            <SecondaryButton onClick={() => setModal('revision')}>
+                                            <PrimaryButton
+                                                onClick={() =>
+                                                    setModal('approve')
+                                                }
+                                            >
+                                                Setujui
+                                            </PrimaryButton>
+                                            <DangerButton
+                                                onClick={() =>
+                                                    setModal('reject')
+                                                }
+                                            >
+                                                Tolak
+                                            </DangerButton>
+                                            <SecondaryButton
+                                                onClick={() =>
+                                                    setModal('revision')
+                                                }
+                                            >
                                                 Minta Revisi
                                             </SecondaryButton>
                                         </>
                                     )}
                                     {canPay && (
-                                        <PrimaryButton onClick={() => setModal('pay')}>💸 Proses Pembayaran</PrimaryButton>
+                                        <PrimaryButton
+                                            onClick={() => setModal('pay')}
+                                        >
+                                            💸 Proses Pembayaran
+                                        </PrimaryButton>
                                     )}
                                 </div>
                             </Card>
@@ -323,14 +446,22 @@ export default function Show({ id }) {
                                     Lampiran ({claim.attachments?.length ?? 0})
                                 </h3>
                                 {(claim.attachments ?? []).length === 0 ? (
-                                    <p className="mt-2 text-sm text-gray-400">Tidak ada lampiran (pengajuan tanpa bukti).</p>
+                                    <p className="mt-2 text-sm text-gray-400">
+                                        Tidak ada lampiran (pengajuan tanpa
+                                        bukti).
+                                    </p>
                                 ) : (
                                     <ul className="mt-3 divide-y divide-gray-100 dark:divide-gray-700">
                                         {claim.attachments.map((f) => (
-                                            <li key={f.id} className="flex items-center justify-between py-2 text-sm">
+                                            <li
+                                                key={f.id}
+                                                className="flex items-center justify-between py-2 text-sm"
+                                            >
                                                 <span className="text-gray-700 dark:text-gray-200">
                                                     📎 {f.file_name}{' '}
-                                                    <span className="text-gray-400">({f.human_size})</span>
+                                                    <span className="text-gray-400">
+                                                        ({f.human_size})
+                                                    </span>
                                                 </span>
                                                 <span className="flex gap-3">
                                                     <a
@@ -357,7 +488,9 @@ export default function Show({ id }) {
 
                         {/* Timeline */}
                         <Card className="h-fit p-6">
-                            <h3 className="font-semibold text-gray-700 dark:text-gray-200">Timeline Status</h3>
+                            <h3 className="font-semibold text-gray-700 dark:text-gray-200">
+                                Timeline Status
+                            </h3>
                             <ol className="mt-4 space-y-4 border-l-2 border-gray-200 pl-4 dark:border-gray-700">
                                 {timeline.map((t, i) => (
                                     <li key={i} className="relative">

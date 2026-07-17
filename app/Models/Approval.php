@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ApprovalAction;
 use App\Enums\ApprovalLevel;
+use Database\Factories\ApprovalFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Approval extends Model
 {
-    /** @use HasFactory<\Database\Factories\ApprovalFactory> */
+    /** @use HasFactory<ApprovalFactory> */
     use HasFactory;
 
     protected $fillable = [

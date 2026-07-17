@@ -2,12 +2,13 @@
 
 namespace Database\Factories;
 
+use App\Models\Attachment;
 use App\Models\Reimbursement;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Attachment>
+ * @extends Factory<Attachment>
  * Default menempel ke Reimbursement; override attachable_type/id untuk Payment.
  */
 class AttachmentFactory extends Factory

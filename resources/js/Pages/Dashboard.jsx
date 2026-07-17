@@ -9,7 +9,20 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { formatDate, rupiah } from '@/lib/format';
 import { Head, Link } from '@inertiajs/react';
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+const MONTHS = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'Mei',
+    'Jun',
+    'Jul',
+    'Agu',
+    'Sep',
+    'Okt',
+    'Nov',
+    'Des',
+];
 
 const PENDING_LABELS = {
     manager_approval: 'Menunggu Persetujuan Manager',
@@ -38,12 +51,20 @@ function MonthlyChart({ data }) {
     return (
         <div className="flex h-40 items-end gap-1.5">
             {data.map((d) => (
-                <div key={d.month} className="flex flex-1 flex-col items-center gap-1" title={rupiah(d.total)}>
+                <div
+                    key={d.month}
+                    className="flex flex-1 flex-col items-center gap-1"
+                    title={rupiah(d.total)}
+                >
                     <div
                         className="w-full rounded-t bg-indigo-500/80 transition-all hover:bg-indigo-600"
-                        style={{ height: `${Math.max((d.total / max) * 100, d.total > 0 ? 4 : 1)}%` }}
+                        style={{
+                            height: `${Math.max((d.total / max) * 100, d.total > 0 ? 4 : 1)}%`,
+                        }}
                     />
-                    <span className="text-[10px] text-gray-400">{MONTHS[d.month - 1]}</span>
+                    <span className="text-[10px] text-gray-400">
+                        {MONTHS[d.month - 1]}
+                    </span>
                 </div>
             ))}
         </div>
@@ -53,14 +74,21 @@ function MonthlyChart({ data }) {
 function TopList({ title, items }) {
     return (
         <Card className="p-5">
-            <h3 className="font-semibold text-gray-700 dark:text-gray-200">{title}</h3>
+            <h3 className="font-semibold text-gray-700 dark:text-gray-200">
+                {title}
+            </h3>
             {items.length === 0 ? (
                 <p className="mt-3 text-sm text-gray-400">Belum ada data.</p>
             ) : (
                 <ul className="mt-3 space-y-2">
                     {items.map((it) => (
-                        <li key={it.name} className="flex items-center justify-between text-sm">
-                            <span className="text-gray-600 dark:text-gray-300">{it.name}</span>
+                        <li
+                            key={it.name}
+                            className="flex items-center justify-between text-sm"
+                        >
+                            <span className="text-gray-600 dark:text-gray-300">
+                                {it.name}
+                            </span>
                             <span className="text-gray-400">
                                 {it.count}× · {rupiah(it.total)}
                             </span>
@@ -93,12 +121,36 @@ export default function Dashboard() {
                     <>
                         {/* Kartu statistik */}
                         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
-                            <StatCard label="Total Pengajuan" value={d.cards.total} accent="gray" />
-                            <StatCard label="Diajukan" value={d.cards.submitted} accent="blue" />
-                            <StatCard label="Disetujui" value={d.cards.approved} accent="indigo" />
-                            <StatCard label="Ditolak" value={d.cards.rejected} accent="red" />
-                            <StatCard label="Dibayar" value={d.cards.paid} accent="green" />
-                            <StatCard label="Total Dibayar" value={rupiah(d.cards.total_paid_amount)} accent="green" />
+                            <StatCard
+                                label="Total Pengajuan"
+                                value={d.cards.total}
+                                accent="gray"
+                            />
+                            <StatCard
+                                label="Diajukan"
+                                value={d.cards.submitted}
+                                accent="blue"
+                            />
+                            <StatCard
+                                label="Disetujui"
+                                value={d.cards.approved}
+                                accent="indigo"
+                            />
+                            <StatCard
+                                label="Ditolak"
+                                value={d.cards.rejected}
+                                accent="red"
+                            />
+                            <StatCard
+                                label="Dibayar"
+                                value={d.cards.paid}
+                                accent="green"
+                            />
+                            <StatCard
+                                label="Total Dibayar"
+                                value={rupiah(d.cards.total_paid_amount)}
+                                accent="green"
+                            />
                         </div>
 
                         {/* Antrean pending */}
@@ -107,7 +159,10 @@ export default function Dashboard() {
                                 {Object.entries(d.pending)
                                     .filter(([, v]) => v > 0)
                                     .map(([key, value]) => (
-                                        <Card key={key} className="border-l-4 border-l-amber-400 p-4">
+                                        <Card
+                                            key={key}
+                                            className="border-l-4 border-l-amber-400 p-4"
+                                        >
                                             <div className="text-sm text-gray-500 dark:text-gray-400">
                                                 {PENDING_LABELS[key] ?? key}
                                             </div>
@@ -123,7 +178,8 @@ export default function Dashboard() {
                             {/* Grafik bulanan */}
                             <Card className="p-5 lg:col-span-2">
                                 <h3 className="font-semibold text-gray-700 dark:text-gray-200">
-                                    Pengeluaran per Bulan ({new Date().getFullYear()})
+                                    Pengeluaran per Bulan (
+                                    {new Date().getFullYear()})
                                 </h3>
                                 <div className="mt-4">
                                     <MonthlyChart data={d.monthly_expense} />
@@ -131,9 +187,15 @@ export default function Dashboard() {
                             </Card>
 
                             <div className="space-y-6">
-                                <TopList title="Top Kategori" items={d.top_categories} />
+                                <TopList
+                                    title="Top Kategori"
+                                    items={d.top_categories}
+                                />
                                 {d.scope === 'global' && (
-                                    <TopList title="Top Department" items={d.top_departments} />
+                                    <TopList
+                                        title="Top Department"
+                                        items={d.top_departments}
+                                    />
                                 )}
                             </div>
                         </div>
@@ -141,8 +203,13 @@ export default function Dashboard() {
                         {/* Aktivitas terbaru */}
                         <Card>
                             <div className="flex items-center justify-between px-5 pt-5">
-                                <h3 className="font-semibold text-gray-700 dark:text-gray-200">Aktivitas Terbaru</h3>
-                                <Link href="/reimbursements" className="text-sm text-indigo-600 hover:underline">
+                                <h3 className="font-semibold text-gray-700 dark:text-gray-200">
+                                    Aktivitas Terbaru
+                                </h3>
+                                <Link
+                                    href="/reimbursements"
+                                    className="text-sm text-indigo-600 hover:underline"
+                                >
                                     Lihat semua →
                                 </Link>
                             </div>
@@ -169,16 +236,28 @@ export default function Dashboard() {
                                                             href={`/reimbursements/${r.id}`}
                                                             className="font-medium text-indigo-600 hover:underline"
                                                         >
-                                                            {r.reimbursement_number}
+                                                            {
+                                                                r.reimbursement_number
+                                                            }
                                                         </Link>
                                                     </TD>
                                                     <TD>{r.title}</TD>
                                                     <TD>{r.user ?? '-'}</TD>
                                                     <TD>{rupiah(r.amount)}</TD>
                                                     <TD>
-                                                        <Badge color={statusColor(r.status)}>{r.status_label}</Badge>
+                                                        <Badge
+                                                            color={statusColor(
+                                                                r.status,
+                                                            )}
+                                                        >
+                                                            {r.status_label}
+                                                        </Badge>
                                                     </TD>
-                                                    <TD>{formatDate(r.created_at)}</TD>
+                                                    <TD>
+                                                        {formatDate(
+                                                            r.created_at,
+                                                        )}
+                                                    </TD>
                                                 </TR>
                                             ))}
                                         </TBody>

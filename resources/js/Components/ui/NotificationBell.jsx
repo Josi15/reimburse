@@ -9,7 +9,8 @@ export default function NotificationBell() {
     useEffect(() => {
         let mounted = true;
         const load = () =>
-            api.get('/api/notifications/unread-count')
+            api
+                .get('/api/notifications/unread-count')
                 .then((d) => mounted && setCount(d.count))
                 .catch(() => {});
         load();
@@ -26,7 +27,13 @@ export default function NotificationBell() {
             className="relative rounded-full p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
             aria-label="Notifikasi"
         >
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
+            <svg
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="1.8"
+            >
                 <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
