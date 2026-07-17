@@ -4,6 +4,9 @@ namespace App\Providers;
 
 use App\Enums\AuditEvent;
 use App\Services\AuditLogger;
+use Dedoc\Scramble\Scramble;
+use Dedoc\Scramble\Support\Generator\OpenApi;
+use Dedoc\Scramble\Support\Generator\SecurityScheme;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -30,6 +33,22 @@ class AppServiceProvider extends ServiceProvider
         $this->configurePasswordPolicy();
         $this->configureRateLimiting();
         $this->configureAuditLogging();
+        $this->configureApiDocs();
+    }
+
+    /** Dokumentasi API (Scramble/OpenAPI) — Phase 18. */
+    private function configureApiDocs(): void
+    {
+        // Akses /docs/api: bebas di local/testing; hanya Super Admin di env lain.
+        Gate::define('viewApiDocs', function ($user = null) {
+            return $this->app->environment(['local', 'testing'])
+                || ($user?->hasRole('super_admin') ?? false);
+        });
+
+        // Deklarasikan skema auth Bearer (Sanctum token) pada spesifikasi.
+        Scramble::configure()->withDocumentTransformers(function (OpenApi $openApi) {
+            $openApi->secure(SecurityScheme::http('bearer'));
+        });
     }
 
     /** Catat login & logout ke audit log (Phase 15). */
