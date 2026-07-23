@@ -14,9 +14,16 @@ class NotificationController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $notifications = $request->user()->notifications()->paginate(
-            min((int) $request->query('per_page', 15), 100),
-        );
+        // through() menjaga bentuk paginator tetap sama, hanya memangkas tiap
+        // item ke field yang dipakai klien (tak membocorkan notifiable_type/id).
+        $notifications = $request->user()->notifications()
+            ->paginate(min((int) $request->query('per_page', 15), 100))
+            ->through(fn ($n) => [
+                'id' => $n->id,
+                'data' => $n->data,
+                'read_at' => $n->read_at,
+                'created_at' => $n->created_at,
+            ]);
 
         return response()->json($notifications);
     }

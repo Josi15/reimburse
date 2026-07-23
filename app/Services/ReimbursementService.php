@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\AuditEvent;
 use App\Enums\ReimbursementStatus;
 use App\Models\Reimbursement;
 use App\Models\User;
@@ -17,6 +18,7 @@ class ReimbursementService
     public function __construct(
         private readonly AttachmentService $attachments,
         private readonly ReimbursementNotifier $notifier,
+        private readonly AuditLogger $audit,
     ) {}
 
     /** Buat draft baru milik user. */
@@ -65,13 +67,30 @@ class ReimbursementService
     /** Ajukan reimbursement (Draft/Revisi → Submitted) mengikuti state machine. */
     public function submit(Reimbursement $reimbursement): Reimbursement
     {
-        $this->assertTransition($reimbursement, ReimbursementStatus::Submitted);
+        $reimbursement = DB::transaction(function () use ($reimbursement) {
+            // Kunci baris: cegah submit ganda / balapan dengan aksi lain.
+            $locked = Reimbursement::whereKey($reimbursement->id)->lockForUpdate()->firstOrFail();
 
-        $reimbursement->update([
-            'status' => ReimbursementStatus::Submitted,
-            'submitted_at' => now(),
-        ]);
+            $this->assertTransition($locked, ReimbursementStatus::Submitted);
 
+            // Status diubah tanpa auto-audit; dicatat sebagai event semantik "submit".
+            Reimbursement::withoutAuditing(fn () => $locked->update([
+                'status' => ReimbursementStatus::Submitted,
+                'submitted_at' => now(),
+            ]));
+
+            $this->audit->log(
+                AuditEvent::Submit,
+                $locked,
+                null,
+                ['status' => ReimbursementStatus::Submitted->value],
+                'Reimbursement diajukan',
+            );
+
+            return $locked;
+        });
+
+        // Notifikasi ke approver setelah commit.
         $this->notifier->submitted($reimbursement);
 
         return $reimbursement;

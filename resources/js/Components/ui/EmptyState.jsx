@@ -6,7 +6,9 @@ export default function EmptyState({ title = 'Tidak ada data', description }) {
                 {title}
             </p>
             {description && (
-                <p className="mt-1 text-sm text-gray-400">{description}</p>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    {description}
+                </p>
             )}
         </div>
     );

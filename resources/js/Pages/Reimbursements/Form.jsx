@@ -127,8 +127,9 @@ export default function Form({ id = null }) {
                     ) : (
                         <form onSubmit={submit} className="space-y-5">
                             <div>
-                                <InputLabel value="Judul *" />
+                                <InputLabel htmlFor="title" value="Judul *" />
                                 <TextInput
+                                    id="title"
                                     className="mt-1 block w-full"
                                     value={form.title}
                                     onChange={set('title')}
@@ -142,8 +143,12 @@ export default function Form({ id = null }) {
 
                             <div className="grid gap-5 sm:grid-cols-2">
                                 <div>
-                                    <InputLabel value="Kategori *" />
+                                    <InputLabel
+                                        htmlFor="category_id"
+                                        value="Kategori *"
+                                    />
                                     <SelectInput
+                                        id="category_id"
                                         className="mt-1 block w-full"
                                         value={form.category_id}
                                         onChange={set('category_id')}
@@ -173,8 +178,12 @@ export default function Form({ id = null }) {
                                 </div>
 
                                 <div>
-                                    <InputLabel value="Nominal (Rp) *" />
+                                    <InputLabel
+                                        htmlFor="amount"
+                                        value="Nominal (Rp) *"
+                                    />
                                     <TextInput
+                                        id="amount"
                                         type="number"
                                         min="1"
                                         className="mt-1 block w-full"
@@ -189,8 +198,12 @@ export default function Form({ id = null }) {
                                 </div>
 
                                 <div>
-                                    <InputLabel value="Tanggal Pengeluaran" />
+                                    <InputLabel
+                                        htmlFor="expense_date"
+                                        value="Tanggal Pengeluaran"
+                                    />
                                     <TextInput
+                                        id="expense_date"
                                         type="date"
                                         className="mt-1 block w-full"
                                         value={form.expense_date}
@@ -203,8 +216,12 @@ export default function Form({ id = null }) {
                                 </div>
 
                                 <div>
-                                    <InputLabel value="Rekening Tujuan" />
+                                    <InputLabel
+                                        htmlFor="bank_account_id"
+                                        value="Rekening Tujuan"
+                                    />
                                     <SelectInput
+                                        id="bank_account_id"
                                         className="mt-1 block w-full"
                                         value={form.bank_account_id}
                                         onChange={set('bank_account_id')}
@@ -231,8 +248,9 @@ export default function Form({ id = null }) {
                             </div>
 
                             <div>
-                                <InputLabel value="Alasan *" />
+                                <InputLabel htmlFor="reason" value="Alasan *" />
                                 <TextareaInput
+                                    id="reason"
                                     rows={2}
                                     className="mt-1 block w-full"
                                     value={form.reason}
@@ -246,8 +264,12 @@ export default function Form({ id = null }) {
                             </div>
 
                             <div>
-                                <InputLabel value="Deskripsi" />
+                                <InputLabel
+                                    htmlFor="description"
+                                    value="Deskripsi"
+                                />
                                 <TextareaInput
+                                    id="description"
                                     rows={3}
                                     className="mt-1 block w-full"
                                     value={form.description}
@@ -305,8 +327,12 @@ export default function Form({ id = null }) {
                             )}
 
                             <div>
-                                <InputLabel value="Upload Bukti (JPG/PNG/PDF, maks 5 MB per file)" />
+                                <InputLabel
+                                    htmlFor="attachments"
+                                    value="Upload Bukti (JPG/PNG/PDF, maks 5 MB per file)"
+                                />
                                 <input
+                                    id="attachments"
                                     type="file"
                                     multiple
                                     accept=".jpg,.jpeg,.png,.pdf"

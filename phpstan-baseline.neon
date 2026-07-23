@@ -1,0 +1,1135 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Exports/AuditLogsExport.php
+
+		-
+			message: '#^Cannot call method label\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Exports/AuditLogsExport.php
+
+		-
+			message: '#^Method App\\Exports\\AuditLogsExport\:\:query\(\) has invalid return type Laravel\\Scout\\Builder\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Exports/AuditLogsExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Exports/ReimbursementsExport.php
+
+		-
+			message: '#^Cannot call method label\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Exports/ReimbursementsExport.php
+
+		-
+			message: '#^Method App\\Exports\\ReimbursementsExport\:\:query\(\) has invalid return type Laravel\\Scout\\Builder\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Exports/ReimbursementsExport.php
+
+		-
+			message: '#^Cannot call method approvalLevel\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Api/ApprovalController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:onlyTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BankController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:withTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/BankController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:onlyTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/CategoryController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:withTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/CategoryController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:onlyTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/DepartmentController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:withTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/DepartmentController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:onlyTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PaymentController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:withTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PaymentController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:onlyTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ReimbursementController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:withTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ReimbursementController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:onlyTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/RoleController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:withTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/RoleController.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Http/Controllers/Api/SearchController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Reimbursement\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/SearchController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:onlyTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/UserController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:withTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/UserController.php
+
+		-
+			message: '#^Parameter \#1 \$user of class Illuminate\\Auth\\Events\\Verified constructor expects Illuminate\\Contracts\\Auth\\MustVerifyEmail, App\\Models\\User\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Auth/VerifyEmailController.php
+
+		-
+			message: '#^Cannot call method isFuture\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Middleware/EnsureUserIsActive.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Support\\HigherOrderCollectionProxy\<string, Illuminate\\Database\\Eloquent\\Model, Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\>\:\:\$permissions\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Middleware/HandleInertiaRequests.php
+
+		-
+			message: '#^Cannot call method isFuture\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Requests/Auth/LoginRequest.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ApprovalResource\:\:\$acted_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ApprovalResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ApprovalResource\:\:\$action\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/ApprovalResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ApprovalResource\:\:\$approver\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/ApprovalResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ApprovalResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ApprovalResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ApprovalResource\:\:\$level\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/ApprovalResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ApprovalResource\:\:\$notes\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ApprovalResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AttachmentResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AttachmentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AttachmentResource\:\:\$file_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AttachmentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AttachmentResource\:\:\$file_size\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AttachmentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AttachmentResource\:\:\$human_size\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AttachmentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AttachmentResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AttachmentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AttachmentResource\:\:\$mime_type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AttachmentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AttachmentResource\:\:\$uploaded_by\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AttachmentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AttachmentResource\:\:\$url\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AttachmentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AuditLogResource\:\:\$auditable_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AuditLogResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AuditLogResource\:\:\$auditable_type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AuditLogResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AuditLogResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AuditLogResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AuditLogResource\:\:\$description\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AuditLogResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AuditLogResource\:\:\$event\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/AuditLogResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AuditLogResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AuditLogResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AuditLogResource\:\:\$ip_address\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AuditLogResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AuditLogResource\:\:\$new_values\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AuditLogResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AuditLogResource\:\:\$old_values\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AuditLogResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AuditLogResource\:\:\$url\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AuditLogResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AuditLogResource\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/AuditLogResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\AuditLogResource\:\:\$user_agent\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/AuditLogResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\BankAccountResource\:\:\$account_holder_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/BankAccountResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\BankAccountResource\:\:\$account_number\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/BankAccountResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\BankAccountResource\:\:\$bank_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/BankAccountResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\BankAccountResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/BankAccountResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\BankAccountResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/BankAccountResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\BankAccountResource\:\:\$is_active\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/BankAccountResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\BankAccountResource\:\:\$is_primary\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/BankAccountResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\BankAccountResource\:\:\$masked_number\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/BankAccountResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\BankAccountResource\:\:\$updated_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/BankAccountResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\BankResource\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/BankResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\BankResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/BankResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\BankResource\:\:\$deleted_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/BankResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\BankResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/BankResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\BankResource\:\:\$is_active\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/BankResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\BankResource\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/BankResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\BankResource\:\:\$swift_code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/BankResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\BankResource\:\:\$updated_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/BankResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\CategoryResource\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/CategoryResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\CategoryResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/CategoryResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\CategoryResource\:\:\$deleted_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/CategoryResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\CategoryResource\:\:\$description\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/CategoryResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\CategoryResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/CategoryResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\CategoryResource\:\:\$is_active\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/CategoryResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\CategoryResource\:\:\$max_amount\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/CategoryResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\CategoryResource\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/CategoryResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\CategoryResource\:\:\$updated_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/CategoryResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\DepartmentResource\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/DepartmentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\DepartmentResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/DepartmentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\DepartmentResource\:\:\$deleted_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/DepartmentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\DepartmentResource\:\:\$description\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/DepartmentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\DepartmentResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/DepartmentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\DepartmentResource\:\:\$is_active\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/DepartmentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\DepartmentResource\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/DepartmentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\DepartmentResource\:\:\$updated_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/DepartmentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\PaymentResource\:\:\$amount\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/PaymentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\PaymentResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/PaymentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\PaymentResource\:\:\$currency\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/PaymentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\PaymentResource\:\:\$formatted_amount\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/PaymentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\PaymentResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/PaymentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\PaymentResource\:\:\$method\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/PaymentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\PaymentResource\:\:\$notes\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/PaymentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\PaymentResource\:\:\$paid_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/PaymentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\PaymentResource\:\:\$payment_number\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/PaymentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\PaymentResource\:\:\$processed_by\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/PaymentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\PaymentResource\:\:\$processor\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/PaymentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\PaymentResource\:\:\$reference_number\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/PaymentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\PaymentResource\:\:\$reimbursement_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/PaymentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\PaymentResource\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Resources/PaymentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ReimbursementResource\:\:\$amount\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ReimbursementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ReimbursementResource\:\:\$bank_account_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ReimbursementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ReimbursementResource\:\:\$category_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ReimbursementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ReimbursementResource\:\:\$completed_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ReimbursementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ReimbursementResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ReimbursementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ReimbursementResource\:\:\$currency\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ReimbursementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ReimbursementResource\:\:\$department_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ReimbursementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ReimbursementResource\:\:\$description\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ReimbursementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ReimbursementResource\:\:\$expense_date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ReimbursementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ReimbursementResource\:\:\$formatted_amount\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ReimbursementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ReimbursementResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ReimbursementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ReimbursementResource\:\:\$reason\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ReimbursementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ReimbursementResource\:\:\$reimbursement_number\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ReimbursementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ReimbursementResource\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Resources/ReimbursementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ReimbursementResource\:\:\$submitted_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ReimbursementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ReimbursementResource\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ReimbursementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ReimbursementResource\:\:\$updated_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ReimbursementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ReimbursementResource\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/ReimbursementResource.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Resources\\ReimbursementResource\:\:isEditable\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/ReimbursementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RoleResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RoleResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RoleResource\:\:\$description\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RoleResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RoleResource\:\:\$display_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RoleResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RoleResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RoleResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RoleResource\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RoleResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RoleResource\:\:\$permissions\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RoleResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RoleResource\:\:\$updated_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RoleResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserResource\:\:\$deleted_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserResource\:\:\$department_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserResource\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserResource\:\:\$is_active\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserResource\:\:\$manager\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserResource\:\:\$manager_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserResource\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserResource\:\:\$phone\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserResource\:\:\$roles\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserResource\:\:\$updated_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserResource.php
+
+		-
+			message: '#^Call to function in_array\(\) with arguments ''draft''\|''finance_approved''\|''finance_rejected''\|''manager_approved''\|''manager_rejected''\|''paid''\|''revision_requested''\|''submitted'', array\{App\\Enums\\ReimbursementStatus\:\:Draft, App\\Enums\\ReimbursementStatus\:\:RevisionRequested\} and true will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Models/Reimbursement.php
+
+		-
+			message: '#^Cannot call method canTransitionTo\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Models/Reimbursement.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Support\\HigherOrderCollectionProxy\<string, Illuminate\\Database\\Eloquent\\Model, Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\>\:\:\$permissions\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Notifications/ReimbursementActioned.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Policies/PaymentPolicy.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between ''draft''\|''finance_approved''\|''finance_rejected''\|''manager_approved''\|''manager_rejected''\|''paid''\|''revision_requested''\|''submitted'' and App\\Enums\\ReimbursementStatus\:\:FinanceApproved will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Policies/PaymentPolicy.php
+
+		-
+			message: '#^Cannot call method approvalLevel\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Policies/ReimbursementPolicy.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
+			count: 2
+			path: app/Policies/ReimbursementPolicy.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between ''draft''\|''finance_approved''\|''finance_rejected''\|''manager_approved''\|''manager_rejected''\|''paid''\|''revision_requested''\|''submitted'' and App\\Enums\\ReimbursementStatus\:\:Draft will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Policies/ReimbursementPolicy.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Contracts\\Auth\\Authenticatable\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Providers/AppServiceProvider.php
+
+		-
+			message: '#^Cannot call method canTransitionTo\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/ApprovalService.php
+
+		-
+			message: '#^Parameter \#1 \$status of method App\\Services\\ApprovalService\:\:resolveApprove\(\) expects App\\Enums\\ReimbursementStatus, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/ApprovalService.php
+
+		-
+			message: '#^Parameter \#1 \$status of method App\\Services\\ApprovalService\:\:resolveLevel\(\) expects App\\Enums\\ReimbursementStatus, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/ApprovalService.php
+
+		-
+			message: '#^Parameter \#1 \$status of method App\\Services\\ApprovalService\:\:resolveReject\(\) expects App\\Enums\\ReimbursementStatus, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/ApprovalService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:attachments\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/AttachmentService.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 2
+			path: app/Services/AuditLogger.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Http\\Request\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/AuditLogger.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/DashboardService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Services/DashboardService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$total\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/DashboardService.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Services/DashboardService.php
+
+		-
+			message: '#^Cannot call method color\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/DashboardService.php
+
+		-
+			message: '#^Cannot call method label\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/DashboardService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Reimbursement\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/DashboardService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 2
+			path: app/Services/DashboardService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, reimbursement_number\: string, title\: string, amount\: int, status\: array\{value\: mixed, label\: mixed, color\: mixed\}, user\: mixed, category\: mixed, created_at\: Carbon\\Carbon\|null\}, Closure\(App\\Models\\Reimbursement\)\: array\{id\: int, reimbursement_number\: string, title\: string, amount\: int, status\: array\{value\: mixed, label\: mixed, color\: mixed\}, user\: mixed, category\: mixed, created_at\: Carbon\\Carbon\|null\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/DashboardService.php
+
+		-
+			message: '#^Method App\\Services\\PaymentService\:\:process\(\) should return App\\Models\\Payment but returns null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/PaymentService.php
+
+		-
+			message: '#^Method App\\Services\\PaymentService\:\:resolveAccount\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/Services/PaymentService.php
+
+		-
+			message: '#^Parameter \#2 \$payment of method App\\Services\\ReimbursementNotifier\:\:paid\(\) expects App\\Models\\Payment, null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/PaymentService.php
+
+		-
+			message: '#^Property App\\Services\\PaymentService\:\:\$attachments is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/Services/PaymentService.php
+
+		-
+			message: '#^Property App\\Services\\PaymentService\:\:\$audit is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/Services/PaymentService.php
+
+		-
+			message: '#^Result of static method Illuminate\\Database\\Connection\:\:transaction\(\) \(void\) is used\.$#'
+			identifier: staticMethod.void
+			count: 1
+			path: app/Services/PaymentService.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between ''draft''\|''finance_approved''\|''finance_rejected''\|''manager_approved''\|''manager_rejected''\|''paid''\|''revision_requested''\|''submitted'' and App\\Enums\\ReimbursementStatus\:\:FinanceApproved will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Services/PaymentService.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: app/Services/PaymentService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$manager\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ReimbursementNotifier.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:notify\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Services/ReimbursementNotifier.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$acted_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ReimbursementService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$action\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/ReimbursementService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$approver\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ReimbursementService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$level\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ReimbursementService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/ReimbursementService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$notes\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ReimbursementService.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Services/ReimbursementService.php
+
+		-
+			message: '#^Cannot call method canTransitionTo\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/ReimbursementService.php
+
+		-
+			message: '#^Parameter \#1 \$attachment of method App\\Services\\AttachmentService\:\:delete\(\) expects App\\Models\\Attachment, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/ReimbursementService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$c\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ReportService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ReportService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$total\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ReportService.php
+
+		-
+			message: '#^Call to an undefined static method Illuminate\\Database\\Eloquent\\Model\:\:withTrashed\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: app/Support/SequentialNumber.php
+
+		-
+			message: '#^PHPDoc tag @var with type Illuminate\\Database\\Eloquent\\Model is not subtype of native type string\.$#'
+			identifier: varTag.nativeType
+			count: 1
+			path: app/Support/SequentialNumber.php

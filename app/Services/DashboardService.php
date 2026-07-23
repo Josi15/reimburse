@@ -94,8 +94,12 @@ class DashboardService
                 'reimbursement_number' => $r->reimbursement_number,
                 'title' => $r->title,
                 'amount' => $r->amount,
-                'status' => $r->status->value,
-                'status_label' => $r->status->label(),
+                // Bentuk status seragam dengan endpoint lain: { value, label, color }.
+                'status' => [
+                    'value' => $r->status->value,
+                    'label' => $r->status->label(),
+                    'color' => $r->status->color(),
+                ],
                 'user' => $r->user?->name,
                 'category' => $r->category?->name,
                 'created_at' => $r->created_at,

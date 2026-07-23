@@ -4,11 +4,22 @@
 # Langkah pasca-boot (sekali): lihat docs/22-deployment.md
 # =========================================================================
 
+# Override .env agar stack Docker benar-benar memakai container Redis
+# (queue/cache/session). Nilai di `environment:` menang atas `env_file:`.
+# Lokal dev tetap pakai driver `database` dari .env — tak terpengaruh.
+x-redis-env: &redis-env
+  QUEUE_CONNECTION: redis
+  CACHE_STORE: redis
+  SESSION_DRIVER: redis
+  REDIS_HOST: redis
+
 services:
   app:
     build: .
     restart: unless-stopped
     env_file: .env
+    environment:
+      <<: *redis-env
     volumes:
       - storage-data:/var/www/html/storage/app
     depends_on:
@@ -22,6 +33,8 @@ services:
     build: .
     restart: unless-stopped
     env_file: .env
+    environment:
+      <<: *redis-env
     command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
     volumes:
       - storage-data:/var/www/html/storage/app
@@ -36,10 +49,14 @@ services:
     build: .
     restart: unless-stopped
     env_file: .env
+    environment:
+      <<: *redis-env
     command: php artisan schedule:work
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_started
 
   nginx:
     image: nginx:1.27-alpine

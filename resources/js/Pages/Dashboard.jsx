@@ -1,4 +1,7 @@
-import Badge from '@/Components/ui/Badge';
+import {
+    ReimbursementNumberCell,
+    StatusCell,
+} from '@/Components/ReimbursementRow';
 import Card from '@/Components/ui/Card';
 import EmptyState from '@/Components/ui/EmptyState';
 import { Loading } from '@/Components/ui/Spinner';
@@ -30,20 +33,6 @@ const PENDING_LABELS = {
     awaiting_payment: 'Menunggu Pembayaran',
     my_revision_requested: 'Pengajuan Saya Perlu Revisi',
 };
-
-export function statusColor(status) {
-    const map = {
-        draft: 'gray',
-        submitted: 'blue',
-        manager_approved: 'blue',
-        finance_approved: 'indigo',
-        manager_rejected: 'red',
-        finance_rejected: 'red',
-        revision_requested: 'amber',
-        paid: 'green',
-    };
-    return map[status] ?? 'gray';
-}
 
 function MonthlyChart({ data }) {
     const max = Math.max(...data.map((d) => d.total), 1);
@@ -229,30 +218,20 @@ export default function Dashboard() {
                                             </TR>
                                         </THead>
                                         <TBody>
-                                            {d.recent.map((r) => (
+                                            {(d.recent ?? []).map((r) => (
                                                 <TR key={r.id}>
-                                                    <TD>
-                                                        <Link
-                                                            href={`/reimbursements/${r.id}`}
-                                                            className="font-medium text-indigo-600 hover:underline"
-                                                        >
-                                                            {
-                                                                r.reimbursement_number
-                                                            }
-                                                        </Link>
-                                                    </TD>
+                                                    <ReimbursementNumberCell
+                                                        id={r.id}
+                                                        number={
+                                                            r.reimbursement_number
+                                                        }
+                                                    />
                                                     <TD>{r.title}</TD>
                                                     <TD>{r.user ?? '-'}</TD>
                                                     <TD>{rupiah(r.amount)}</TD>
-                                                    <TD>
-                                                        <Badge
-                                                            color={statusColor(
-                                                                r.status,
-                                                            )}
-                                                        >
-                                                            {r.status_label}
-                                                        </Badge>
-                                                    </TD>
+                                                    <StatusCell
+                                                        status={r.status}
+                                                    />
                                                     <TD>
                                                         {formatDate(
                                                             r.created_at,

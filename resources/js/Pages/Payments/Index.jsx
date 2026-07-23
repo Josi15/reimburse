@@ -1,6 +1,7 @@
 import Badge from '@/Components/ui/Badge';
 import Card from '@/Components/ui/Card';
 import EmptyState from '@/Components/ui/EmptyState';
+import ErrorState from '@/Components/ui/ErrorState';
 import Pagination from '@/Components/ui/Pagination';
 import { Loading } from '@/Components/ui/Spinner';
 import { Table, TBody, TD, TH, THead, TR } from '@/Components/ui/Table';
@@ -17,11 +18,14 @@ export default function Index() {
     const [payments, setPayments] = useState(null);
     const [meta, setMeta] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [page, setPage] = useState(1);
+    const [nonce, setNonce] = useState(0);
 
     useEffect(() => {
         let active = true;
         setLoading(true);
+        setError(null);
 
         const tasks = [
             api.get(`/api/payments?page=${page}`).then((d) => {
@@ -44,14 +48,20 @@ export default function Index() {
         }
 
         Promise.all(tasks)
-            .catch((e) => handleApiError(e))
+            .catch((e) => {
+                if (!active) return;
+                setError(true);
+                handleApiError(e);
+            })
             .finally(() => active && setLoading(false));
 
         return () => {
             active = false;
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [page]);
+    }, [page, nonce]);
+
+    const reload = () => setNonce((n) => n + 1);
 
     return (
         <AuthenticatedLayout
@@ -66,6 +76,10 @@ export default function Index() {
             <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
                 {loading ? (
                     <Loading />
+                ) : error ? (
+                    <Card>
+                        <ErrorState onRetry={reload} />
+                    </Card>
                 ) : (
                     <>
                         {can('payment.process') && (
@@ -91,7 +105,7 @@ export default function Index() {
                                                 </TR>
                                             </THead>
                                             <TBody>
-                                                {queue.map((r) => (
+                                                {(queue ?? []).map((r) => (
                                                     <TR key={r.id}>
                                                         <TD>
                                                             {
@@ -145,7 +159,7 @@ export default function Index() {
                                             </TR>
                                         </THead>
                                         <TBody>
-                                            {payments.map((p) => (
+                                            {(payments ?? []).map((p) => (
                                                 <TR key={p.id}>
                                                     <TD className="font-medium">
                                                         {p.payment_number}

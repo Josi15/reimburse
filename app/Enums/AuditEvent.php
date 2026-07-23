@@ -9,6 +9,7 @@ enum AuditEvent: string
     case Create = 'create';
     case Update = 'update';
     case Delete = 'delete';
+    case Submit = 'submit';
     case Approve = 'approve';
     case Reject = 'reject';
     case Payment = 'payment';

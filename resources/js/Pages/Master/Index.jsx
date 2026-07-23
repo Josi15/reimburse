@@ -8,17 +8,19 @@ import Badge from '@/Components/ui/Badge';
 import Card from '@/Components/ui/Card';
 import ConfirmDialog from '@/Components/ui/ConfirmDialog';
 import EmptyState from '@/Components/ui/EmptyState';
+import ErrorState from '@/Components/ui/ErrorState';
 import Pagination from '@/Components/ui/Pagination';
 import SelectInput from '@/Components/ui/SelectInput';
 import { Loading } from '@/Components/ui/Spinner';
 import { Table, TBody, TD, TH, THead, TR } from '@/Components/ui/Table';
 import useAuth from '@/hooks/useAuth';
+import useDebouncedValue from '@/hooks/useDebouncedValue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { api, handleApiError } from '@/lib/api';
 import { cn, rupiah } from '@/lib/format';
 import { toast } from '@/lib/toast';
 import { Head } from '@inertiajs/react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 /* ------------------------------------------------------------------ */
 /* CRUD generik — dipakai Department, Category, Bank, User             */
@@ -27,6 +29,7 @@ function CrudSection({ endpoint, columns, fields, emptyTitle, transform }) {
     const [rows, setRows] = useState(null);
     const [meta, setMeta] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [page, setPage] = useState(1);
     const [q, setQ] = useState('');
     const [modal, setModal] = useState(null); // 'form' | {deleteId}
@@ -34,18 +37,28 @@ function CrudSection({ endpoint, columns, fields, emptyTitle, transform }) {
     const [form, setForm] = useState({});
     const [errors, setErrors] = useState({});
     const [busy, setBusy] = useState(false);
+    const reqRef = useRef(0);
+    const dq = useDebouncedValue(q);
 
     const reload = useCallback(() => {
+        const token = ++reqRef.current;
         setLoading(true);
-        const params = new URLSearchParams({ page, ...(q && { q }) });
+        setError(null);
+        const params = new URLSearchParams({ page, ...(dq && { q: dq }) });
         api.get(`${endpoint}?${params}`)
             .then((d) => {
+                if (token !== reqRef.current) return;
                 setRows(d.data);
                 setMeta(d.meta);
             })
-            .catch((e) => handleApiError(e))
-            .finally(() => setLoading(false));
-    }, [endpoint, page, q]);
+            .catch((e) => {
+                if (token === reqRef.current) setError(true);
+                handleApiError(e);
+            })
+            .finally(() => {
+                if (token === reqRef.current) setLoading(false);
+            });
+    }, [endpoint, page, dq]);
 
     useEffect(() => {
         reload();
@@ -135,6 +148,8 @@ function CrudSection({ endpoint, columns, fields, emptyTitle, transform }) {
 
             {loading ? (
                 <Loading />
+            ) : error ? (
+                <ErrorState onRetry={reload} />
             ) : rows?.length === 0 ? (
                 <EmptyState title={emptyTitle} />
             ) : (
@@ -149,7 +164,7 @@ function CrudSection({ endpoint, columns, fields, emptyTitle, transform }) {
                             </TR>
                         </THead>
                         <TBody>
-                            {rows.map((row) => (
+                            {(rows ?? []).map((row) => (
                                 <TR key={row.id}>
                                     {columns.map((c) => (
                                         <TD key={c.key}>
@@ -219,8 +234,12 @@ function CrudSection({ endpoint, columns, fields, emptyTitle, transform }) {
                                         </label>
                                     ) : fd.type === 'select' ? (
                                         <>
-                                            <InputLabel value={fd.label} />
+                                            <InputLabel
+                                                htmlFor={`field-${fd.key}`}
+                                                value={fd.label}
+                                            />
                                             <SelectInput
+                                                id={`field-${fd.key}`}
                                                 className="mt-1 block w-full"
                                                 value={form[fd.key] ?? ''}
                                                 onChange={(e) =>
@@ -246,8 +265,12 @@ function CrudSection({ endpoint, columns, fields, emptyTitle, transform }) {
                                         </>
                                     ) : (
                                         <>
-                                            <InputLabel value={fd.label} />
+                                            <InputLabel
+                                                htmlFor={`field-${fd.key}`}
+                                                value={fd.label}
+                                            />
                                             <TextInput
+                                                id={`field-${fd.key}`}
                                                 type={fd.type ?? 'text'}
                                                 className="mt-1 block w-full"
                                                 value={form[fd.key] ?? ''}
@@ -299,6 +322,7 @@ function RolesSection() {
     const [roles, setRoles] = useState(null);
     const [permissions, setPermissions] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [modal, setModal] = useState(null);
     const [editing, setEditing] = useState(null);
     const [form, setForm] = useState({
@@ -309,13 +333,23 @@ function RolesSection() {
     });
     const [errors, setErrors] = useState({});
     const [busy, setBusy] = useState(false);
+    const reqRef = useRef(0);
 
     const reload = useCallback(() => {
+        const token = ++reqRef.current;
         setLoading(true);
+        setError(null);
         api.get('/api/roles?per_page=100')
-            .then((d) => setRoles(d.data))
-            .catch((e) => handleApiError(e))
-            .finally(() => setLoading(false));
+            .then((d) => {
+                if (token === reqRef.current) setRoles(d.data);
+            })
+            .catch((e) => {
+                if (token === reqRef.current) setError(true);
+                handleApiError(e);
+            })
+            .finally(() => {
+                if (token === reqRef.current) setLoading(false);
+            });
     }, []);
 
     useEffect(() => {
@@ -400,6 +434,8 @@ function RolesSection() {
 
             {loading ? (
                 <Loading />
+            ) : error ? (
+                <ErrorState onRetry={reload} />
             ) : (
                 <Table>
                     <THead>
@@ -412,7 +448,7 @@ function RolesSection() {
                         </TR>
                     </THead>
                     <TBody>
-                        {roles.map((r) => (
+                        {(roles ?? []).map((r) => (
                             <TR key={r.id}>
                                 <TD className="font-mono text-xs">{r.name}</TD>
                                 <TD>{r.display_name}</TD>
@@ -459,8 +495,12 @@ function RolesSection() {
                     </h3>
                     <div className="mt-4 grid gap-4 sm:grid-cols-2">
                         <div>
-                            <InputLabel value="Slug * (huruf kecil & underscore)" />
+                            <InputLabel
+                                htmlFor="role_name"
+                                value="Slug * (huruf kecil & underscore)"
+                            />
                             <TextInput
+                                id="role_name"
                                 className="mt-1 block w-full"
                                 value={form.name}
                                 onChange={(e) =>
@@ -476,8 +516,12 @@ function RolesSection() {
                             />
                         </div>
                         <div>
-                            <InputLabel value="Nama Tampilan *" />
+                            <InputLabel
+                                htmlFor="role_display_name"
+                                value="Nama Tampilan *"
+                            />
                             <TextInput
+                                id="role_display_name"
                                 className="mt-1 block w-full"
                                 value={form.display_name}
                                 onChange={(e) =>

@@ -20,7 +20,11 @@ export default function Toaster() {
     }, []);
 
     return (
-        <div className="pointer-events-none fixed right-4 top-4 z-50 flex w-80 flex-col gap-2">
+        <div
+            role="status"
+            aria-live="polite"
+            className="pointer-events-none fixed right-4 top-4 z-50 flex w-80 flex-col gap-2"
+        >
             {items.map((t) => (
                 <div
                     key={t.id}

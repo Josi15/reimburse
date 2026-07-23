@@ -7,18 +7,20 @@ use App\Http\Requests\BankAccount\BankAccountStoreRequest;
 use App\Http\Requests\BankAccount\BankAccountUpdateRequest;
 use App\Http\Resources\BankAccountResource;
 use App\Models\BankAccount;
+use App\Services\BankAccountService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Rekening bank milik user yang login. Semua aksi dibatasi ke pemilik.
- * Rekening utama dijamin tunggal (partial unique index + logika di sini).
+ * Rekening utama dijamin tunggal (partial unique index + BankAccountService).
  */
 class BankAccountController extends Controller
 {
+    public function __construct(private readonly BankAccountService $service) {}
+
     public function index(Request $request): AnonymousResourceCollection
     {
         $accounts = BankAccount::query()
@@ -33,27 +35,7 @@ class BankAccountController extends Controller
 
     public function store(BankAccountStoreRequest $request): JsonResponse
     {
-        $data = $request->validated();
-        $userId = $request->user()->id;
-
-        // Rekening pertama otomatis jadi utama.
-        $isFirst = ! BankAccount::where('user_id', $userId)->exists();
-        $makePrimary = ($data['is_primary'] ?? false) || $isFirst;
-
-        $account = DB::transaction(function () use ($data, $userId, $makePrimary) {
-            if ($makePrimary) {
-                $this->clearPrimary($userId);
-            }
-
-            return BankAccount::create([
-                'user_id' => $userId,
-                'bank_id' => $data['bank_id'],
-                'account_number' => $data['account_number'],
-                'account_holder_name' => $data['account_holder_name'],
-                'is_primary' => $makePrimary,
-                'is_active' => $data['is_active'] ?? true,
-            ]);
-        });
+        $account = $this->service->create($request->user()->id, $request->validated());
 
         return (new BankAccountResource($account->load('bank')))->response()->setStatusCode(201);
     }
@@ -68,14 +50,8 @@ class BankAccountController extends Controller
     public function update(BankAccountUpdateRequest $request, BankAccount $bankAccount): BankAccountResource
     {
         $this->ensureOwner($request, $bankAccount);
-        $data = $request->validated();
 
-        DB::transaction(function () use ($bankAccount, $data) {
-            if (($data['is_primary'] ?? false) === true) {
-                $this->clearPrimary($bankAccount->user_id);
-            }
-            $bankAccount->update($data);
-        });
+        $this->service->update($bankAccount, $request->validated());
 
         return new BankAccountResource($bankAccount->load('bank'));
     }
@@ -94,10 +70,7 @@ class BankAccountController extends Controller
     {
         $this->ensureOwner($request, $bankAccount);
 
-        DB::transaction(function () use ($bankAccount) {
-            $this->clearPrimary($bankAccount->user_id);
-            $bankAccount->update(['is_primary' => true]);
-        });
+        $this->service->setPrimary($bankAccount);
 
         return new BankAccountResource($bankAccount->load('bank'));
     }
@@ -105,10 +78,5 @@ class BankAccountController extends Controller
     private function ensureOwner(Request $request, BankAccount $bankAccount): void
     {
         abort_unless($bankAccount->user_id === $request->user()->id, 403, 'Bukan rekening milik Anda.');
-    }
-
-    private function clearPrimary(int $userId): void
-    {
-        BankAccount::where('user_id', $userId)->where('is_primary', true)->update(['is_primary' => false]);
     }
 }

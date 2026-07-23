@@ -5,10 +5,12 @@ import TextInput from '@/Components/TextInput';
 import Badge from '@/Components/ui/Badge';
 import Card from '@/Components/ui/Card';
 import EmptyState from '@/Components/ui/EmptyState';
+import ErrorState from '@/Components/ui/ErrorState';
 import Pagination from '@/Components/ui/Pagination';
 import SelectInput from '@/Components/ui/SelectInput';
 import { Loading } from '@/Components/ui/Spinner';
 import { Table, TBody, TD, TH, THead, TR } from '@/Components/ui/Table';
+import useDebouncedValue from '@/hooks/useDebouncedValue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { api, handleApiError } from '@/lib/api';
 import { formatDate } from '@/lib/format';
@@ -48,36 +50,48 @@ export default function Index() {
     const [rows, setRows] = useState(null);
     const [meta, setMeta] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [page, setPage] = useState(1);
+    const [nonce, setNonce] = useState(0);
     const [detail, setDetail] = useState(null);
+    const dq = useDebouncedValue(filters.q);
 
     const set = (key) => (e) => {
         setFilters((f) => ({ ...f, [key]: e.target.value }));
         setPage(1);
     };
 
-    const query = () => {
+    const query = (qValue = filters.q) => {
         const params = new URLSearchParams({ page });
-        Object.entries(filters).forEach(([k, v]) => v && params.append(k, v));
+        Object.entries({ ...filters, q: qValue }).forEach(
+            ([k, v]) => v && params.append(k, v),
+        );
         return params;
     };
 
     useEffect(() => {
         let active = true;
         setLoading(true);
-        api.get(`/api/audit-logs?${query()}`)
+        setError(null);
+        api.get(`/api/audit-logs?${query(dq)}`)
             .then((d) => {
                 if (!active) return;
                 setRows(d.data);
                 setMeta(d.meta);
             })
-            .catch((e) => handleApiError(e))
+            .catch((e) => {
+                if (!active) return;
+                setError(true);
+                handleApiError(e);
+            })
             .finally(() => active && setLoading(false));
         return () => {
             active = false;
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [page, JSON.stringify(filters)]);
+    }, [page, JSON.stringify({ ...filters, q: dq }), nonce]);
+
+    const reload = () => setNonce((n) => n + 1);
 
     function exportAs(format) {
         const params = query();
@@ -160,6 +174,8 @@ export default function Index() {
                 <Card>
                     {loading ? (
                         <Loading />
+                    ) : error ? (
+                        <ErrorState onRetry={reload} />
                     ) : rows?.length === 0 ? (
                         <EmptyState title="Tidak ada aktivitas" />
                     ) : (
@@ -177,7 +193,7 @@ export default function Index() {
                                     </TR>
                                 </THead>
                                 <TBody>
-                                    {rows.map((l) => (
+                                    {(rows ?? []).map((l) => (
                                         <TR key={l.id}>
                                             <TD className="whitespace-nowrap">
                                                 {formatDate(l.created_at, true)}

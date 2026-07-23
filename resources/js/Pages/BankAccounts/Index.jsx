@@ -8,6 +8,7 @@ import Badge from '@/Components/ui/Badge';
 import Card from '@/Components/ui/Card';
 import ConfirmDialog from '@/Components/ui/ConfirmDialog';
 import EmptyState from '@/Components/ui/EmptyState';
+import ErrorState from '@/Components/ui/ErrorState';
 import SelectInput from '@/Components/ui/SelectInput';
 import { Loading } from '@/Components/ui/Spinner';
 import { Table, TBody, TD, TH, THead, TR } from '@/Components/ui/Table';
@@ -15,7 +16,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { api, handleApiError } from '@/lib/api';
 import { toast } from '@/lib/toast';
 import { Head } from '@inertiajs/react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const EMPTY = {
     bank_id: '',
@@ -28,18 +29,29 @@ export default function Index() {
     const [accounts, setAccounts] = useState(null);
     const [banks, setBanks] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [modal, setModal] = useState(null); // 'form' | id-to-delete
     const [editing, setEditing] = useState(null);
     const [form, setForm] = useState(EMPTY);
     const [errors, setErrors] = useState({});
     const [busy, setBusy] = useState(false);
+    const reqRef = useRef(0);
 
     const reload = useCallback(() => {
+        const token = ++reqRef.current;
         setLoading(true);
+        setError(null);
         api.get('/api/bank-accounts')
-            .then((d) => setAccounts(d.data))
-            .catch((e) => handleApiError(e))
-            .finally(() => setLoading(false));
+            .then((d) => {
+                if (token === reqRef.current) setAccounts(d.data);
+            })
+            .catch((e) => {
+                if (token === reqRef.current) setError(true);
+                handleApiError(e);
+            })
+            .finally(() => {
+                if (token === reqRef.current) setLoading(false);
+            });
     }, []);
 
     useEffect(() => {
@@ -131,6 +143,8 @@ export default function Index() {
                 <Card>
                     {loading ? (
                         <Loading />
+                    ) : error ? (
+                        <ErrorState onRetry={reload} />
                     ) : accounts?.length === 0 ? (
                         <EmptyState
                             title="Belum ada rekening"
@@ -148,7 +162,7 @@ export default function Index() {
                                 </TR>
                             </THead>
                             <TBody>
-                                {accounts.map((a) => (
+                                {(accounts ?? []).map((a) => (
                                     <TR key={a.id}>
                                         <TD className="font-medium">
                                             {a.bank?.name} ({a.bank?.code})
@@ -223,8 +237,9 @@ export default function Index() {
                     </h3>
                     <div className="mt-4 space-y-4">
                         <div>
-                            <InputLabel value="Bank *" />
+                            <InputLabel htmlFor="bank_id" value="Bank *" />
                             <SelectInput
+                                id="bank_id"
                                 className="mt-1 block w-full"
                                 value={form.bank_id}
                                 onChange={(e) =>
@@ -247,8 +262,12 @@ export default function Index() {
                             />
                         </div>
                         <div>
-                            <InputLabel value="Nomor Rekening * (6–30 digit)" />
+                            <InputLabel
+                                htmlFor="account_number"
+                                value="Nomor Rekening * (6–30 digit)"
+                            />
                             <TextInput
+                                id="account_number"
                                 className="mt-1 block w-full"
                                 value={form.account_number}
                                 onChange={(e) =>
@@ -264,8 +283,12 @@ export default function Index() {
                             />
                         </div>
                         <div>
-                            <InputLabel value="Nama Pemilik Rekening *" />
+                            <InputLabel
+                                htmlFor="account_holder_name"
+                                value="Nama Pemilik Rekening *"
+                            />
                             <TextInput
+                                id="account_holder_name"
                                 className="mt-1 block w-full"
                                 value={form.account_holder_name}
                                 onChange={(e) =>

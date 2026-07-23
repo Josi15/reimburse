@@ -114,3 +114,18 @@ test('finance and auditor can view payment history', function () {
     Sanctum::actingAs(userWithRole('auditor'));
     $this->getJson('/api/payments')->assertOk();
 });
+
+test('claim owner can view the payment for their own claim', function () {
+    $claim = payableClaim();
+    Sanctum::actingAs(userWithRole('finance'));
+    $paymentId = $this->postJson("/api/reimbursements/{$claim->id}/pay", ['method' => 'bank_transfer'])
+        ->assertCreated()->json('data.id');
+
+    // Pemilik klaim (employee, tanpa permission payment.view) tetap bisa melihat.
+    Sanctum::actingAs($claim->user);
+    $this->getJson("/api/payments/{$paymentId}")->assertOk()->assertJsonPath('data.id', $paymentId);
+
+    // Employee lain tidak boleh.
+    Sanctum::actingAs(employeeUser());
+    $this->getJson("/api/payments/{$paymentId}")->assertForbidden();
+});

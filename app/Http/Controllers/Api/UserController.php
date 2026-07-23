@@ -8,6 +8,7 @@ use App\Http\Requests\MasterData\UserStoreRequest;
 use App\Http\Requests\MasterData\UserUpdateRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -16,6 +17,8 @@ use Illuminate\Http\Response;
 class UserController extends Controller
 {
     use HandlesResourceQuery;
+
+    public function __construct(private readonly UserService $service) {}
 
     public function index(Request $request): AnonymousResourceCollection
     {
@@ -38,20 +41,7 @@ class UserController extends Controller
 
     public function store(UserStoreRequest $request): JsonResponse
     {
-        $data = $request->validated();
-
-        $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => $data['password'],          // di-hash otomatis oleh cast
-            'phone' => $data['phone'] ?? null,
-            'department_id' => $data['department_id'] ?? null,
-            'manager_id' => $data['manager_id'] ?? null,
-            'is_active' => $data['is_active'] ?? true,
-            'email_verified_at' => now(),
-        ]);
-
-        $user->roles()->sync($data['role_ids']);
+        $user = $this->service->create($request->user(), $request->validated());
 
         return (new UserResource($user->load(['department', 'roles'])))->response()->setStatusCode(201);
     }
@@ -63,30 +53,14 @@ class UserController extends Controller
 
     public function update(UserUpdateRequest $request, User $user): UserResource
     {
-        $data = $request->validated();
-
-        $user->fill(collect($data)->only([
-            'name', 'email', 'phone', 'department_id', 'manager_id', 'is_active',
-        ])->toArray());
-
-        if (! empty($data['password'])) {
-            $user->password = $data['password'];      // di-hash otomatis oleh cast
-        }
-
-        $user->save();
-
-        if (isset($data['role_ids'])) {
-            $user->roles()->sync($data['role_ids']);
-        }
+        $user = $this->service->update($request->user(), $user, $request->validated());
 
         return new UserResource($user->load(['department', 'roles']));
     }
 
     public function destroy(Request $request, User $user): Response
     {
-        abort_if($user->id === $request->user()->id, 422, 'Anda tidak dapat menghapus akun Anda sendiri.');
-
-        $user->delete();
+        $this->service->delete($request->user(), $user);
 
         return response()->noContent();
     }

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Enums\ReimbursementStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Approval\ApprovalNotesRequest;
 use App\Http\Resources\ApprovalResource;
@@ -57,12 +56,9 @@ class ApprovalController extends Controller
     /** Otorisasi berdasarkan level yang berlaku untuk status sekarang. */
     private function authorizeAction(Reimbursement $reimbursement): void
     {
-        $ability = match ($reimbursement->status) {
-            ReimbursementStatus::Submitted => 'approveManager',
-            ReimbursementStatus::ManagerApproved => 'approveFinance',
-            default => abort(422, 'Reimbursement tidak berada pada status yang dapat diproses.'),
-        };
+        $level = $reimbursement->status->approvalLevel()
+            ?? abort(422, 'Reimbursement tidak berada pada status yang dapat diproses.');
 
-        $this->authorize($ability, $reimbursement);
+        $this->authorize($level->ability(), $reimbursement);
     }
 }

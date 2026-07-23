@@ -20,7 +20,11 @@ export default function StatCard({ label, value, hint, accent = 'blue' }) {
             >
                 {value}
             </div>
-            {hint && <div className="mt-1 text-xs text-gray-400">{hint}</div>}
+            {hint && (
+                <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    {hint}
+                </div>
+            )}
         </Card>
     );
 }

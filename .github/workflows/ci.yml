@@ -55,6 +55,9 @@ jobs:
       - name: Pint (PHP code style)
         run: ./vendor/bin/pint --test
 
+      - name: PHPStan (static analysis)
+        run: ./vendor/bin/phpstan analyse --no-progress --memory-limit=512M
+
       # ---- 2) SECURITY AUDIT ---------------------------------------------
       - name: Composer audit (known CVEs)
         run: composer audit

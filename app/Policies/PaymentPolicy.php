@@ -20,7 +20,9 @@ class PaymentPolicy
 
     public function view(User $user, Payment $payment): bool
     {
-        return $user->hasPermission('payment.view');
+        // Pemilik reimbursement boleh melihat pembayaran atas klaimnya sendiri.
+        return $user->hasPermission('payment.view')
+            || $payment->reimbursement?->user_id === $user->id;
     }
 
     /** Membuat pembayaran hanya untuk reimbursement Finance Approved. */
@@ -32,5 +34,16 @@ class PaymentPolicy
 
         return $reimbursement === null
             || $reimbursement->status === ReimbursementStatus::FinanceApproved;
+    }
+
+    /**
+     * Bukti pembayaran bersifat immutable (keputusan desain Phase 16):
+     * tidak ada yang boleh mengubah/menghapusnya kecuali Super Admin, yang
+     * sudah di-bypass lebih awal oleh Gate::before. Method eksplisit ini
+     * mendokumentasikan intent tersebut agar tidak terbaca sebagai celah.
+     */
+    public function update(User $user, Payment $payment): bool
+    {
+        return false;
     }
 }

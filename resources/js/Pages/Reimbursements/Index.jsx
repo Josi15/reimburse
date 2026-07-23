@@ -1,47 +1,45 @@
 import PrimaryButton from '@/Components/PrimaryButton';
+import {
+    ReimbursementNumberCell,
+    StatusCell,
+} from '@/Components/ReimbursementRow';
 import TextInput from '@/Components/TextInput';
-import Badge from '@/Components/ui/Badge';
 import Card from '@/Components/ui/Card';
 import EmptyState from '@/Components/ui/EmptyState';
+import ErrorState from '@/Components/ui/ErrorState';
 import Pagination from '@/Components/ui/Pagination';
 import SelectInput from '@/Components/ui/SelectInput';
 import { Loading } from '@/Components/ui/Spinner';
 import { Table, TBody, TD, TH, THead, TR } from '@/Components/ui/Table';
 import useAuth from '@/hooks/useAuth';
+import useDebouncedValue from '@/hooks/useDebouncedValue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { api, handleApiError } from '@/lib/api';
 import { formatDate } from '@/lib/format';
+import { REIMBURSEMENT_STATUSES } from '@/lib/statuses';
 import { Head, Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
-
-const STATUSES = [
-    ['', 'Semua Status'],
-    ['draft', 'Draft'],
-    ['submitted', 'Menunggu Manager'],
-    ['manager_approved', 'Disetujui Manager'],
-    ['finance_approved', 'Disetujui Finance'],
-    ['manager_rejected', 'Ditolak Manager'],
-    ['finance_rejected', 'Ditolak Finance'],
-    ['revision_requested', 'Perlu Revisi'],
-    ['paid', 'Dibayar'],
-];
 
 export default function Index() {
     const { can } = useAuth();
     const [rows, setRows] = useState(null);
     const [meta, setMeta] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [status, setStatus] = useState('');
     const [q, setQ] = useState('');
     const [page, setPage] = useState(1);
+    const [nonce, setNonce] = useState(0);
+    const dq = useDebouncedValue(q);
 
     useEffect(() => {
         let active = true;
         setLoading(true);
+        setError(null);
         const params = new URLSearchParams({
             page,
             ...(status && { status }),
-            ...(q && { q }),
+            ...(dq && { q: dq }),
         });
         api.get(`/api/reimbursements?${params}`)
             .then((d) => {
@@ -49,12 +47,18 @@ export default function Index() {
                 setRows(d.data);
                 setMeta(d.meta);
             })
-            .catch((e) => handleApiError(e))
+            .catch((e) => {
+                if (!active) return;
+                setError(true);
+                handleApiError(e);
+            })
             .finally(() => active && setLoading(false));
         return () => {
             active = false;
         };
-    }, [page, status, q]);
+    }, [page, status, dq, nonce]);
+
+    const reload = () => setNonce((n) => n + 1);
 
     return (
         <AuthenticatedLayout
@@ -94,7 +98,7 @@ export default function Index() {
                                 setPage(1);
                             }}
                         >
-                            {STATUSES.map(([v, l]) => (
+                            {REIMBURSEMENT_STATUSES.map(([v, l]) => (
                                 <option key={v} value={v}>
                                     {l}
                                 </option>
@@ -104,6 +108,8 @@ export default function Index() {
 
                     {loading ? (
                         <Loading />
+                    ) : error ? (
+                        <ErrorState onRetry={reload} />
                     ) : rows?.length === 0 ? (
                         <EmptyState
                             title="Belum ada pengajuan"
@@ -124,25 +130,17 @@ export default function Index() {
                                     </TR>
                                 </THead>
                                 <TBody>
-                                    {rows.map((r) => (
+                                    {(rows ?? []).map((r) => (
                                         <TR key={r.id}>
-                                            <TD>
-                                                <Link
-                                                    href={`/reimbursements/${r.id}`}
-                                                    className="font-medium text-indigo-600 hover:underline"
-                                                >
-                                                    {r.reimbursement_number}
-                                                </Link>
-                                            </TD>
+                                            <ReimbursementNumberCell
+                                                id={r.id}
+                                                number={r.reimbursement_number}
+                                            />
                                             <TD>{r.title}</TD>
                                             <TD>{r.category?.name ?? '-'}</TD>
                                             <TD>{r.user?.name ?? '-'}</TD>
                                             <TD>{r.formatted_amount}</TD>
-                                            <TD>
-                                                <Badge color={r.status.color}>
-                                                    {r.status.label}
-                                                </Badge>
-                                            </TD>
+                                            <StatusCell status={r.status} />
                                             <TD>{formatDate(r.created_at)}</TD>
                                         </TR>
                                     ))}

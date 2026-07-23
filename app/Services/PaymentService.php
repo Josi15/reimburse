@@ -27,6 +27,7 @@ class PaymentService
     public function __construct(
         private readonly AttachmentService $attachments,
         private readonly ReimbursementNotifier $notifier,
+        private readonly AuditLogger $audit,
     ) {}
 
     public function process(Reimbursement $reimbursement, User $finance, array $data, ?UploadedFile $proof = null): Payment
@@ -74,17 +75,17 @@ class PaymentService
                 'completed_at' => now(),
             ]));
 
+            // Audit ditulis di dalam transaksi: pembayaran & jejaknya atomik.
+            $this->audit->log(
+                AuditEvent::Payment,
+                $payment,
+                null,
+                ['amount' => $payment->amount, 'reference_number' => $payment->reference_number],
+                "Pembayaran {$payment->payment_number}",
+            );
+
             return $payment;
         });
-
-        // Catat event pembayaran ke audit log.
-        app(AuditLogger::class)->log(
-            AuditEvent::Payment,
-            $payment,
-            null,
-            ['amount' => $payment->amount, 'reference_number' => $payment->reference_number],
-            "Pembayaran {$payment->payment_number}",
-        );
 
         // Notifikasi "Paid" ke pemilik setelah transaksi commit.
         $this->notifier->paid($reimbursement->refresh(), $payment);

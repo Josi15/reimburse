@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\ApprovalLevel;
 use App\Enums\ReimbursementStatus;
 use App\Models\Reimbursement;
 use App\Models\User;
@@ -50,18 +51,18 @@ class ReimbursementPolicy
             && $user->hasPermission('reimbursement.submit');
     }
 
-    /** Persetujuan tingkat Manager (hanya dari status Submitted). */
+    /** Persetujuan tingkat Manager (hanya saat level berlaku = Manager). */
     public function approveManager(User $user, Reimbursement $reimbursement): bool
     {
         return $user->hasPermission('reimbursement.approve.manager')
-            && $reimbursement->status === ReimbursementStatus::Submitted;
+            && $reimbursement->status->approvalLevel() === ApprovalLevel::Manager;
     }
 
-    /** Persetujuan tingkat Finance (hanya dari status Manager Approved). */
+    /** Persetujuan tingkat Finance (hanya saat level berlaku = Finance). */
     public function approveFinance(User $user, Reimbursement $reimbursement): bool
     {
         return $user->hasPermission('reimbursement.approve.finance')
-            && $reimbursement->status === ReimbursementStatus::ManagerApproved;
+            && $reimbursement->status->approvalLevel() === ApprovalLevel::Finance;
     }
 
     private function owns(User $user, Reimbursement $reimbursement): bool

@@ -1,0 +1,14 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - phpstan-baseline.neon
+
+parameters:
+    paths:
+        - app
+
+    # Level 5 menyeimbangkan cakupan tipe dengan derau di kode Laravel.
+    level: 5
+
+    ignoreErrors:
+        # Relasi/atribut Eloquent dinamis kerap tak terbaca analisis statis.
+        - '#Access to an undefined property App\\Models\\.*#'

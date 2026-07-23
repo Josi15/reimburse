@@ -69,3 +69,50 @@ test('admin can soft delete another user', function () {
     $this->deleteJson("/api/users/{$victim->id}")->assertNoContent();
     $this->assertSoftDeleted('users', ['id' => $victim->id]);
 });
+
+test('admin cannot assign the super_admin role', function () {
+    $superId = Role::where('name', 'super_admin')->value('id');
+    Sanctum::actingAs(userWithRole('admin'));
+
+    $this->postJson('/api/users', [
+        'name' => 'Escalate',
+        'email' => 'escalate@example.com',
+        'password' => 'Str0ng#Pass1',
+        'password_confirmation' => 'Str0ng#Pass1',
+        'role_ids' => [$superId],
+    ])->assertUnprocessable()->assertJsonValidationErrors(['role_ids']);
+
+    $this->assertDatabaseMissing('users', ['email' => 'escalate@example.com']);
+});
+
+test('super admin can assign the super_admin role', function () {
+    $superId = Role::where('name', 'super_admin')->value('id');
+    Sanctum::actingAs(userWithRole('super_admin'));
+
+    $this->postJson('/api/users', [
+        'name' => 'Another Super',
+        'email' => 'super2@example.com',
+        'password' => 'Str0ng#Pass1',
+        'password_confirmation' => 'Str0ng#Pass1',
+        'role_ids' => [$superId],
+    ])->assertCreated();
+});
+
+test('admin cannot modify or delete a super admin account', function () {
+    $super = userWithRole('super_admin');
+    Sanctum::actingAs(userWithRole('admin'));
+
+    $this->putJson("/api/users/{$super->id}", ['name' => 'Hijacked'])->assertStatus(422);
+    $this->deleteJson("/api/users/{$super->id}")->assertStatus(422);
+    $this->assertDatabaseHas('users', ['id' => $super->id, 'name' => $super->name, 'deleted_at' => null]);
+});
+
+test('admin cannot deactivate their own account', function () {
+    $admin = userWithRole('admin');
+    Sanctum::actingAs($admin);
+
+    $this->putJson("/api/users/{$admin->id}", ['is_active' => false])
+        ->assertStatus(422)->assertJsonValidationErrors(['is_active']);
+
+    $this->assertDatabaseHas('users', ['id' => $admin->id, 'is_active' => true]);
+});

@@ -22,8 +22,13 @@ RUN composer install --no-dev --no-interaction --prefer-dist \
 # ---- Stage 3: runtime PHP-FPM --------------------------------------------
 FROM php:8.3-fpm-alpine
 
+# Ekstensi inti + phpredis (untuk QUEUE/CACHE/SESSION berbasis Redis di stack).
 RUN apk add --no-cache postgresql-dev icu-dev libzip-dev libpng-dev oniguruma-dev \
-    && docker-php-ext-install pdo_pgsql pgsql intl zip gd bcmath opcache
+    && apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
+    && docker-php-ext-install pdo_pgsql pgsql intl zip gd bcmath opcache \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && apk del .build-deps
 
 COPY docker/php/app.ini /usr/local/etc/php/conf.d/app.ini
 

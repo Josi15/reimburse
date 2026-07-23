@@ -71,4 +71,17 @@ enum ReimbursementStatus: string
     {
         return in_array($target, $this->allowedTransitions(), true);
     }
+
+    /**
+     * Level approval yang berlaku untuk status ini (satu-satunya sumber
+     * pemetaan status → level; dipakai service, controller, & policy).
+     */
+    public function approvalLevel(): ?ApprovalLevel
+    {
+        return match ($this) {
+            self::Submitted => ApprovalLevel::Manager,
+            self::ManagerApproved => ApprovalLevel::Finance,
+            default => null,
+        };
+    }
 }

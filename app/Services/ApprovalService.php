@@ -19,7 +19,10 @@ use Illuminate\Validation\ValidationException;
  */
 class ApprovalService
 {
-    public function __construct(private readonly ReimbursementNotifier $notifier) {}
+    public function __construct(
+        private readonly ReimbursementNotifier $notifier,
+        private readonly AuditLogger $audit,
+    ) {}
 
     public function approve(Reimbursement $reimbursement, User $approver, ?string $notes = null): Reimbursement
     {
@@ -45,32 +48,25 @@ class ApprovalService
         );
     }
 
-    /** Level approval yang berlaku untuk status sekarang. */
+    /** Level approval yang berlaku untuk status sekarang (sumber: enum). */
     private function resolveLevel(ReimbursementStatus $status): ApprovalLevel
     {
-        return match ($status) {
-            ReimbursementStatus::Submitted => ApprovalLevel::Manager,
-            ReimbursementStatus::ManagerApproved => ApprovalLevel::Finance,
-            default => $this->fail('Status ini tidak menunggu persetujuan.'),
-        };
+        return $status->approvalLevel()
+            ?? $this->fail('Status ini tidak menunggu persetujuan.');
     }
 
     private function resolveApprove(ReimbursementStatus $status): array
     {
-        return match ($status) {
-            ReimbursementStatus::Submitted => [ApprovalLevel::Manager, ReimbursementStatus::ManagerApproved],
-            ReimbursementStatus::ManagerApproved => [ApprovalLevel::Finance, ReimbursementStatus::FinanceApproved],
-            default => $this->fail('Status ini tidak menunggu persetujuan.'),
-        };
+        $level = $this->resolveLevel($status);
+
+        return [$level, $level->approvedStatus()];
     }
 
     private function resolveReject(ReimbursementStatus $status): array
     {
-        return match ($status) {
-            ReimbursementStatus::Submitted => [ApprovalLevel::Manager, ReimbursementStatus::ManagerRejected],
-            ReimbursementStatus::ManagerApproved => [ApprovalLevel::Finance, ReimbursementStatus::FinanceRejected],
-            default => $this->fail('Status ini tidak dapat ditolak.'),
-        };
+        $level = $this->resolveLevel($status);
+
+        return [$level, $level->rejectedStatus()];
     }
 
     private function apply(
@@ -81,13 +77,17 @@ class ApprovalService
         ReimbursementStatus $target,
         ?string $notes,
     ): Reimbursement {
-        if (! $reimbursement->status->canTransitionTo($target)) {
-            $this->fail("Transisi ke {$target->value} tidak diperbolehkan.");
-        }
-
         $reimbursement = DB::transaction(function () use ($reimbursement, $approver, $level, $action, $target, $notes) {
+            // Kunci baris agar dua approver tidak memproses status yang sama
+            // secara bersamaan (race → dua baris approval / transisi ganda).
+            $locked = Reimbursement::whereKey($reimbursement->id)->lockForUpdate()->firstOrFail();
+
+            if (! $locked->status->canTransitionTo($target)) {
+                $this->fail("Transisi ke {$target->value} tidak diperbolehkan.");
+            }
+
             Approval::create([
-                'reimbursement_id' => $reimbursement->id,
+                'reimbursement_id' => $locked->id,
                 'approver_id' => $approver->id,
                 'level' => $level,
                 'action' => $action,
@@ -96,19 +96,19 @@ class ApprovalService
             ]);
 
             // Status diubah tanpa auto-audit; dicatat sebagai event semantik.
-            Reimbursement::withoutAuditing(fn () => $reimbursement->update(['status' => $target]));
+            Reimbursement::withoutAuditing(fn () => $locked->update(['status' => $target]));
 
-            return $reimbursement->refresh();
+            // Audit ditulis di dalam transaksi: transisi & jejaknya atomik.
+            $this->audit->log(
+                $action === ApprovalAction::Approved ? AuditEvent::Approve : AuditEvent::Reject,
+                $locked,
+                null,
+                ['status' => $target->value],
+                "{$level->label()} — {$action->label()}",
+            );
+
+            return $locked->refresh();
         });
-
-        // Catat event approve/reject ke audit log.
-        app(AuditLogger::class)->log(
-            $action === ApprovalAction::Approved ? AuditEvent::Approve : AuditEvent::Reject,
-            $reimbursement,
-            null,
-            ['status' => $target->value],
-            "{$level->label()} — {$action->label()}",
-        );
 
         // Notifikasi dikirim setelah commit.
         $this->notifier->actioned($reimbursement, $level, $action, $notes);

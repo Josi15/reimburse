@@ -23,7 +23,21 @@ const Trigger = ({ children }) => {
 
     return (
         <>
-            <div onClick={toggleOpen}>{children}</div>
+            <div
+                role="button"
+                tabIndex={0}
+                aria-haspopup="menu"
+                aria-expanded={open}
+                onClick={toggleOpen}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        toggleOpen();
+                    }
+                }}
+            >
+                {children}
+            </div>
 
             {open && (
                 <div
@@ -69,6 +83,7 @@ const Content = ({
                 leaveTo="opacity-0 scale-95"
             >
                 <div
+                    role="menu"
                     className={`absolute z-50 mt-2 rounded-md shadow-lg ${alignmentClasses} ${widthClasses}`}
                     onClick={() => setOpen(false)}
                 >

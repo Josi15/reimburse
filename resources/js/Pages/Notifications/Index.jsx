@@ -1,6 +1,7 @@
 import SecondaryButton from '@/Components/SecondaryButton';
 import Card from '@/Components/ui/Card';
 import EmptyState from '@/Components/ui/EmptyState';
+import ErrorState from '@/Components/ui/ErrorState';
 import Pagination from '@/Components/ui/Pagination';
 import { Loading } from '@/Components/ui/Spinner';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -8,18 +9,23 @@ import { api, handleApiError } from '@/lib/api';
 import { cn, formatDate } from '@/lib/format';
 import { toast } from '@/lib/toast';
 import { Head, Link } from '@inertiajs/react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export default function Index() {
     const [items, setItems] = useState(null);
     const [meta, setMeta] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [page, setPage] = useState(1);
+    const reqRef = useRef(0);
 
     const reload = useCallback(() => {
+        const token = ++reqRef.current;
         setLoading(true);
+        setError(null);
         api.get(`/api/notifications?page=${page}`)
             .then((d) => {
+                if (token !== reqRef.current) return;
                 setItems(d.data);
                 setMeta({
                     current_page: d.current_page,
@@ -29,8 +35,13 @@ export default function Index() {
                     total: d.total,
                 });
             })
-            .catch((e) => handleApiError(e))
-            .finally(() => setLoading(false));
+            .catch((e) => {
+                if (token === reqRef.current) setError(true);
+                handleApiError(e);
+            })
+            .finally(() => {
+                if (token === reqRef.current) setLoading(false);
+            });
     }, [page]);
 
     useEffect(() => {
@@ -40,6 +51,7 @@ export default function Index() {
     async function markRead(id) {
         try {
             await api.post(`/api/notifications/${id}/read`);
+            window.dispatchEvent(new CustomEvent('notifications-read'));
             reload();
         } catch (e) {
             handleApiError(e);
@@ -50,6 +62,7 @@ export default function Index() {
         try {
             await api.post('/api/notifications/read-all');
             toast('Semua notifikasi ditandai dibaca.');
+            window.dispatchEvent(new CustomEvent('notifications-read'));
             reload();
         } catch (e) {
             handleApiError(e);
@@ -75,12 +88,14 @@ export default function Index() {
                 <Card>
                     {loading ? (
                         <Loading />
+                    ) : error ? (
+                        <ErrorState onRetry={reload} />
                     ) : items?.length === 0 ? (
                         <EmptyState title="Tidak ada notifikasi" />
                     ) : (
                         <>
                             <ul className="divide-y divide-gray-100 dark:divide-gray-700">
-                                {items.map((n) => (
+                                {(items ?? []).map((n) => (
                                     <li
                                         key={n.id}
                                         className={cn(

@@ -13,11 +13,33 @@ export default function NotificationBell() {
                 .get('/api/notifications/unread-count')
                 .then((d) => mounted && setCount(d.count))
                 .catch(() => {});
+
+        // Hanya polling saat tab terlihat (hemat request di background).
+        const tick = () => {
+            if (!document.hidden) load();
+        };
+
         load();
-        const timer = setInterval(load, 60_000);
+        const timer = setInterval(tick, 60_000);
+
+        const onVisibility = () => {
+            if (!document.hidden) load();
+        };
+        const onNotificationsRead = () => load();
+
+        document.addEventListener('visibilitychange', onVisibility);
+        window.addEventListener('focus', onVisibility);
+        window.addEventListener('notifications-read', onNotificationsRead);
+
         return () => {
             mounted = false;
             clearInterval(timer);
+            document.removeEventListener('visibilitychange', onVisibility);
+            window.removeEventListener('focus', onVisibility);
+            window.removeEventListener(
+                'notifications-read',
+                onNotificationsRead,
+            );
         };
     }, []);
 

@@ -1,31 +1,22 @@
 import InputLabel from '@/Components/InputLabel';
+import { StatusCell } from '@/Components/ReimbursementRow';
 import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
-import Badge from '@/Components/ui/Badge';
 import Card from '@/Components/ui/Card';
 import EmptyState from '@/Components/ui/EmptyState';
+import ErrorState from '@/Components/ui/ErrorState';
 import Pagination from '@/Components/ui/Pagination';
 import SelectInput from '@/Components/ui/SelectInput';
 import { Loading } from '@/Components/ui/Spinner';
 import StatCard from '@/Components/ui/StatCard';
 import { Table, TBody, TD, TH, THead, TR } from '@/Components/ui/Table';
+import useDebouncedValue from '@/hooks/useDebouncedValue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { api, handleApiError } from '@/lib/api';
 import { formatDate, rupiah } from '@/lib/format';
+import { REIMBURSEMENT_STATUSES } from '@/lib/statuses';
 import { Head } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
-
-const STATUSES = [
-    ['', 'Semua Status'],
-    ['draft', 'Draft'],
-    ['submitted', 'Diajukan'],
-    ['manager_approved', 'Disetujui Manager'],
-    ['finance_approved', 'Disetujui Finance'],
-    ['manager_rejected', 'Ditolak Manager'],
-    ['finance_rejected', 'Ditolak Finance'],
-    ['revision_requested', 'Perlu Revisi'],
-    ['paid', 'Dibayar'],
-];
 
 export default function Index() {
     const [filters, setFilters] = useState({
@@ -42,16 +33,21 @@ export default function Index() {
     const [meta, setMeta] = useState(null);
     const [summary, setSummary] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [page, setPage] = useState(1);
+    const [nonce, setNonce] = useState(0);
+    const dq = useDebouncedValue(filters.q);
 
     const set = (key) => (e) => {
         setFilters((f) => ({ ...f, [key]: e.target.value }));
         setPage(1);
     };
 
-    const query = () => {
+    const query = (qValue = filters.q) => {
         const params = new URLSearchParams({ page });
-        Object.entries(filters).forEach(([k, v]) => v && params.append(k, v));
+        Object.entries({ ...filters, q: qValue }).forEach(
+            ([k, v]) => v && params.append(k, v),
+        );
         return params;
     };
 
@@ -67,20 +63,27 @@ export default function Index() {
     useEffect(() => {
         let active = true;
         setLoading(true);
-        api.get(`/api/reports/reimbursements?${query()}`)
+        setError(null);
+        api.get(`/api/reports/reimbursements?${query(dq)}`)
             .then((d) => {
                 if (!active) return;
                 setRows(d.data);
                 setMeta(d.meta);
                 setSummary(d.summary);
             })
-            .catch((e) => handleApiError(e))
+            .catch((e) => {
+                if (!active) return;
+                setError(true);
+                handleApiError(e);
+            })
             .finally(() => active && setLoading(false));
         return () => {
             active = false;
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [page, JSON.stringify(filters)]);
+    }, [page, JSON.stringify({ ...filters, q: dq }), nonce]);
+
+    const reload = () => setNonce((n) => n + 1);
 
     function exportAs(format) {
         const params = query();
@@ -131,7 +134,7 @@ export default function Index() {
                                 value={filters.status}
                                 onChange={set('status')}
                             >
-                                {STATUSES.map(([v, l]) => (
+                                {REIMBURSEMENT_STATUSES.map(([v, l]) => (
                                     <option key={v} value={v}>
                                         {l}
                                     </option>
@@ -234,6 +237,8 @@ export default function Index() {
                 <Card>
                     {loading ? (
                         <Loading />
+                    ) : error ? (
+                        <ErrorState onRetry={reload} />
                     ) : rows?.length === 0 ? (
                         <EmptyState title="Tidak ada data untuk filter ini" />
                     ) : (
@@ -252,7 +257,7 @@ export default function Index() {
                                     </TR>
                                 </THead>
                                 <TBody>
-                                    {rows.map((r) => (
+                                    {(rows ?? []).map((r) => (
                                         <TR key={r.id}>
                                             <TD className="font-medium">
                                                 {r.reimbursement_number}
@@ -262,11 +267,7 @@ export default function Index() {
                                             <TD>{r.department?.name ?? '-'}</TD>
                                             <TD>{r.category?.name ?? '-'}</TD>
                                             <TD>{r.formatted_amount}</TD>
-                                            <TD>
-                                                <Badge color={r.status.color}>
-                                                    {r.status.label}
-                                                </Badge>
-                                            </TD>
+                                            <StatusCell status={r.status} />
                                             <TD>{formatDate(r.created_at)}</TD>
                                         </TR>
                                     ))}

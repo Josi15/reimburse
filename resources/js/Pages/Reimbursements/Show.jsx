@@ -17,7 +17,7 @@ import { api, handleApiError } from '@/lib/api';
 import { formatDate } from '@/lib/format';
 import { toast } from '@/lib/toast';
 import { Head, Link, router } from '@inertiajs/react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 /** Modal aksi approval (approve / reject / revisi). */
 function ActionModal({ show, action, claimId, onClose, onDone }) {
@@ -71,8 +71,9 @@ function ActionModal({ show, action, claimId, onClose, onDone }) {
                     {config.title}
                 </h3>
                 <div className="mt-4">
-                    <InputLabel value={config.label} />
+                    <InputLabel htmlFor="action-notes" value={config.label} />
                     <TextareaInput
+                        id="action-notes"
                         rows={3}
                         className="mt-1 block w-full"
                         value={notes}
@@ -138,8 +139,9 @@ function PayModal({ show, claim, onClose, onDone }) {
 
                 <div className="mt-4 space-y-4">
                     <div>
-                        <InputLabel value="Metode *" />
+                        <InputLabel htmlFor="pay-method" value="Metode *" />
                         <SelectInput
+                            id="pay-method"
                             className="mt-1 block w-full"
                             value={form.method}
                             onChange={(e) =>
@@ -155,8 +157,12 @@ function PayModal({ show, claim, onClose, onDone }) {
                         </SelectInput>
                     </div>
                     <div>
-                        <InputLabel value="Nomor Referensi" />
+                        <InputLabel
+                            htmlFor="pay-reference"
+                            value="Nomor Referensi"
+                        />
                         <TextInput
+                            id="pay-reference"
                             className="mt-1 block w-full"
                             value={form.reference_number}
                             onChange={(e) =>
@@ -168,8 +174,9 @@ function PayModal({ show, claim, onClose, onDone }) {
                         />
                     </div>
                     <div>
-                        <InputLabel value="Catatan Finance" />
+                        <InputLabel htmlFor="pay-notes" value="Catatan Finance" />
                         <TextareaInput
+                            id="pay-notes"
                             rows={2}
                             className="mt-1 block w-full"
                             value={form.notes}
@@ -182,8 +189,12 @@ function PayModal({ show, claim, onClose, onDone }) {
                         />
                     </div>
                     <div>
-                        <InputLabel value="Bukti Pembayaran (JPG/PNG/PDF)" />
+                        <InputLabel
+                            htmlFor="pay-proof"
+                            value="Bukti Pembayaran (JPG/PNG/PDF)"
+                        />
                         <input
+                            id="pay-proof"
                             type="file"
                             accept=".jpg,.jpeg,.png,.pdf"
                             className="mt-1 block w-full text-sm text-gray-500"
@@ -220,15 +231,21 @@ export default function Show({ id }) {
     const [modal, setModal] = useState(null); // 'approve'|'reject'|'revision'|'pay'|'delete'|'submit'
     const [busy, setBusy] = useState(false);
 
+    const reqRef = useRef(0);
+
     const reload = useCallback(() => {
+        const token = ++reqRef.current;
         setLoading(true);
         api.get(`/api/reimbursements/${id}`)
             .then((d) => {
+                if (token !== reqRef.current) return;
                 setClaim(d.data);
                 setTimeline(d.timeline ?? []);
             })
             .catch((e) => handleApiError(e))
-            .finally(() => setLoading(false));
+            .finally(() => {
+                if (token === reqRef.current) setLoading(false);
+            });
     }, [id]);
 
     useEffect(() => {
