@@ -2,9 +2,11 @@ import {
     ReimbursementNumberCell,
     StatusCell,
 } from '@/Components/ReimbursementRow';
+import Badge from '@/Components/ui/Badge';
 import Card from '@/Components/ui/Card';
 import EmptyState from '@/Components/ui/EmptyState';
 import ErrorState from '@/Components/ui/ErrorState';
+import { MobileList, MobileListItem } from '@/Components/ui/MobileList';
 import Pagination from '@/Components/ui/Pagination';
 import { TableSkeleton } from '@/Components/ui/Skeleton';
 import { Table, TBody, TD, TH, THead, TR } from '@/Components/ui/Table';
@@ -12,7 +14,7 @@ import useAuth from '@/hooks/useAuth';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { api, handleApiError } from '@/lib/api';
 import { formatDate } from '@/lib/format';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
 export default function Index() {
@@ -82,40 +84,79 @@ export default function Index() {
                         />
                     ) : (
                         <>
-                            <Table>
-                                <THead>
-                                    <TR>
-                                        <TH>Nomor</TH>
-                                        <TH>Judul</TH>
-                                        <TH>Pengaju</TH>
-                                        <TH>Kategori</TH>
-                                        <TH>Nominal</TH>
-                                        <TH>Status</TH>
-                                        <TH>Diajukan</TH>
-                                    </TR>
-                                </THead>
-                                <TBody>
-                                    {(rows ?? []).map((r) => (
-                                        <TR key={r.id}>
-                                            <ReimbursementNumberCell
-                                                id={r.id}
-                                                number={r.reimbursement_number}
-                                            />
-                                            <TD>{r.title}</TD>
-                                            <TD>{r.user?.name ?? '-'}</TD>
-                                            <TD>{r.category?.name ?? '-'}</TD>
-                                            <TD>{r.formatted_amount}</TD>
-                                            <StatusCell status={r.status} />
-                                            <TD>
-                                                {formatDate(
-                                                    r.submitted_at,
-                                                    true,
-                                                )}
-                                            </TD>
+                            <div className="hidden md:block">
+                                <Table>
+                                    <THead>
+                                        <TR>
+                                            <TH>Nomor</TH>
+                                            <TH>Judul</TH>
+                                            <TH>Pengaju</TH>
+                                            <TH>Kategori</TH>
+                                            <TH>Nominal</TH>
+                                            <TH>Status</TH>
+                                            <TH>Diajukan</TH>
                                         </TR>
-                                    ))}
-                                </TBody>
-                            </Table>
+                                    </THead>
+                                    <TBody>
+                                        {(rows ?? []).map((r) => (
+                                            <TR key={r.id}>
+                                                <ReimbursementNumberCell
+                                                    id={r.id}
+                                                    number={
+                                                        r.reimbursement_number
+                                                    }
+                                                />
+                                                <TD>{r.title}</TD>
+                                                <TD>{r.user?.name ?? '-'}</TD>
+                                                <TD>
+                                                    {r.category?.name ?? '-'}
+                                                </TD>
+                                                <TD>{r.formatted_amount}</TD>
+                                                <StatusCell status={r.status} />
+                                                <TD>
+                                                    {formatDate(
+                                                        r.submitted_at,
+                                                        true,
+                                                    )}
+                                                </TD>
+                                            </TR>
+                                        ))}
+                                    </TBody>
+                                </Table>
+                            </div>
+
+                            <MobileList>
+                                {(rows ?? []).map((r) => (
+                                    <MobileListItem key={r.id}>
+                                        <div className="flex items-center justify-between gap-3">
+                                            <Link
+                                                href={`/reimbursements/${r.id}`}
+                                                className="inline-flex min-h-[44px] items-center font-medium text-indigo-600 hover:underline"
+                                            >
+                                                {r.reimbursement_number}
+                                            </Link>
+                                            <Badge color={r.status.color}>
+                                                {r.status.label}
+                                            </Badge>
+                                        </div>
+                                        <p className="text-sm text-gray-800 dark:text-gray-200">
+                                            {r.title}
+                                        </p>
+                                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                            {r.user?.name ?? '-'} ·{' '}
+                                            {r.formatted_amount} ·{' '}
+                                            {formatDate(r.submitted_at, true)}
+                                        </p>
+                                        <Link
+                                            href={`/reimbursements/${r.id}`}
+                                            className="mt-2 inline-flex min-h-[44px] items-center font-medium text-indigo-600 hover:underline"
+                                        >
+                                            Proses →
+                                        </Link>
+                                    </MobileListItem>
+                                ))}
+                            </MobileList>
+
                             <Pagination meta={meta} onPage={setPage} />
                         </>
                     )}

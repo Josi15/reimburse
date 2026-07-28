@@ -2,6 +2,7 @@ import Badge from '@/Components/ui/Badge';
 import Card from '@/Components/ui/Card';
 import EmptyState from '@/Components/ui/EmptyState';
 import ErrorState from '@/Components/ui/ErrorState';
+import { MobileList, MobileListItem } from '@/Components/ui/MobileList';
 import Pagination from '@/Components/ui/Pagination';
 import { TableSkeleton } from '@/Components/ui/Skeleton';
 import { Table, TBody, TD, TH, THead, TR } from '@/Components/ui/Table';
@@ -96,44 +97,75 @@ export default function Index() {
                                     </p>
                                 ) : (
                                     <div className="mt-2">
-                                        <Table>
-                                            <THead>
-                                                <TR>
-                                                    <TH>Nomor</TH>
-                                                    <TH>Judul</TH>
-                                                    <TH>Pengaju</TH>
-                                                    <TH>Nominal</TH>
-                                                    <TH>Aksi</TH>
-                                                </TR>
-                                            </THead>
-                                            <TBody>
-                                                {(queue ?? []).map((r) => (
-                                                    <TR key={r.id}>
-                                                        <TD>
+                                        <div className="hidden md:block">
+                                            <Table>
+                                                <THead>
+                                                    <TR>
+                                                        <TH>Nomor</TH>
+                                                        <TH>Judul</TH>
+                                                        <TH>Pengaju</TH>
+                                                        <TH>Nominal</TH>
+                                                        <TH>Aksi</TH>
+                                                    </TR>
+                                                </THead>
+                                                <TBody>
+                                                    {(queue ?? []).map((r) => (
+                                                        <TR key={r.id}>
+                                                            <TD>
+                                                                {
+                                                                    r.reimbursement_number
+                                                                }
+                                                            </TD>
+                                                            <TD>{r.title}</TD>
+                                                            <TD>
+                                                                {r.user?.name ??
+                                                                    '-'}
+                                                            </TD>
+                                                            <TD>
+                                                                {
+                                                                    r.formatted_amount
+                                                                }
+                                                            </TD>
+                                                            <TD>
+                                                                <Link
+                                                                    href={`/reimbursements/${r.id}`}
+                                                                    className="font-medium text-indigo-600 hover:underline"
+                                                                >
+                                                                    Bayar →
+                                                                </Link>
+                                                            </TD>
+                                                        </TR>
+                                                    ))}
+                                                </TBody>
+                                            </Table>
+                                        </div>
+
+                                        <MobileList>
+                                            {(queue ?? []).map((r) => (
+                                                <MobileListItem key={r.id}>
+                                                    <div className="flex items-center justify-between gap-3">
+                                                        <span className="font-medium text-gray-800 dark:text-gray-200">
                                                             {
                                                                 r.reimbursement_number
                                                             }
-                                                        </TD>
-                                                        <TD>{r.title}</TD>
-                                                        <TD>
-                                                            {r.user?.name ??
-                                                                '-'}
-                                                        </TD>
-                                                        <TD>
-                                                            {r.formatted_amount}
-                                                        </TD>
-                                                        <TD>
-                                                            <Link
-                                                                href={`/reimbursements/${r.id}`}
-                                                                className="font-medium text-indigo-600 hover:underline"
-                                                            >
-                                                                Bayar →
-                                                            </Link>
-                                                        </TD>
-                                                    </TR>
-                                                ))}
-                                            </TBody>
-                                        </Table>
+                                                        </span>
+                                                        <Link
+                                                            href={`/reimbursements/${r.id}`}
+                                                            className="inline-flex min-h-[44px] items-center font-medium text-indigo-600 hover:underline"
+                                                        >
+                                                            Bayar →
+                                                        </Link>
+                                                    </div>
+                                                    <p className="text-sm text-gray-800 dark:text-gray-200">
+                                                        {r.title}
+                                                    </p>
+                                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                                        {r.user?.name ?? '-'} ·{' '}
+                                                        {r.formatted_amount}
+                                                    </p>
+                                                </MobileListItem>
+                                            ))}
+                                        </MobileList>
                                     </div>
                                 )}
                             </Card>
@@ -147,61 +179,88 @@ export default function Index() {
                                 <EmptyState title="Belum ada pembayaran" />
                             ) : (
                                 <div className="mt-2">
-                                    <Table>
-                                        <THead>
-                                            <TR>
-                                                <TH>No. Pembayaran</TH>
-                                                <TH>Metode</TH>
-                                                <TH>Rekening Tujuan</TH>
-                                                <TH>Nominal</TH>
-                                                <TH>Referensi</TH>
-                                                <TH>Status</TH>
-                                                <TH>Dibayar</TH>
-                                                <TH>Oleh</TH>
-                                            </TR>
-                                        </THead>
-                                        <TBody>
-                                            {(payments ?? []).map((p) => (
-                                                <TR key={p.id}>
-                                                    <TD className="font-medium">
-                                                        {p.payment_number}
-                                                    </TD>
-                                                    <TD>{p.method.label}</TD>
-                                                    <TD>
-                                                        {p.bank_account
-                                                            ? `${p.bank_account.bank?.code ?? ''} · ${p.bank_account.masked_number}`
-                                                            : '-'}
-                                                    </TD>
-                                                    <TD>
-                                                        {p.formatted_amount}
-                                                    </TD>
-                                                    <TD>
-                                                        {p.reference_number ??
-                                                            '-'}
-                                                    </TD>
-                                                    <TD>
-                                                        <Badge
-                                                            color={
-                                                                p.status.color
-                                                            }
-                                                        >
-                                                            {p.status.label}
-                                                        </Badge>
-                                                    </TD>
-                                                    <TD>
-                                                        {formatDate(
-                                                            p.paid_at,
-                                                            true,
-                                                        )}
-                                                    </TD>
-                                                    <TD>
-                                                        {p.processor?.name ??
-                                                            '-'}
-                                                    </TD>
+                                    <div className="hidden md:block">
+                                        <Table>
+                                            <THead>
+                                                <TR>
+                                                    <TH>No. Pembayaran</TH>
+                                                    <TH>Metode</TH>
+                                                    <TH>Rekening Tujuan</TH>
+                                                    <TH>Nominal</TH>
+                                                    <TH>Referensi</TH>
+                                                    <TH>Status</TH>
+                                                    <TH>Dibayar</TH>
+                                                    <TH>Oleh</TH>
                                                 </TR>
-                                            ))}
-                                        </TBody>
-                                    </Table>
+                                            </THead>
+                                            <TBody>
+                                                {(payments ?? []).map((p) => (
+                                                    <TR key={p.id}>
+                                                        <TD className="font-medium">
+                                                            {p.payment_number}
+                                                        </TD>
+                                                        <TD>{p.method.label}</TD>
+                                                        <TD>
+                                                            {p.bank_account
+                                                                ? `${p.bank_account.bank?.code ?? ''} · ${p.bank_account.masked_number}`
+                                                                : '-'}
+                                                        </TD>
+                                                        <TD>
+                                                            {p.formatted_amount}
+                                                        </TD>
+                                                        <TD>
+                                                            {p.reference_number ??
+                                                                '-'}
+                                                        </TD>
+                                                        <TD>
+                                                            <Badge
+                                                                color={
+                                                                    p.status
+                                                                        .color
+                                                                }
+                                                            >
+                                                                {p.status.label}
+                                                            </Badge>
+                                                        </TD>
+                                                        <TD>
+                                                            {formatDate(
+                                                                p.paid_at,
+                                                                true,
+                                                            )}
+                                                        </TD>
+                                                        <TD>
+                                                            {p.processor?.name ??
+                                                                '-'}
+                                                        </TD>
+                                                    </TR>
+                                                ))}
+                                            </TBody>
+                                        </Table>
+                                    </div>
+
+                                    <MobileList>
+                                        {(payments ?? []).map((p) => (
+                                            <MobileListItem key={p.id}>
+                                                <div className="flex items-center justify-between gap-3">
+                                                    <span className="font-medium text-gray-800 dark:text-gray-200">
+                                                        {p.payment_number}
+                                                    </span>
+                                                    <Badge color={p.status.color}>
+                                                        {p.status.label}
+                                                    </Badge>
+                                                </div>
+                                                <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                                    {p.formatted_amount}
+                                                </p>
+                                                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                                    {p.method.label} ·{' '}
+                                                    {p.reference_number ?? '-'} ·{' '}
+                                                    {formatDate(p.paid_at, true)}
+                                                </p>
+                                            </MobileListItem>
+                                        ))}
+                                    </MobileList>
+
                                     <Pagination meta={meta} onPage={setPage} />
                                 </div>
                             )}

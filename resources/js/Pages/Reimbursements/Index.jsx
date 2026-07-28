@@ -5,8 +5,10 @@ import {
 } from '@/Components/ReimbursementRow';
 import TextInput from '@/Components/TextInput';
 import Card from '@/Components/ui/Card';
+import Badge from '@/Components/ui/Badge';
 import EmptyState from '@/Components/ui/EmptyState';
 import ErrorState from '@/Components/ui/ErrorState';
+import { MobileList, MobileListItem } from '@/Components/ui/MobileList';
 import Pagination from '@/Components/ui/Pagination';
 import SelectInput from '@/Components/ui/SelectInput';
 import { TableSkeleton } from '@/Components/ui/Skeleton';
@@ -117,35 +119,70 @@ export default function Index() {
                         />
                     ) : (
                         <>
-                            <Table>
-                                <THead>
-                                    <TR>
-                                        <TH>Nomor</TH>
-                                        <TH>Judul</TH>
-                                        <TH>Kategori</TH>
-                                        <TH>Pengaju</TH>
-                                        <TH>Nominal</TH>
-                                        <TH>Status</TH>
-                                        <TH>Dibuat</TH>
-                                    </TR>
-                                </THead>
-                                <TBody>
-                                    {(rows ?? []).map((r) => (
-                                        <TR key={r.id}>
-                                            <ReimbursementNumberCell
-                                                id={r.id}
-                                                number={r.reimbursement_number}
-                                            />
-                                            <TD>{r.title}</TD>
-                                            <TD>{r.category?.name ?? '-'}</TD>
-                                            <TD>{r.user?.name ?? '-'}</TD>
-                                            <TD>{r.formatted_amount}</TD>
-                                            <StatusCell status={r.status} />
-                                            <TD>{formatDate(r.created_at)}</TD>
+                            <div className="hidden md:block">
+                                <Table>
+                                    <THead>
+                                        <TR>
+                                            <TH>Nomor</TH>
+                                            <TH>Judul</TH>
+                                            <TH>Kategori</TH>
+                                            <TH>Pengaju</TH>
+                                            <TH>Nominal</TH>
+                                            <TH>Status</TH>
+                                            <TH>Dibuat</TH>
                                         </TR>
-                                    ))}
-                                </TBody>
-                            </Table>
+                                    </THead>
+                                    <TBody>
+                                        {(rows ?? []).map((r) => (
+                                            <TR key={r.id}>
+                                                <ReimbursementNumberCell
+                                                    id={r.id}
+                                                    number={
+                                                        r.reimbursement_number
+                                                    }
+                                                />
+                                                <TD>{r.title}</TD>
+                                                <TD>
+                                                    {r.category?.name ?? '-'}
+                                                </TD>
+                                                <TD>{r.user?.name ?? '-'}</TD>
+                                                <TD>{r.formatted_amount}</TD>
+                                                <StatusCell status={r.status} />
+                                                <TD>
+                                                    {formatDate(r.created_at)}
+                                                </TD>
+                                            </TR>
+                                        ))}
+                                    </TBody>
+                                </Table>
+                            </div>
+
+                            <MobileList>
+                                {(rows ?? []).map((r) => (
+                                    <MobileListItem key={r.id}>
+                                        <div className="flex items-center justify-between gap-3">
+                                            <Link
+                                                href={`/reimbursements/${r.id}`}
+                                                className="inline-flex min-h-[44px] items-center font-medium text-indigo-600 hover:underline"
+                                            >
+                                                {r.reimbursement_number}
+                                            </Link>
+                                            <Badge color={r.status.color}>
+                                                {r.status.label}
+                                            </Badge>
+                                        </div>
+                                        <p className="text-sm text-gray-800 dark:text-gray-200">
+                                            {r.title}
+                                        </p>
+                                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                            {r.user?.name ?? '-'} ·{' '}
+                                            {r.formatted_amount} ·{' '}
+                                            {formatDate(r.created_at)}
+                                        </p>
+                                    </MobileListItem>
+                                ))}
+                            </MobileList>
+
                             <Pagination meta={meta} onPage={setPage} />
                         </>
                     )}
