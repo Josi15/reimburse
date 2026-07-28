@@ -190,7 +190,7 @@ export default function Sidebar({ navigation, user, isActive, onNavigate }) {
                                 </svg>
                             </button>
                         </Dropdown.Trigger>
-                        <Dropdown.Content align="left" width="48">
+                        <Dropdown.Content align="right" width="48" dropUp>
                             <Dropdown.Link href={route('profile.edit')}>
                                 Profile
                             </Dropdown.Link>

@@ -52,18 +52,27 @@ const Trigger = ({ children }) => {
 const Content = ({
     align = 'right',
     width = '48',
+    dropUp = false,
     contentClasses = 'py-1 bg-white dark:bg-gray-700',
     children,
 }) => {
     const { open, setOpen } = useContext(DropDownContext);
 
-    let alignmentClasses = 'origin-top';
+    // Kelas ditulis penuh (bukan interpolasi) agar Tailwind meng-generate-nya.
+    let alignmentClasses = dropUp ? 'origin-bottom' : 'origin-top';
 
     if (align === 'left') {
-        alignmentClasses = 'ltr:origin-top-left rtl:origin-top-right start-0';
+        alignmentClasses = dropUp
+            ? 'ltr:origin-bottom-left rtl:origin-bottom-right start-0'
+            : 'ltr:origin-top-left rtl:origin-top-right start-0';
     } else if (align === 'right') {
-        alignmentClasses = 'ltr:origin-top-right rtl:origin-top-left end-0';
+        alignmentClasses = dropUp
+            ? 'ltr:origin-bottom-right rtl:origin-bottom-left end-0'
+            : 'ltr:origin-top-right rtl:origin-top-left end-0';
     }
+
+    // Buka ke atas (drop-up) bila trigger berada di dekat dasar layar.
+    const verticalClasses = dropUp ? 'bottom-full mb-2' : 'mt-2';
 
     let widthClasses = '';
 
@@ -84,7 +93,7 @@ const Content = ({
             >
                 <div
                     role="menu"
-                    className={`absolute z-50 mt-2 rounded-md shadow-lg ${alignmentClasses} ${widthClasses}`}
+                    className={`absolute z-50 ${verticalClasses} rounded-md shadow-lg ${alignmentClasses} ${widthClasses}`}
                     onClick={() => setOpen(false)}
                 >
                     <div
