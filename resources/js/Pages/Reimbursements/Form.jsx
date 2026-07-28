@@ -34,8 +34,11 @@ export default function Form({ id = null }) {
         attachments: [],
     });
 
-    const set = (key) => (e) =>
+    const set = (key) => (e) => {
         setForm((f) => ({ ...f, [key]: e.target.value }));
+        // Bersihkan error field ini begitu user memperbaikinya.
+        setErrors((prev) => (prev[key] ? { ...prev, [key]: undefined } : prev));
+    };
 
     useEffect(() => {
         api.get('/api/options/categories')
@@ -133,6 +136,7 @@ export default function Form({ id = null }) {
                                     className="mt-1 block w-full"
                                     value={form.title}
                                     onChange={set('title')}
+                                    autoFocus={!isEdit}
                                     required
                                 />
                                 <InputError
@@ -164,7 +168,7 @@ export default function Form({ id = null }) {
                                         ))}
                                     </SelectInput>
                                     {selectedCategory?.max_amount && (
-                                        <p className="mt-1 text-xs text-gray-400">
+                                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                             Plafon:{' '}
                                             {rupiah(
                                                 selectedCategory.max_amount,
@@ -237,7 +241,7 @@ export default function Form({ id = null }) {
                                             </option>
                                         ))}
                                     </SelectInput>
-                                    <p className="mt-1 text-xs text-gray-400">
+                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                         Kelola rekening di menu Rekening Bank.
                                     </p>
                                     <InputError
@@ -320,7 +324,7 @@ export default function Form({ id = null }) {
                                             </li>
                                         ))}
                                     </ul>
-                                    <p className="mt-1 text-xs text-gray-400">
+                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                         Centang untuk menghapus saat disimpan.
                                     </p>
                                 </div>
@@ -336,7 +340,7 @@ export default function Form({ id = null }) {
                                     type="file"
                                     multiple
                                     accept=".jpg,.jpeg,.png,.pdf"
-                                    className="mt-1 block w-full text-sm text-gray-500 file:mr-3 file:rounded-md file:border-0 file:bg-indigo-50 file:px-3 file:py-2 file:text-indigo-700 hover:file:bg-indigo-100"
+                                    className="mt-1 block w-full text-sm text-gray-500 file:mr-3 file:rounded-md file:border-0 file:bg-indigo-50 file:px-3 file:py-2 file:text-indigo-700 hover:file:bg-indigo-100 dark:text-gray-400 dark:file:bg-indigo-900/40 dark:file:text-indigo-300 dark:hover:file:bg-indigo-900/60"
                                     onChange={(e) =>
                                         setForm((f) => ({
                                             ...f,

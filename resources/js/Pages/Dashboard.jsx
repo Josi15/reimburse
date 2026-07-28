@@ -51,7 +51,7 @@ function MonthlyChart({ data }) {
                             height: `${Math.max((d.total / max) * 100, d.total > 0 ? 4 : 1)}%`,
                         }}
                     />
-                    <span className="text-[10px] text-gray-400">
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400">
                         {MONTHS[d.month - 1]}
                     </span>
                 </div>
@@ -67,7 +67,9 @@ function TopList({ title, items }) {
                 {title}
             </h3>
             {items.length === 0 ? (
-                <p className="mt-3 text-sm text-gray-400">Belum ada data.</p>
+                <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+                    Belum ada data.
+                </p>
             ) : (
                 <ul className="mt-3 space-y-2">
                     {items.map((it) => (
@@ -78,7 +80,7 @@ function TopList({ title, items }) {
                             <span className="text-gray-600 dark:text-gray-300">
                                 {it.name}
                             </span>
-                            <span className="text-gray-400">
+                            <span className="text-gray-500 dark:text-gray-400">
                                 {it.count}× · {rupiah(it.total)}
                             </span>
                         </li>

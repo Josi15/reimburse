@@ -6,21 +6,21 @@ export default function Pagination({ meta, onPage }) {
             <span>
                 {meta.from ?? 0}–{meta.to ?? 0} dari {meta.total}
             </span>
-            <div className="flex gap-1">
+            <div className="flex items-center gap-1">
                 <button
                     disabled={meta.current_page <= 1}
                     onClick={() => onPage(meta.current_page - 1)}
-                    className="rounded-md border border-gray-200 px-3 py-1 hover:bg-gray-50 disabled:opacity-40 dark:border-gray-600 dark:hover:bg-gray-700"
+                    className="rounded-md border border-gray-200 px-3 py-2.5 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-40 dark:border-gray-600 dark:hover:bg-gray-700"
                 >
                     ‹ Sebelumnya
                 </button>
-                <span className="px-3 py-1">
+                <span className="px-3 py-2.5">
                     Hal {meta.current_page}/{meta.last_page}
                 </span>
                 <button
                     disabled={meta.current_page >= meta.last_page}
                     onClick={() => onPage(meta.current_page + 1)}
-                    className="rounded-md border border-gray-200 px-3 py-1 hover:bg-gray-50 disabled:opacity-40 dark:border-gray-600 dark:hover:bg-gray-700"
+                    className="rounded-md border border-gray-200 px-3 py-2.5 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-40 dark:border-gray-600 dark:hover:bg-gray-700"
                 >
                     Berikutnya ›
                 </button>
