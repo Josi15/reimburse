@@ -3,7 +3,7 @@ import Card from '@/Components/ui/Card';
 import EmptyState from '@/Components/ui/EmptyState';
 import ErrorState from '@/Components/ui/ErrorState';
 import Pagination from '@/Components/ui/Pagination';
-import { Loading } from '@/Components/ui/Spinner';
+import { TableSkeleton } from '@/Components/ui/Skeleton';
 import { Table, TBody, TD, TH, THead, TR } from '@/Components/ui/Table';
 import useAuth from '@/hooks/useAuth';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -75,7 +75,9 @@ export default function Index() {
 
             <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
                 {loading ? (
-                    <Loading />
+                    <Card>
+                        <TableSkeleton rows={6} cols={8} />
+                    </Card>
                 ) : error ? (
                     <Card>
                         <ErrorState onRetry={reload} />

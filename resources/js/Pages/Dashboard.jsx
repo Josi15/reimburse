@@ -4,13 +4,14 @@ import {
 } from '@/Components/ReimbursementRow';
 import Card from '@/Components/ui/Card';
 import EmptyState from '@/Components/ui/EmptyState';
-import { Loading } from '@/Components/ui/Spinner';
+import { DashboardSkeleton } from '@/Components/ui/Skeleton';
 import StatCard from '@/Components/ui/StatCard';
 import { Table, TBody, TD, TH, THead, TR } from '@/Components/ui/Table';
 import useFetch from '@/hooks/useFetch';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { formatDate, rupiah } from '@/lib/format';
+import { cn, formatDate, rupiah } from '@/lib/format';
 import { Head, Link } from '@inertiajs/react';
+import { useState } from 'react';
 
 const MONTHS = [
     'Jan',
@@ -34,28 +35,94 @@ const PENDING_LABELS = {
     my_revision_requested: 'Pengajuan Saya Perlu Revisi',
 };
 
+/** Singkat nominal rupiah: 12500000 -> "12,5jt", 1500 -> "1,5rb". */
+function abbrevRupiah(value) {
+    const n = Number(value ?? 0);
+    const fmt = (x) => x.toFixed(1).replace(/[.,]0$/, '').replace('.', ',');
+    if (n >= 1_000_000_000) return fmt(n / 1_000_000_000) + 'M';
+    if (n >= 1_000_000) return fmt(n / 1_000_000) + 'jt';
+    if (n >= 1_000) return fmt(n / 1_000) + 'rb';
+    return String(n);
+}
+
 function MonthlyChart({ data }) {
     const max = Math.max(...data.map((d) => d.total), 1);
+    const [active, setActive] = useState(null);
 
     return (
-        <div className="flex h-40 items-end gap-1.5">
-            {data.map((d) => (
-                <div
-                    key={d.month}
-                    className="flex flex-1 flex-col items-center gap-1"
-                    title={rupiah(d.total)}
-                >
-                    <div
-                        className="w-full rounded-t bg-indigo-500/80 transition-all hover:bg-indigo-600"
-                        style={{
-                            height: `${Math.max((d.total / max) * 100, d.total > 0 ? 4 : 1)}%`,
-                        }}
-                    />
-                    <span className="text-[10px] text-gray-500 dark:text-gray-400">
+        <div>
+            {/* Label maksimum sumbu-y */}
+            <div className="mb-1 text-right text-[10px] text-gray-400 dark:text-gray-500">
+                maks {abbrevRupiah(max)}
+            </div>
+
+            <div className="relative h-40">
+                {/* Gridlines di belakang bar */}
+                <div className="pointer-events-none absolute inset-0">
+                    {[0, 0.25, 0.5, 0.75, 1].map((f) => (
+                        <div
+                            key={f}
+                            className="absolute inset-x-0 border-t border-dashed border-gray-100 dark:border-gray-700/70"
+                            style={{ top: `${f * 100}%` }}
+                        />
+                    ))}
+                </div>
+
+                {/* Bar */}
+                <div className="relative flex h-full items-end gap-1.5">
+                    {data.map((d, i) => {
+                        const pct = Math.max(
+                            (d.total / max) * 100,
+                            d.total > 0 ? 4 : 2,
+                        );
+                        const label = `${MONTHS[d.month - 1]}: ${rupiah(d.total)}`;
+                        return (
+                            <div
+                                key={d.month}
+                                className="relative flex h-full flex-1 items-end"
+                            >
+                                {active === i && (
+                                    <div
+                                        role="tooltip"
+                                        className="absolute left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-[10px] font-medium text-white shadow-lg dark:bg-gray-700"
+                                        style={{ bottom: `calc(${pct}% + 6px)` }}
+                                    >
+                                        {label}
+                                    </div>
+                                )}
+                                <div
+                                    tabIndex={0}
+                                    role="img"
+                                    aria-label={label}
+                                    onMouseEnter={() => setActive(i)}
+                                    onMouseLeave={() => setActive(null)}
+                                    onFocus={() => setActive(i)}
+                                    onBlur={() => setActive(null)}
+                                    className={cn(
+                                        'w-full rounded-t transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500',
+                                        d.total > 0
+                                            ? 'bg-indigo-500/80 hover:bg-indigo-600'
+                                            : 'bg-gray-200 dark:bg-gray-700',
+                                    )}
+                                    style={{ height: `${pct}%` }}
+                                />
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* Label bulan */}
+            <div className="mt-1 flex gap-1.5">
+                {data.map((d) => (
+                    <span
+                        key={d.month}
+                        className="flex-1 text-center text-[10px] text-gray-500 dark:text-gray-400"
+                    >
                         {MONTHS[d.month - 1]}
                     </span>
-                </div>
-            ))}
+                ))}
+            </div>
         </div>
     );
 }
@@ -107,7 +174,7 @@ export default function Dashboard() {
 
             <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
                 {loading || !d ? (
-                    <Loading />
+                    <DashboardSkeleton />
                 ) : (
                     <>
                         {/* Kartu statistik */}

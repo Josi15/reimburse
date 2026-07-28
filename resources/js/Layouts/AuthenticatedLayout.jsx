@@ -3,6 +3,7 @@ import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import NotificationBell from '@/Components/ui/NotificationBell';
+import ThemeToggle from '@/Components/ui/ThemeToggle';
 import Toaster from '@/Components/ui/Toaster';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
@@ -48,6 +49,7 @@ export default function AuthenticatedLayout({ header, children }) {
                         </div>
 
                         <div className="hidden sm:ms-6 sm:flex sm:items-center">
+                            <ThemeToggle className="me-1" />
                             <NotificationBell />
                             <div className="relative ms-3">
                                 <Dropdown>
@@ -166,6 +168,12 @@ export default function AuthenticatedLayout({ header, children }) {
                         </div>
 
                         <div className="mt-3 space-y-1">
+                            <div className="flex items-center justify-between px-4 py-2">
+                                <span className="text-base font-medium text-gray-500 dark:text-gray-400">
+                                    Tema tampilan
+                                </span>
+                                <ThemeToggle />
+                            </div>
                             <ResponsiveNavLink href={route('profile.edit')}>
                                 Profile
                             </ResponsiveNavLink>

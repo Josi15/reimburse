@@ -8,7 +8,7 @@ import EmptyState from '@/Components/ui/EmptyState';
 import ErrorState from '@/Components/ui/ErrorState';
 import Pagination from '@/Components/ui/Pagination';
 import SelectInput from '@/Components/ui/SelectInput';
-import { Loading } from '@/Components/ui/Spinner';
+import { TableSkeleton } from '@/Components/ui/Skeleton';
 import { Table, TBody, TD, TH, THead, TR } from '@/Components/ui/Table';
 import useDebouncedValue from '@/hooks/useDebouncedValue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -173,7 +173,7 @@ export default function Index() {
 
                 <Card>
                     {loading ? (
-                        <Loading />
+                        <TableSkeleton rows={6} cols={7} />
                     ) : error ? (
                         <ErrorState onRetry={reload} />
                     ) : rows?.length === 0 ? (

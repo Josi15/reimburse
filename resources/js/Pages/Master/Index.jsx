@@ -11,7 +11,7 @@ import EmptyState from '@/Components/ui/EmptyState';
 import ErrorState from '@/Components/ui/ErrorState';
 import Pagination from '@/Components/ui/Pagination';
 import SelectInput from '@/Components/ui/SelectInput';
-import { Loading } from '@/Components/ui/Spinner';
+import { TableSkeleton } from '@/Components/ui/Skeleton';
 import { Table, TBody, TD, TH, THead, TR } from '@/Components/ui/Table';
 import useAuth from '@/hooks/useAuth';
 import useDebouncedValue from '@/hooks/useDebouncedValue';
@@ -147,7 +147,7 @@ function CrudSection({ endpoint, columns, fields, emptyTitle, transform }) {
             </div>
 
             {loading ? (
-                <Loading />
+                <TableSkeleton rows={6} cols={columns.length + 1} />
             ) : error ? (
                 <ErrorState onRetry={reload} />
             ) : rows?.length === 0 ? (
@@ -433,7 +433,7 @@ function RolesSection() {
             </div>
 
             {loading ? (
-                <Loading />
+                <TableSkeleton rows={5} cols={5} />
             ) : error ? (
                 <ErrorState onRetry={reload} />
             ) : (

@@ -6,6 +6,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
 import Badge from '@/Components/ui/Badge';
+import Breadcrumb from '@/Components/ui/Breadcrumb';
 import Card from '@/Components/ui/Card';
 import ConfirmDialog from '@/Components/ui/ConfirmDialog';
 import SelectInput from '@/Components/ui/SelectInput';
@@ -295,9 +296,21 @@ export default function Show({ id }) {
     return (
         <AuthenticatedLayout
             header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Detail Reimbursement
-                </h2>
+                <div>
+                    <Breadcrumb
+                        items={[
+                            { label: 'Dashboard', href: '/dashboard' },
+                            { label: 'Reimbursement', href: '/reimbursements' },
+                            {
+                                label:
+                                    claim?.reimbursement_number ?? 'Detail',
+                            },
+                        ]}
+                    />
+                    <h2 className="mt-1 text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+                        Detail Reimbursement
+                    </h2>
+                </div>
             }
         >
             <Head title={claim?.reimbursement_number ?? 'Detail'} />

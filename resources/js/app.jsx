@@ -2,11 +2,15 @@ import '../css/app.css';
 import './bootstrap';
 
 import ErrorBoundary from '@/Components/ErrorBoundary';
+import { initSystemListener } from '@/lib/theme';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+
+// Ikuti perubahan tema OS saat preferensi = 'system'.
+initSystemListener();
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,

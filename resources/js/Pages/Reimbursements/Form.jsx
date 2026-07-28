@@ -3,6 +3,7 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
+import Breadcrumb from '@/Components/ui/Breadcrumb';
 import Card from '@/Components/ui/Card';
 import SelectInput from '@/Components/ui/SelectInput';
 import { Loading } from '@/Components/ui/Spinner';
@@ -116,9 +117,20 @@ export default function Form({ id = null }) {
     return (
         <AuthenticatedLayout
             header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    {isEdit ? 'Edit Pengajuan' : 'Buat Pengajuan Reimbursement'}
-                </h2>
+                <div>
+                    <Breadcrumb
+                        items={[
+                            { label: 'Dashboard', href: '/dashboard' },
+                            { label: 'Reimbursement', href: '/reimbursements' },
+                            { label: isEdit ? 'Edit' : 'Buat' },
+                        ]}
+                    />
+                    <h2 className="mt-1 text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+                        {isEdit
+                            ? 'Edit Pengajuan'
+                            : 'Buat Pengajuan Reimbursement'}
+                    </h2>
+                </div>
             }
         >
             <Head title={isEdit ? 'Edit Pengajuan' : 'Buat Pengajuan'} />

@@ -10,7 +10,7 @@ import ConfirmDialog from '@/Components/ui/ConfirmDialog';
 import EmptyState from '@/Components/ui/EmptyState';
 import ErrorState from '@/Components/ui/ErrorState';
 import SelectInput from '@/Components/ui/SelectInput';
-import { Loading } from '@/Components/ui/Spinner';
+import { TableSkeleton } from '@/Components/ui/Skeleton';
 import { Table, TBody, TD, TH, THead, TR } from '@/Components/ui/Table';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { api, handleApiError } from '@/lib/api';
@@ -142,7 +142,7 @@ export default function Index() {
             <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
                 <Card>
                     {loading ? (
-                        <Loading />
+                        <TableSkeleton rows={5} cols={5} />
                     ) : error ? (
                         <ErrorState onRetry={reload} />
                     ) : accounts?.length === 0 ? (
