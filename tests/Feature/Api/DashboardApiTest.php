@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\ReimbursementStatus;
 use App\Models\Reimbursement;
 use Database\Seeders\RolePermissionSeeder;
 use Laravel\Sanctum\Sanctum;
@@ -21,6 +22,18 @@ test('employee dashboard is scoped to their own claims', function () {
         ->and($data['cards']['total'])->toBe(3)
         ->and($data['cards']['paid'])->toBe(1)
         ->and($data['top_departments'])->toBe([]);
+});
+
+test('approved card counts both manager- and finance-approved (symmetric with rejected)', function () {
+    Reimbursement::factory()->managerApproved()->count(2)->create();
+    Reimbursement::factory()->financeApproved()->create();
+    Reimbursement::factory()->create(['status' => ReimbursementStatus::ManagerRejected]);
+    Sanctum::actingAs(userWithRole('super_admin'));
+
+    $data = $this->getJson('/api/dashboard')->assertOk()->json('data');
+
+    expect($data['cards']['approved'])->toBe(3)   // 2 manager-approved + 1 finance-approved
+        ->and($data['cards']['rejected'])->toBe(1);
 });
 
 test('manager dashboard reports the manager approval queue', function () {

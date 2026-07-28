@@ -51,7 +51,10 @@ class DashboardService
             'total' => (int) $counts->sum('c'),
             'draft' => $count(ReimbursementStatus::Draft),
             'submitted' => $count(ReimbursementStatus::Submitted),
-            'approved' => $count(ReimbursementStatus::FinanceApproved),
+            // Simetris dengan "rejected": hitung persetujuan di kedua level
+            // (manager & finance), bukan hanya finance. Tanpa ini, pengajuan
+            // yang baru disetujui manajer tidak muncul di kartu "Disetujui".
+            'approved' => $count(ReimbursementStatus::ManagerApproved) + $count(ReimbursementStatus::FinanceApproved),
             'rejected' => $count(ReimbursementStatus::ManagerRejected) + $count(ReimbursementStatus::FinanceRejected),
             'paid' => $count(ReimbursementStatus::Paid),
             'total_paid_amount' => (int) ($counts[ReimbursementStatus::Paid->value]->total ?? 0),
