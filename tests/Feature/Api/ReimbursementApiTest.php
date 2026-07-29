@@ -2,6 +2,7 @@
 
 use App\Models\Category;
 use App\Models\Reimbursement;
+use App\Models\Role;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -41,7 +42,7 @@ test('employee creates a draft with auto number and draft status', function () {
 test('role ceiling blocks an amount above the employee reimbursement limit', function () {
     // Set plafon role employee secara eksplisit agar test mandiri (default seeder
     // = tanpa batas). Kategori mengizinkan s/d Rp2jt, plafon jabatan Rp1jt.
-    App\Models\Role::where('name', 'employee')->update(['reimbursement_limit' => 1_000_000]);
+    Role::where('name', 'employee')->update(['reimbursement_limit' => 1_000_000]);
     Sanctum::actingAs(employeeUser());
 
     $this->postJson('/api/reimbursements', draftPayload(['amount' => 1_500_000]))
