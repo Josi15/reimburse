@@ -37,7 +37,7 @@ test('full lifecycle: draft -> submit -> manager -> finance -> paid', function (
         'category_id' => $category->id,
         'title' => 'Perjalanan Dinas E2E',
         'reason' => 'Uji integrasi menyeluruh',
-        'amount' => 1_250_000,
+        'amount' => 950_000,
         'bank_account_id' => $account->id,
         'attachments' => [UploadedFile::fake()->create('nota.pdf', 20, 'application/pdf')],
     ])->assertCreated()->json('data.id');
@@ -73,7 +73,7 @@ test('full lifecycle: draft -> submit -> manager -> finance -> paid', function (
 
     $payment = $claim->payments()->first();
     expect($payment->attachments()->count())->toBe(1)     // bukti pembayaran
-        ->and($payment->amount)->toBe(1_250_000)
+        ->and($payment->amount)->toBe(950_000)
         ->and($payment->bank_account_id)->toBe($account->id);
 
     // Timeline mencerminkan seluruh perjalanan

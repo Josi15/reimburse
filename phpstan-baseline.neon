@@ -70,6 +70,18 @@ parameters:
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:onlyTrashed\(\)\.$#'
 			identifier: method.notFound
 			count: 1
+			path: app/Http/Controllers/Api/CompanyBankAccountController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:withTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/CompanyBankAccountController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:onlyTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
 			path: app/Http/Controllers/Api/DepartmentController.php
 
 		-
@@ -77,6 +89,18 @@ parameters:
 			identifier: method.notFound
 			count: 1
 			path: app/Http/Controllers/Api/DepartmentController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/OptionsController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\CompanyBankAccount\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/OptionsController.php
 
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:onlyTrashed\(\)\.$#'
@@ -89,6 +113,18 @@ parameters:
 			identifier: method.notFound
 			count: 1
 			path: app/Http/Controllers/Api/PaymentController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:onlyTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ProjectController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:withTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ProjectController.php
 
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:onlyTrashed\(\)\.$#'
@@ -475,6 +511,66 @@ parameters:
 			path: app/Http/Resources/CategoryResource.php
 
 		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\CompanyBankAccountResource\:\:\$account_holder_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/CompanyBankAccountResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\CompanyBankAccountResource\:\:\$account_number\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/CompanyBankAccountResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\CompanyBankAccountResource\:\:\$bank_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/CompanyBankAccountResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\CompanyBankAccountResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/CompanyBankAccountResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\CompanyBankAccountResource\:\:\$deleted_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/CompanyBankAccountResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\CompanyBankAccountResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/CompanyBankAccountResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\CompanyBankAccountResource\:\:\$is_active\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/CompanyBankAccountResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\CompanyBankAccountResource\:\:\$label\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/CompanyBankAccountResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\CompanyBankAccountResource\:\:\$masked_number\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/CompanyBankAccountResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\CompanyBankAccountResource\:\:\$updated_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/CompanyBankAccountResource.php
+
+		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\DepartmentResource\:\:\$code\.$#'
 			identifier: property.notFound
 			count: 1
@@ -601,10 +697,82 @@ parameters:
 			path: app/Http/Resources/PaymentResource.php
 
 		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\PaymentResource\:\:\$source_account_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/PaymentResource.php
+
+		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\PaymentResource\:\:\$status\.$#'
 			identifier: property.notFound
 			count: 3
 			path: app/Http/Resources/PaymentResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ProjectResource\:\:\$budget\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/ProjectResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ProjectResource\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ProjectResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ProjectResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ProjectResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ProjectResource\:\:\$deleted_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ProjectResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ProjectResource\:\:\$description\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ProjectResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ProjectResource\:\:\$end_date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ProjectResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ProjectResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ProjectResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ProjectResource\:\:\$is_active\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ProjectResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ProjectResource\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ProjectResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ProjectResource\:\:\$start_date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ProjectResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ProjectResource\:\:\$updated_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ProjectResource.php
 
 		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\ReimbursementResource\:\:\$amount\.$#'
@@ -668,6 +836,12 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\ReimbursementResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ReimbursementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ReimbursementResource\:\:\$project_id\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Resources/ReimbursementResource.php
@@ -752,6 +926,12 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\RoleResource\:\:\$permissions\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RoleResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RoleResource\:\:\$reimbursement_limit\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Resources/RoleResource.php
@@ -1105,7 +1285,37 @@ parameters:
 			path: app/Services/ReimbursementService.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$budget\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ReportService.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$c\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/ReportService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ReportService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ReportService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$paid\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ReportService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$pid\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Services/ReportService.php
@@ -1119,6 +1329,12 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$total\.$#'
 			identifier: property.notFound
+			count: 2
+			path: app/Services/ReportService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
 			count: 1
 			path: app/Services/ReportService.php
 
