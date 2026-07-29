@@ -36,6 +36,13 @@ export default function Index() {
     const [error, setError] = useState(null);
     const [page, setPage] = useState(1);
     const [nonce, setNonce] = useState(0);
+    const [tab, setTab] = useState('reimbursements');
+    const [projectRows, setProjectRows] = useState(null);
+    const [projectLoading, setProjectLoading] = useState(false);
+    const [projectError, setProjectError] = useState(null);
+    const [accountRows, setAccountRows] = useState(null);
+    const [accountLoading, setAccountLoading] = useState(false);
+    const [accountError, setAccountError] = useState(null);
     const dq = useDebouncedValue(filters.q);
 
     const set = (key) => (e) => {
@@ -82,6 +89,54 @@ export default function Index() {
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page, JSON.stringify({ ...filters, q: dq }), nonce]);
+
+    useEffect(() => {
+        if (tab !== 'projects') return;
+        let active = true;
+        setProjectLoading(true);
+        setProjectError(null);
+        const params = query(dq);
+        params.delete('page');
+        api.get(`/api/reports/projects?${params}`)
+            .then((d) => {
+                if (!active) return;
+                setProjectRows(d.data);
+            })
+            .catch((e) => {
+                if (!active) return;
+                setProjectError(true);
+                handleApiError(e);
+            })
+            .finally(() => active && setProjectLoading(false));
+        return () => {
+            active = false;
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [tab, JSON.stringify({ ...filters, q: dq }), nonce]);
+
+    useEffect(() => {
+        if (tab !== 'company-accounts') return;
+        let active = true;
+        setAccountLoading(true);
+        setAccountError(null);
+        const params = query(dq);
+        params.delete('page');
+        api.get(`/api/reports/company-accounts?${params}`)
+            .then((d) => {
+                if (!active) return;
+                setAccountRows(d.data);
+            })
+            .catch((e) => {
+                if (!active) return;
+                setAccountError(true);
+                handleApiError(e);
+            })
+            .finally(() => active && setAccountLoading(false));
+        return () => {
+            active = false;
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [tab, JSON.stringify({ ...filters, q: dq }), nonce]);
 
     const reload = () => setNonce((n) => n + 1);
 
@@ -201,8 +256,31 @@ export default function Index() {
                     </div>
                 </Card>
 
+                {/* Tab navigasi rekap */}
+                <div className="flex flex-wrap gap-2 border-b border-gray-200 dark:border-gray-700">
+                    {[
+                        ['reimbursements', 'Reimbursement'],
+                        ['projects', 'Rekap per Project'],
+                        ['company-accounts', 'Rekap per Rekening Perusahaan'],
+                    ].map(([v, l]) => (
+                        <button
+                            key={v}
+                            type="button"
+                            onClick={() => setTab(v)}
+                            className={
+                                'border-b-2 px-3 py-2 text-sm font-medium transition ' +
+                                (tab === v
+                                    ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200')
+                            }
+                        >
+                            {l}
+                        </button>
+                    ))}
+                </div>
+
                 {/* Ringkasan */}
-                {summary && (
+                {tab === 'reimbursements' && summary && (
                     <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                         <StatCard
                             label="Jumlah Pengajuan"
@@ -233,7 +311,8 @@ export default function Index() {
                     </div>
                 )}
 
-                {/* Tabel */}
+                {/* Tabel reimbursement */}
+                {tab === 'reimbursements' && (
                 <Card>
                     {loading ? (
                         <TableSkeleton rows={6} cols={8} />
@@ -277,6 +356,83 @@ export default function Index() {
                         </>
                     )}
                 </Card>
+                )}
+
+                {/* Rekap per Project */}
+                {tab === 'projects' && (
+                    <Card>
+                        {projectLoading ? (
+                            <TableSkeleton rows={6} cols={5} />
+                        ) : projectError ? (
+                            <ErrorState onRetry={reload} />
+                        ) : projectRows?.length === 0 ? (
+                            <EmptyState title="Tidak ada data untuk filter ini" />
+                        ) : (
+                            <Table>
+                                <THead>
+                                    <TR>
+                                        <TH>Project</TH>
+                                        <TH>Jumlah</TH>
+                                        <TH>Total Diajukan</TH>
+                                        <TH>Total Dibayar</TH>
+                                        <TH>Anggaran</TH>
+                                    </TR>
+                                </THead>
+                                <TBody>
+                                    {(projectRows ?? []).map((r) => (
+                                        <TR key={r.project_id}>
+                                            <TD className="font-medium">
+                                                {r.code} — {r.name}
+                                            </TD>
+                                            <TD>{r.count}</TD>
+                                            <TD>{rupiah(r.total_amount)}</TD>
+                                            <TD>{rupiah(r.paid_amount)}</TD>
+                                            <TD>
+                                                {r.budget != null
+                                                    ? rupiah(r.budget)
+                                                    : '-'}
+                                            </TD>
+                                        </TR>
+                                    ))}
+                                </TBody>
+                            </Table>
+                        )}
+                    </Card>
+                )}
+
+                {/* Rekap per Rekening Perusahaan */}
+                {tab === 'company-accounts' && (
+                    <Card>
+                        {accountLoading ? (
+                            <TableSkeleton rows={6} cols={3} />
+                        ) : accountError ? (
+                            <ErrorState onRetry={reload} />
+                        ) : accountRows?.length === 0 ? (
+                            <EmptyState title="Tidak ada data untuk filter ini" />
+                        ) : (
+                            <Table>
+                                <THead>
+                                    <TR>
+                                        <TH>Rekening</TH>
+                                        <TH>Jumlah Pembayaran</TH>
+                                        <TH>Total</TH>
+                                    </TR>
+                                </THead>
+                                <TBody>
+                                    {(accountRows ?? []).map((r) => (
+                                        <TR key={r.source_account_id}>
+                                            <TD className="font-medium">
+                                                {r.label}
+                                            </TD>
+                                            <TD>{r.count}</TD>
+                                            <TD>{rupiah(r.total_amount)}</TD>
+                                        </TR>
+                                    ))}
+                                </TBody>
+                            </Table>
+                        )}
+                    </Card>
+                )}
             </div>
         </AuthenticatedLayout>
     );

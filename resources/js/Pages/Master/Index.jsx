@@ -12,6 +12,7 @@ import ErrorState from '@/Components/ui/ErrorState';
 import Pagination from '@/Components/ui/Pagination';
 import SelectInput from '@/Components/ui/SelectInput';
 import { TableSkeleton } from '@/Components/ui/Skeleton';
+import TextareaInput from '@/Components/ui/TextareaInput';
 import { Table, TBody, TD, TH, THead, TR } from '@/Components/ui/Table';
 import useAuth from '@/hooks/useAuth';
 import useDebouncedValue from '@/hooks/useDebouncedValue';
@@ -232,6 +233,26 @@ function CrudSection({ endpoint, columns, fields, emptyTitle, transform }) {
                                             />
                                             {fd.label}
                                         </label>
+                                    ) : fd.type === 'textarea' ? (
+                                        <>
+                                            <InputLabel
+                                                htmlFor={`field-${fd.key}`}
+                                                value={fd.label}
+                                            />
+                                            <TextareaInput
+                                                id={`field-${fd.key}`}
+                                                rows={3}
+                                                className="mt-1 block w-full"
+                                                value={form[fd.key] ?? ''}
+                                                onChange={(e) =>
+                                                    setForm((f) => ({
+                                                        ...f,
+                                                        [fd.key]:
+                                                            e.target.value,
+                                                    }))
+                                                }
+                                            />
+                                        </>
                                     ) : fd.type === 'select' ? (
                                         <>
                                             <InputLabel
@@ -329,6 +350,7 @@ function RolesSection() {
         name: '',
         display_name: '',
         description: '',
+        reimbursement_limit: '',
         permission_ids: [],
     });
     const [errors, setErrors] = useState({});
@@ -365,6 +387,7 @@ function RolesSection() {
             name: '',
             display_name: '',
             description: '',
+            reimbursement_limit: '',
             permission_ids: [],
         });
         setErrors({});
@@ -380,6 +403,7 @@ function RolesSection() {
             name: role.name,
             display_name: role.display_name,
             description: role.description ?? '',
+            reimbursement_limit: role.reimbursement_limit ?? '',
             permission_ids: permIds,
         });
         setErrors({});
@@ -389,12 +413,20 @@ function RolesSection() {
     async function save() {
         setBusy(true);
         setErrors({});
+        const payload = {
+            ...form,
+            reimbursement_limit:
+                form.reimbursement_limit === '' ||
+                form.reimbursement_limit === null
+                    ? null
+                    : Number(form.reimbursement_limit),
+        };
         try {
             if (editing) {
-                await api.put(`/api/roles/${editing.id}`, form);
+                await api.put(`/api/roles/${editing.id}`, payload);
                 toast('Role diperbarui.');
             } else {
-                await api.post('/api/roles', form);
+                await api.post('/api/roles', payload);
                 toast('Role ditambahkan.');
             }
             setModal(null);
@@ -444,6 +476,7 @@ function RolesSection() {
                             <TH>Nama</TH>
                             <TH>Users</TH>
                             <TH>Permissions</TH>
+                            <TH>Plafon</TH>
                             <TH>Aksi</TH>
                         </TR>
                     </THead>
@@ -457,6 +490,11 @@ function RolesSection() {
                                     <span className="text-xs text-gray-400">
                                         {(r.permissions ?? []).length} izin
                                     </span>
+                                </TD>
+                                <TD>
+                                    {r.reimbursement_limit == null
+                                        ? 'Tanpa batas'
+                                        : rupiah(r.reimbursement_limit)}
                                 </TD>
                                 <TD>
                                     <span className="flex gap-3 text-sm">
@@ -538,6 +576,31 @@ function RolesSection() {
                         </div>
                     </div>
                     <div className="mt-4">
+                        <InputLabel
+                            htmlFor="role_reimbursement_limit"
+                            value="Plafon Reimbursement (Rp)"
+                        />
+                        <TextInput
+                            id="role_reimbursement_limit"
+                            type="number"
+                            className="mt-1 block w-full"
+                            value={form.reimbursement_limit ?? ''}
+                            onChange={(e) =>
+                                setForm((f) => ({
+                                    ...f,
+                                    reimbursement_limit: e.target.value,
+                                }))
+                            }
+                        />
+                        <p className="mt-1 text-xs text-gray-400">
+                            kosongkan = tanpa batas
+                        </p>
+                        <InputError
+                            message={errors.reimbursement_limit?.[0]}
+                            className="mt-1"
+                        />
+                    </div>
+                    <div className="mt-4">
                         <InputLabel value="Permissions" />
                         <div className="mt-2 grid max-h-64 grid-cols-2 gap-1 overflow-y-auto rounded-md border border-gray-200 p-3 text-sm sm:grid-cols-3 dark:border-gray-700">
                             {permissions.map((p) => (
@@ -604,11 +667,17 @@ export default function Index() {
     const [tab, setTab] = useState(null);
     const [departments, setDepartments] = useState([]);
     const [roleOptions, setRoleOptions] = useState([]);
+    const [bankOptions, setBankOptions] = useState([]);
 
     const tabs = [
         can('department.manage') && { key: 'departments', label: 'Department' },
         can('category.manage') && { key: 'categories', label: 'Kategori' },
         can('bank.manage') && { key: 'banks', label: 'Bank' },
+        can('project.manage') && { key: 'projects', label: 'Project' },
+        can('company_account.manage') && {
+            key: 'company_accounts',
+            label: 'Rekening Perusahaan',
+        },
         can('user.view') && { key: 'users', label: 'User' },
         can('role.manage') && { key: 'roles', label: 'Role' },
     ].filter(Boolean);
@@ -625,6 +694,11 @@ export default function Index() {
                 .catch(() => {});
             api.get('/api/options/roles')
                 .then((d) => setRoleOptions(d.data))
+                .catch(() => {});
+        }
+        if (can('company_account.manage')) {
+            api.get('/api/options/banks')
+                .then((d) => setBankOptions(d.data))
                 .catch(() => {});
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -761,6 +835,124 @@ export default function Index() {
                                 type: 'checkbox',
                             },
                         ]}
+                    />
+                )}
+
+                {tab === 'projects' && (
+                    <CrudSection
+                        endpoint="/api/projects"
+                        emptyTitle="Belum ada project"
+                        columns={[
+                            { key: 'code', label: 'Kode' },
+                            { key: 'name', label: 'Nama' },
+                            {
+                                key: 'formatted_budget',
+                                label: 'Anggaran',
+                                render: (r) => r.formatted_budget ?? '-',
+                            },
+                            {
+                                key: 'is_active',
+                                label: 'Status',
+                                render: activeBadge,
+                            },
+                        ]}
+                        fields={[
+                            { key: 'code', label: 'Kode *' },
+                            { key: 'name', label: 'Nama *' },
+                            {
+                                key: 'description',
+                                label: 'Deskripsi',
+                                type: 'textarea',
+                            },
+                            {
+                                key: 'budget',
+                                label: 'Anggaran (Rp)',
+                                type: 'number',
+                            },
+                            {
+                                key: 'start_date',
+                                label: 'Tanggal Mulai',
+                                type: 'date',
+                            },
+                            {
+                                key: 'end_date',
+                                label: 'Tanggal Selesai',
+                                type: 'date',
+                            },
+                            {
+                                key: 'is_active',
+                                label: 'Aktif',
+                                type: 'checkbox',
+                            },
+                        ]}
+                        transform={(f) => ({
+                            ...f,
+                            budget: f.budget === '' ? null : f.budget,
+                            start_date:
+                                f.start_date === '' ? null : f.start_date,
+                            end_date: f.end_date === '' ? null : f.end_date,
+                        })}
+                    />
+                )}
+
+                {tab === 'company_accounts' && (
+                    <CrudSection
+                        endpoint="/api/company-accounts"
+                        emptyTitle="Belum ada rekening perusahaan"
+                        columns={[
+                            { key: 'label', label: 'Label' },
+                            {
+                                key: 'bank',
+                                label: 'Bank',
+                                render: (r) =>
+                                    r.bank?.code ?? r.bank?.name ?? '-',
+                            },
+                            {
+                                key: 'masked_number',
+                                label: 'No. Rekening',
+                                render: (r) => r.masked_number ?? '-',
+                            },
+                            {
+                                key: 'account_holder_name',
+                                label: 'Atas Nama',
+                            },
+                            {
+                                key: 'is_active',
+                                label: 'Status',
+                                render: activeBadge,
+                            },
+                        ]}
+                        fields={[
+                            {
+                                key: 'bank_id',
+                                label: 'Bank *',
+                                type: 'select',
+                                options: bankOptions.map((b) => ({
+                                    value: b.id,
+                                    label: b.code
+                                        ? `${b.code} — ${b.name}`
+                                        : b.name,
+                                })),
+                            },
+                            { key: 'label', label: 'Label *' },
+                            {
+                                key: 'account_number',
+                                label: 'No. Rekening *',
+                            },
+                            {
+                                key: 'account_holder_name',
+                                label: 'Atas Nama *',
+                            },
+                            {
+                                key: 'is_active',
+                                label: 'Aktif',
+                                type: 'checkbox',
+                            },
+                        ]}
+                        transform={(f) => ({
+                            ...f,
+                            bank_id: f.bank_id === '' ? null : Number(f.bank_id),
+                        })}
                     />
                 )}
 

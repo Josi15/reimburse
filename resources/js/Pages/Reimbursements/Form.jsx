@@ -8,6 +8,7 @@ import Card from '@/Components/ui/Card';
 import SelectInput from '@/Components/ui/SelectInput';
 import { Loading } from '@/Components/ui/Spinner';
 import TextareaInput from '@/Components/ui/TextareaInput';
+import useAuth from '@/hooks/useAuth';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { api, handleApiError } from '@/lib/api';
 import { rupiah } from '@/lib/format';
@@ -17,11 +18,13 @@ import { useEffect, useState } from 'react';
 
 export default function Form({ id = null }) {
     const isEdit = id !== null;
+    const { user } = useAuth();
     const [loading, setLoading] = useState(isEdit);
     const [busy, setBusy] = useState(false);
     const [errors, setErrors] = useState({});
     const [categories, setCategories] = useState([]);
     const [accounts, setAccounts] = useState([]);
+    const [projects, setProjects] = useState([]);
     const [existingFiles, setExistingFiles] = useState([]);
     const [deleteIds, setDeleteIds] = useState([]);
     const [form, setForm] = useState({
@@ -30,6 +33,7 @@ export default function Form({ id = null }) {
         amount: '',
         expense_date: '',
         bank_account_id: '',
+        project_id: '',
         reason: '',
         description: '',
         attachments: [],
@@ -48,6 +52,9 @@ export default function Form({ id = null }) {
         api.get('/api/bank-accounts')
             .then((d) => setAccounts(d.data.filter((a) => a.is_active)))
             .catch(() => {});
+        api.get('/api/options/projects')
+            .then((d) => setProjects(d.data))
+            .catch(() => {});
 
         if (isEdit) {
             api.get(`/api/reimbursements/${id}`)
@@ -60,6 +67,7 @@ export default function Form({ id = null }) {
                         amount: r.amount ?? '',
                         expense_date: r.expense_date ?? '',
                         bank_account_id: r.bank_account_id ?? '',
+                        project_id: r.project_id ?? '',
                         reason: r.reason ?? '',
                         description: r.description ?? '',
                     }));
@@ -86,6 +94,7 @@ export default function Form({ id = null }) {
             'amount',
             'expense_date',
             'bank_account_id',
+            'project_id',
             'reason',
             'description',
         ].forEach((k) => {
@@ -207,6 +216,13 @@ export default function Form({ id = null }) {
                                         onChange={set('amount')}
                                         required
                                     />
+                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        Plafon jabatan:{' '}
+                                        {typeof user?.reimbursement_limit ===
+                                        'number'
+                                            ? rupiah(user.reimbursement_limit)
+                                            : 'tanpa batas'}
+                                    </p>
                                     <InputError
                                         message={errors.amount?.[0]}
                                         className="mt-1"
@@ -258,6 +274,34 @@ export default function Form({ id = null }) {
                                     </p>
                                     <InputError
                                         message={errors.bank_account_id?.[0]}
+                                        className="mt-1"
+                                    />
+                                </div>
+
+                                <div>
+                                    <InputLabel
+                                        htmlFor="project_id"
+                                        value="Project"
+                                    />
+                                    <SelectInput
+                                        id="project_id"
+                                        className="mt-1 block w-full"
+                                        value={form.project_id}
+                                        onChange={set('project_id')}
+                                    >
+                                        <option value="">
+                                            — tanpa project —
+                                        </option>
+                                        {projects.map((p) => (
+                                            <option key={p.id} value={p.id}>
+                                                {p.code
+                                                    ? `${p.code} — ${p.name}`
+                                                    : p.name}
+                                            </option>
+                                        ))}
+                                    </SelectInput>
+                                    <InputError
+                                        message={errors.project_id?.[0]}
                                         className="mt-1"
                                     />
                                 </div>

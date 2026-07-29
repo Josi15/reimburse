@@ -103,9 +103,18 @@ function PayModal({ show, claim, onClose, onDone }) {
         reference_number: '',
         notes: '',
         proof: null,
+        source_account_id: '',
     });
+    const [companyAccounts, setCompanyAccounts] = useState([]);
     const [busy, setBusy] = useState(false);
     const [errors, setErrors] = useState({});
+
+    useEffect(() => {
+        if (!show) return;
+        api.get('/api/options/company-accounts')
+            .then((d) => setCompanyAccounts(d.data))
+            .catch(() => {});
+    }, [show]);
 
     async function submit() {
         setBusy(true);
@@ -116,6 +125,8 @@ function PayModal({ show, claim, onClose, onDone }) {
             fd.append('reference_number', form.reference_number);
         if (form.notes) fd.append('notes', form.notes);
         if (form.proof) fd.append('proof', form.proof);
+        if (form.source_account_id)
+            fd.append('source_account_id', form.source_account_id);
 
         try {
             await api.post(`/api/reimbursements/${claim.id}/pay`, fd);
@@ -139,6 +150,34 @@ function PayModal({ show, claim, onClose, onDone }) {
                 </p>
 
                 <div className="mt-4 space-y-4">
+                    <div>
+                        <InputLabel
+                            htmlFor="pay-source-account"
+                            value="Rekening Sumber (Perusahaan)"
+                        />
+                        <SelectInput
+                            id="pay-source-account"
+                            className="mt-1 block w-full"
+                            value={form.source_account_id}
+                            onChange={(e) =>
+                                setForm((f) => ({
+                                    ...f,
+                                    source_account_id: e.target.value,
+                                }))
+                            }
+                        >
+                            <option value="">— pilih rekening sumber —</option>
+                            {companyAccounts.map((a) => (
+                                <option key={a.id} value={a.id}>
+                                    {a.label} · {a.bank_code} {a.masked_number}
+                                </option>
+                            ))}
+                        </SelectInput>
+                        <InputError
+                            message={errors.source_account_id?.[0]}
+                            className="mt-1"
+                        />
+                    </div>
                     <div>
                         <InputLabel htmlFor="pay-method" value="Metode *" />
                         <SelectInput
@@ -356,6 +395,16 @@ export default function Show({ id }) {
                                     </div>
                                     <div>
                                         <dt className="text-gray-400">
+                                            Project
+                                        </dt>
+                                        <dd className="text-gray-700 dark:text-gray-200">
+                                            {claim.project
+                                                ? `${claim.project.code} — ${claim.project.name}`
+                                                : '-'}
+                                        </dd>
+                                    </div>
+                                    <div>
+                                        <dt className="text-gray-400">
                                             Department
                                         </dt>
                                         <dd className="text-gray-700 dark:text-gray-200">
@@ -389,6 +438,26 @@ export default function Show({ id }) {
                                             )}
                                         </dd>
                                     </div>
+                                    {claim.payment?.source_account && (
+                                        <div>
+                                            <dt className="text-gray-400">
+                                                Rekening Sumber
+                                            </dt>
+                                            <dd className="text-gray-700 dark:text-gray-200">
+                                                {claim.payment.source_account
+                                                    .label}
+                                                {' — '}
+                                                {
+                                                    claim.payment.source_account
+                                                        .bank?.code
+                                                }{' '}
+                                                {
+                                                    claim.payment.source_account
+                                                        .masked_number
+                                                }
+                                            </dd>
+                                        </div>
+                                    )}
                                 </dl>
 
                                 <div className="mt-5 border-t border-gray-100 pt-4 dark:border-gray-700">
