@@ -56,7 +56,7 @@ class RolePermissionSeeder extends Seeder
         // ---- Pemetaan role → [display, permissions, plafon] --------------
         // Plafon (IDR/pengajuan): null = tanpa batas, 0 = tak boleh mengajukan.
         $map = [
-            'super_admin' => ['Super Admin', $all, null], // akses penuh, tanpa batas
+            'super_admin' => ['Super Admin', $all, 50_000_000], // akses penuh
             'admin' => ['Admin', [
                 'user.view', 'user.create', 'user.update', 'user.delete',
                 'department.manage', 'category.manage', 'bank.manage', 'project.manage',
@@ -68,7 +68,7 @@ class RolePermissionSeeder extends Seeder
                 'reimbursement.view', 'reimbursement.create', 'reimbursement.update',
                 'reimbursement.delete', 'reimbursement.submit',
                 'bankaccount.manage', 'report.export',
-            ], null], // tanpa batas (plafon efektif tetap dibatasi kategori)
+            ], 1_500_000],
             'manager' => ['Manager', [
                 'reimbursement.viewAny', 'reimbursement.approve.manager',
                 'bankaccount.manage', 'dashboard.viewAll', 'report.view', 'report.export',
