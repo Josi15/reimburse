@@ -38,6 +38,19 @@ test('employee creates a draft with auto number and draft status', function () {
         ->assertJsonStructure(['data' => ['reimbursement_number']]);
 });
 
+test('role ceiling blocks an amount above the employee reimbursement limit', function () {
+    // Kategori mengizinkan s/d Rp2jt, tapi plafon jabatan employee Rp1jt.
+    Sanctum::actingAs(employeeUser());
+
+    $this->postJson('/api/reimbursements', draftPayload(['amount' => 1_500_000]))
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['amount']);
+
+    // Dalam plafon jabatan → sukses.
+    $this->postJson('/api/reimbursements', draftPayload(['amount' => 900_000]))
+        ->assertCreated();
+});
+
 test('reason and amount are required', function () {
     Sanctum::actingAs(employeeUser());
 

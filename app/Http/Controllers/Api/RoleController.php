@@ -43,6 +43,7 @@ class RoleController extends Controller
             'name' => $data['name'],
             'display_name' => $data['display_name'],
             'description' => $data['description'] ?? null,
+            'reimbursement_limit' => $data['reimbursement_limit'] ?? null,
             'guard_name' => 'web',
         ]);
 
@@ -60,7 +61,7 @@ class RoleController extends Controller
     {
         $data = $request->validated();
 
-        $role->update(collect($data)->only(['name', 'display_name', 'description'])->toArray());
+        $role->update(collect($data)->only(['name', 'display_name', 'description', 'reimbursement_limit'])->toArray());
 
         if (isset($data['permission_ids'])) {
             $role->permissions()->sync($data['permission_ids']);

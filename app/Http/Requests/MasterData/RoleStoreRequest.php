@@ -18,6 +18,7 @@ class RoleStoreRequest extends FormRequest
             'name' => ['required', 'string', 'max:50', 'regex:/^[a-z0-9_]+$/', Rule::unique('roles', 'name')],
             'display_name' => ['required', 'string', 'max:100'],
             'description' => ['nullable', 'string', 'max:255'],
+            'reimbursement_limit' => ['nullable', 'integer', 'min:0'],
             'permission_ids' => ['sometimes', 'array'],
             'permission_ids.*' => ['integer', Rule::exists('permissions', 'id')],
         ];

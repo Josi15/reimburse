@@ -126,6 +126,25 @@ class User extends Authenticatable
         return $this->permissionNames()->contains($permission);
     }
 
+    /**
+     * Plafon reimbursement per pengajuan berdasarkan jabatan (role).
+     * NULL = tanpa batas (bila salah satu role tak berbatas, mis. super_admin);
+     * selain itu = plafon tertinggi di antara role user. 0 bila tak punya role.
+     */
+    public function reimbursementLimit(): ?int
+    {
+        $limits = $this->roles->pluck('reimbursement_limit');
+
+        if ($limits->isEmpty()) {
+            return 0;
+        }
+        if ($limits->contains(null)) {
+            return null; // ada role tanpa batas
+        }
+
+        return (int) $limits->max();
+    }
+
     // ---- Scopes ----------------------------------------------------------
 
     public function scopeActive(Builder $query): Builder

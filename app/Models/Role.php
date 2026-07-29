@@ -18,7 +18,15 @@ class Role extends Model
         'display_name',
         'guard_name',
         'description',
+        'reimbursement_limit',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'reimbursement_limit' => 'integer',
+        ];
+    }
 
     public function users(): BelongsToMany
     {

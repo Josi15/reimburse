@@ -2,13 +2,15 @@
 
 namespace App\Http\Requests\Reimbursement;
 
-use App\Models\Category;
+use App\Http\Requests\Reimbursement\Concerns\ChecksReimbursementLimits;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 class StoreReimbursementRequest extends FormRequest
 {
+    use ChecksReimbursementLimits;
+
     public function authorize(): bool
     {
         return true; // Otorisasi via policy (create) di controller.
@@ -39,15 +41,9 @@ class StoreReimbursementRequest extends FormRequest
         ];
     }
 
-    /** Nominal tidak boleh melebihi plafon kategori (bila diset). */
+    /** Nominal dibatasi plafon kategori & jabatan (yang paling ketat). */
     public function withValidator(Validator $validator): void
     {
-        $validator->after(function (Validator $validator) {
-            $category = Category::find($this->input('category_id'));
-            if ($category && $category->max_amount !== null && (int) $this->input('amount') > $category->max_amount) {
-                $validator->errors()->add('amount',
-                    'Nominal melebihi plafon kategori (Rp '.number_format($category->max_amount, 0, ',', '.').').');
-            }
-        });
+        $validator->after(fn (Validator $v) => $this->applyLimitChecks($v));
     }
 }

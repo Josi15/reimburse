@@ -46,6 +46,7 @@ class HandleInertiaRequests extends Middleware
                     'email_verified_at' => $user->email_verified_at,
                     'roles' => $user->roles->pluck('name'),
                     'permissions' => $user->roles->flatMap->permissions->pluck('name')->unique()->values(),
+                    'reimbursement_limit' => $user->reimbursementLimit(),
                 ] : null,
             ],
             // Menu sidebar dinamis sesuai hak akses user.
