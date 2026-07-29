@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AuditLogController;
 use App\Http\Controllers\Api\BankAccountController;
 use App\Http\Controllers\Api\BankController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\CompanyBankAccountController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\NotificationController;
@@ -38,6 +39,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('options/departments', [OptionsController::class, 'departments']);
     Route::get('options/projects', [OptionsController::class, 'projects']);
     Route::get('options/banks', [OptionsController::class, 'banks']);
+    Route::get('options/company-accounts', [OptionsController::class, 'companyAccounts'])
+        ->middleware('permission:payment.process');
     Route::get('options/roles', [OptionsController::class, 'roles'])->middleware('permission:user.view');
     Route::get('options/permissions', [OptionsController::class, 'permissions'])->middleware('permission:role.manage');
 
@@ -85,6 +88,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('permission:project.manage')->group(function () {
         Route::apiResource('projects', ProjectController::class);
         Route::post('projects/{id}/restore', [ProjectController::class, 'restore']);
+    });
+
+    // ---- Rekening Perusahaan (permission: company_account.manage) ---------
+    Route::middleware('permission:company_account.manage')->group(function () {
+        Route::apiResource('company-accounts', CompanyBankAccountController::class)
+            ->parameters(['company-accounts' => 'companyAccount']);
+        Route::post('company-accounts/{id}/restore', [CompanyBankAccountController::class, 'restore']);
     });
 
     // ---- User (permission granular per aksi) -----------------------------

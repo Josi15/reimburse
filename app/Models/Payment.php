@@ -29,6 +29,7 @@ class Payment extends Model
         'payment_number',
         'reimbursement_id',
         'bank_account_id',
+        'source_account_id',
         'processed_by',
         'amount',
         'currency',
@@ -59,6 +60,12 @@ class Payment extends Model
     public function bankAccount(): BelongsTo
     {
         return $this->belongsTo(BankAccount::class);
+    }
+
+    /** Rekening perusahaan sumber pembayaran. */
+    public function sourceAccount(): BelongsTo
+    {
+        return $this->belongsTo(CompanyBankAccount::class, 'source_account_id');
     }
 
     public function processor(): BelongsTo

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Bank;
 use App\Models\Category;
+use App\Models\CompanyBankAccount;
 use App\Models\Department;
 use App\Models\Permission;
 use App\Models\Project;
@@ -51,6 +52,21 @@ class OptionsController extends Controller
         return response()->json([
             'data' => Cache::remember('options.banks', self::CACHE_SECONDS,
                 fn () => Bank::active()->orderBy('name')->get(['id', 'name', 'code'])),
+        ]);
+    }
+
+    /** Rekening perusahaan aktif (sumber pembayaran) untuk form Finance. */
+    public function companyAccounts(): JsonResponse
+    {
+        return response()->json([
+            'data' => CompanyBankAccount::active()->with('bank:id,code')->orderBy('label')
+                ->get(['id', 'bank_id', 'label', 'account_number'])
+                ->map(fn ($a) => [
+                    'id' => $a->id,
+                    'label' => $a->label,
+                    'bank_code' => $a->bank?->code,
+                    'masked_number' => $a->masked_number,
+                ]),
         ]);
     }
 

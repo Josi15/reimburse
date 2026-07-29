@@ -24,7 +24,7 @@ class PaymentController extends Controller
         $this->authorize('viewAny', Payment::class);
 
         $payments = $this->paginateResource(
-            Payment::query()->with(['processor', 'bankAccount.bank']),
+            Payment::query()->with(['processor', 'bankAccount.bank', 'sourceAccount.bank']),
             $request,
             [
                 'searchable' => ['payment_number', 'reference_number'],
@@ -41,7 +41,7 @@ class PaymentController extends Controller
     {
         $this->authorize('view', $payment);
 
-        return new PaymentResource($payment->load(['processor', 'bankAccount.bank', 'attachments']));
+        return new PaymentResource($payment->load(['processor', 'bankAccount.bank', 'sourceAccount.bank', 'attachments']));
     }
 
     /** Proses pembayaran atas reimbursement Finance-Approved. */
@@ -56,7 +56,7 @@ class PaymentController extends Controller
             $request->file('proof'),
         );
 
-        return (new PaymentResource($payment->load(['processor', 'bankAccount.bank', 'attachments'])))
+        return (new PaymentResource($payment->load(['processor', 'bankAccount.bank', 'sourceAccount.bank', 'attachments'])))
             ->response()->setStatusCode(201);
     }
 }

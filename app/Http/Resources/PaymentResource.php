@@ -34,6 +34,8 @@ class PaymentResource extends JsonResource
                 'name' => $this->processor->name,
             ]),
             'bank_account' => new BankAccountResource($this->whenLoaded('bankAccount')),
+            'source_account_id' => $this->source_account_id,
+            'source_account' => new CompanyBankAccountResource($this->whenLoaded('sourceAccount')),
             'attachments' => AttachmentResource::collection($this->whenLoaded('attachments')),
             'created_at' => $this->created_at,
         ];

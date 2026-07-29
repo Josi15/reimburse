@@ -26,6 +26,8 @@ class PaymentStoreRequest extends FormRequest
             'notes' => ['nullable', 'string', 'max:1000'],
             'amount' => ['nullable', 'integer', 'min:1'],
             'bank_account_id' => ['nullable', 'integer', Rule::exists('bank_accounts', 'id')],
+            'source_account_id' => ['nullable', 'integer',
+                Rule::exists('company_bank_accounts', 'id')->where('is_active', true)->whereNull('deleted_at')],
             'proof' => ['nullable', 'file', "mimes:{$mimes}", "mimetypes:{$mimetypes}", "max:{$maxKb}"],
         ];
     }

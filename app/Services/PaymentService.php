@@ -54,6 +54,7 @@ class PaymentService
             $payment = Payment::create([
                 'reimbursement_id' => $locked->id,
                 'bank_account_id' => $account->id,
+                'source_account_id' => $data['source_account_id'] ?? null,
                 'processed_by' => $finance->id,
                 'amount' => $amount,
                 'currency' => 'IDR',

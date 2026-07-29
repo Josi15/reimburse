@@ -25,7 +25,7 @@ class Navigation
             ['label' => 'Rekening Bank', 'href' => '/bank-accounts', 'icon' => 'credit-card',
                 'permissions' => ['bankaccount.manage']],
             ['label' => 'Master Data', 'href' => '/master', 'icon' => 'database',
-                'permissions' => ['user.view', 'department.manage', 'category.manage', 'bank.manage', 'project.manage']],
+                'permissions' => ['user.view', 'department.manage', 'category.manage', 'bank.manage', 'project.manage', 'company_account.manage']],
             ['label' => 'Laporan', 'href' => '/reports', 'icon' => 'chart-bar',
                 'permissions' => ['report.view']],
             ['label' => 'Audit Log', 'href' => '/audit-logs', 'icon' => 'shield-check',
