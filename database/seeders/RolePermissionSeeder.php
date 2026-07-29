@@ -68,7 +68,7 @@ class RolePermissionSeeder extends Seeder
                 'reimbursement.view', 'reimbursement.create', 'reimbursement.update',
                 'reimbursement.delete', 'reimbursement.submit',
                 'bankaccount.manage', 'report.export',
-            ], 1_000_000],
+            ], null], // tanpa batas (plafon efektif tetap dibatasi kategori)
             'manager' => ['Manager', [
                 'reimbursement.viewAny', 'reimbursement.approve.manager',
                 'bankaccount.manage', 'dashboard.viewAll', 'report.view', 'report.export',
