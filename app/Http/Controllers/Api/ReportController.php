@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ReimbursementResource;
 use App\Services\ReportService;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Maatwebsite\Excel\Excel as ExcelFormat;
@@ -29,6 +30,22 @@ class ReportController extends Controller
 
         return ReimbursementResource::collection($list)
             ->additional(['summary' => $this->service->summary($filters)]);
+    }
+
+    /** Rekap pengeluaran per proyek (menghormati filter laporan). */
+    public function projects(Request $request): JsonResponse
+    {
+        return response()->json([
+            'data' => $this->service->projectRecap($this->validatedFilters($request)),
+        ]);
+    }
+
+    /** Rekap pembayaran per rekening perusahaan (rekap bulanan via filter tanggal). */
+    public function companyAccounts(Request $request): JsonResponse
+    {
+        return response()->json([
+            'data' => $this->service->companyAccountRecap($this->validatedFilters($request)),
+        ]);
     }
 
     /** Export laporan ke csv/xlsx/pdf. */
@@ -65,11 +82,12 @@ class ReportController extends Controller
             'user_id' => ['nullable', 'integer'],
             'status' => ['nullable', 'string'],
             'category_id' => ['nullable', 'integer'],
+            'project_id' => ['nullable', 'integer'],
             'q' => ['nullable', 'string'],
         ]);
 
         return $request->only([
-            'date_from', 'date_to', 'department_id', 'user_id', 'status', 'category_id', 'q',
+            'date_from', 'date_to', 'department_id', 'user_id', 'status', 'category_id', 'project_id', 'q',
         ]);
     }
 }

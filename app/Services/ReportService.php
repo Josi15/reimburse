@@ -2,43 +2,50 @@
 
 namespace App\Services;
 
+use App\Enums\PaymentStatus;
+use App\Enums\ReimbursementStatus;
+use App\Models\Payment;
 use App\Models\Reimbursement;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Membangun query laporan reimbursement dengan filter lintas-dimensi
- * (tanggal, department, employee, status, kategori, kata kunci) serta ringkasan
- * statistik. Dipakai untuk tampilan laporan & export (Phase 14).
+ * (tanggal, department, employee, status, kategori, project, kata kunci) serta
+ * ringkasan statistik & rekap per-project/per-rekening. Dipakai untuk tampilan
+ * laporan & export (Phase 14).
  */
 class ReportService
 {
-    /** Terapkan filter ke query dasar. */
+    /** Terapkan filter ke query dasar (kolom di-qualify agar aman untuk join). */
     private function apply(array $f): Builder
     {
         $query = Reimbursement::query();
 
         if (! empty($f['date_from'])) {
-            $query->whereDate('created_at', '>=', $f['date_from']);
+            $query->whereDate('reimbursements.created_at', '>=', $f['date_from']);
         }
         if (! empty($f['date_to'])) {
-            $query->whereDate('created_at', '<=', $f['date_to']);
+            $query->whereDate('reimbursements.created_at', '<=', $f['date_to']);
         }
         if (! empty($f['department_id'])) {
-            $query->where('department_id', $f['department_id']);
+            $query->where('reimbursements.department_id', $f['department_id']);
         }
         if (! empty($f['user_id'])) {
-            $query->where('user_id', $f['user_id']);
+            $query->where('reimbursements.user_id', $f['user_id']);
         }
         if (! empty($f['status'])) {
-            $query->where('status', $f['status']);
+            $query->where('reimbursements.status', $f['status']);
         }
         if (! empty($f['category_id'])) {
-            $query->where('category_id', $f['category_id']);
+            $query->where('reimbursements.category_id', $f['category_id']);
+        }
+        if (! empty($f['project_id'])) {
+            $query->where('reimbursements.project_id', $f['project_id']);
         }
         if (! empty($f['q'])) {
             $query->where(function (Builder $sub) use ($f) {
-                $sub->where('reimbursement_number', 'ilike', '%'.$f['q'].'%')
-                    ->orWhere('title', 'ilike', '%'.$f['q'].'%');
+                $sub->where('reimbursements.reimbursement_number', 'ilike', '%'.$f['q'].'%')
+                    ->orWhere('reimbursements.title', 'ilike', '%'.$f['q'].'%');
             });
         }
 
@@ -68,5 +75,70 @@ class ReportService
                 $r->status->value => ['count' => (int) $r->c, 'total' => (int) $r->total],
             ])->all(),
         ];
+    }
+
+    /**
+     * Rekap pengeluaran per proyek (menghormati filter yang sama). Menampilkan
+     * jumlah pengajuan, total nominal diajukan, total yang sudah dibayar, dan
+     * anggaran proyek untuk perbandingan realisasi.
+     */
+    public function projectRecap(array $f): array
+    {
+        return $this->apply($f)
+            ->whereNotNull('reimbursements.project_id')
+            ->join('projects', 'projects.id', '=', 'reimbursements.project_id')
+            ->selectRaw(
+                'projects.id as pid, projects.code, projects.name, projects.budget, '.
+                'COUNT(*) as c, '.
+                'COALESCE(SUM(reimbursements.amount),0) as total, '.
+                'COALESCE(SUM(CASE WHEN reimbursements.status = ? THEN reimbursements.amount ELSE 0 END),0) as paid',
+                [ReimbursementStatus::Paid->value],
+            )
+            ->groupBy('projects.id', 'projects.code', 'projects.name', 'projects.budget')
+            ->orderByDesc('total')
+            ->get()
+            ->map(fn ($r) => [
+                'project_id' => (int) $r->pid,
+                'code' => $r->code,
+                'name' => $r->name,
+                'budget' => $r->budget !== null ? (int) $r->budget : null,
+                'count' => (int) $r->c,
+                'total_amount' => (int) $r->total,
+                'paid_amount' => (int) $r->paid,
+            ])
+            ->all();
+    }
+
+    /**
+     * Rekap pembayaran per rekening perusahaan (sumber). Memakai rentang tanggal
+     * dari filter (paid_at) sehingga bisa dipakai untuk rekap bulanan.
+     */
+    public function companyAccountRecap(array $f): array
+    {
+        $query = Payment::query()->where('payments.status', PaymentStatus::Paid->value);
+
+        if (! empty($f['date_from'])) {
+            $query->whereDate('payments.paid_at', '>=', $f['date_from']);
+        }
+        if (! empty($f['date_to'])) {
+            $query->whereDate('payments.paid_at', '<=', $f['date_to']);
+        }
+
+        return $query
+            ->leftJoin('company_bank_accounts', 'company_bank_accounts.id', '=', 'payments.source_account_id')
+            ->selectRaw(
+                'payments.source_account_id as sid, company_bank_accounts.label, '.
+                'COUNT(*) as c, COALESCE(SUM(payments.amount),0) as total',
+            )
+            ->groupBy('payments.source_account_id', 'company_bank_accounts.label')
+            ->orderByDesc('total')
+            ->get()
+            ->map(fn ($r) => [
+                'source_account_id' => $r->sid !== null ? (int) $r->sid : null,
+                'label' => $r->label ?? 'Tanpa rekening sumber',
+                'count' => (int) $r->c,
+                'total_amount' => (int) $r->total,
+            ])
+            ->all();
     }
 }

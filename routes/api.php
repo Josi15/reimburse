@@ -63,6 +63,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('permission:report.view')->group(function () {
         Route::get('reports/reimbursements/export', [ReportController::class, 'export']);
         Route::get('reports/reimbursements', [ReportController::class, 'reimbursements']);
+        Route::get('reports/projects', [ReportController::class, 'projects']);
+        Route::get('reports/company-accounts', [ReportController::class, 'companyAccounts']);
     });
 
     // ---- Activity / Audit Log (Phase 15; read-only, permission: audit.view)
