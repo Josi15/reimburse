@@ -29,6 +29,7 @@ class ReimbursementService
                 'user_id' => $user->id,
                 'department_id' => $user->department_id,
                 'category_id' => $data['category_id'],
+                'project_id' => $data['project_id'] ?? null,
                 'bank_account_id' => $data['bank_account_id'] ?? null,
                 'title' => $data['title'],
                 'description' => $data['description'] ?? null,
@@ -50,7 +51,7 @@ class ReimbursementService
     {
         return DB::transaction(function () use ($reimbursement, $user, $data, $files, $deleteAttachmentIds) {
             $reimbursement->update(collect($data)->only([
-                'category_id', 'bank_account_id', 'title', 'description',
+                'category_id', 'project_id', 'bank_account_id', 'title', 'description',
                 'reason', 'amount', 'expense_date',
             ])->toArray());
 

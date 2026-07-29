@@ -54,7 +54,7 @@ class ReimbursementController extends Controller
             $request->file('attachments') ?? [],
         );
 
-        return (new ReimbursementResource($reimbursement->load(['category', 'attachments'])))
+        return (new ReimbursementResource($reimbursement->load(['category', 'project', 'attachments'])))
             ->response()->setStatusCode(201);
     }
 
@@ -62,7 +62,7 @@ class ReimbursementController extends Controller
     {
         $this->authorize('view', $reimbursement);
 
-        $reimbursement->load(['category', 'department', 'user', 'attachments']);
+        $reimbursement->load(['category', 'project', 'department', 'user', 'attachments']);
 
         return (new ReimbursementResource($reimbursement))
             ->additional(['timeline' => $this->service->buildTimeline($reimbursement)]);
@@ -80,7 +80,7 @@ class ReimbursementController extends Controller
             $request->input('delete_attachment_ids', []),
         );
 
-        return new ReimbursementResource($reimbursement->load(['category', 'attachments']));
+        return new ReimbursementResource($reimbursement->load(['category', 'project', 'attachments']));
     }
 
     public function destroy(Reimbursement $reimbursement): Response
@@ -99,7 +99,7 @@ class ReimbursementController extends Controller
 
         $reimbursement = $this->service->submit($reimbursement);
 
-        return new ReimbursementResource($reimbursement->load(['category', 'attachments']));
+        return new ReimbursementResource($reimbursement->load(['category', 'project', 'attachments']));
     }
 
     /** Hapus satu lampiran (hanya saat reimbursement masih editable). */

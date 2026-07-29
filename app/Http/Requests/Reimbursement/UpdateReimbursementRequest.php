@@ -25,6 +25,8 @@ class UpdateReimbursementRequest extends FormRequest
 
         return [
             'category_id' => ['sometimes', 'required', 'integer', Rule::exists('categories', 'id')->whereNull('deleted_at')],
+            'project_id' => ['nullable', 'integer',
+                Rule::exists('projects', 'id')->where('is_active', true)->whereNull('deleted_at')],
             'title' => ['sometimes', 'required', 'string', 'max:150'],
             'description' => ['nullable', 'string'],
             'reason' => ['sometimes', 'required', 'string'],

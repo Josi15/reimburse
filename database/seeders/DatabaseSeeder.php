@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             DepartmentSeeder::class,
             CategorySeeder::class,
             BankSeeder::class,
+            ProjectSeeder::class,
             UserSeeder::class,
         ]);
     }

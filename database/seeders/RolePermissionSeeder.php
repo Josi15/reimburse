@@ -24,6 +24,7 @@ class RolePermissionSeeder extends Seeder
             'department.manage' => 'Kelola Department',
             'category.manage' => 'Kelola Category',
             'bank.manage' => 'Kelola Master Bank',
+            'project.manage' => 'Kelola Master Project',
             'bankaccount.manage' => 'Kelola Rekening Sendiri',
             'reimbursement.viewAny' => 'Lihat Semua Reimbursement',
             'reimbursement.view' => 'Lihat Reimbursement Sendiri',
@@ -57,7 +58,7 @@ class RolePermissionSeeder extends Seeder
             'super_admin' => ['Super Admin', $all, null], // akses penuh, tanpa batas
             'admin' => ['Admin', [
                 'user.view', 'user.create', 'user.update', 'user.delete',
-                'department.manage', 'category.manage', 'bank.manage',
+                'department.manage', 'category.manage', 'bank.manage', 'project.manage',
                 'reimbursement.viewAny', 'dashboard.viewAll',
                 'report.view', 'report.export', 'audit.view',
             ], 25_000_000],

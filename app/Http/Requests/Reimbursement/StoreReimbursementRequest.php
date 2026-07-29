@@ -25,6 +25,8 @@ class StoreReimbursementRequest extends FormRequest
 
         return [
             'category_id' => ['required', 'integer', Rule::exists('categories', 'id')->whereNull('deleted_at')],
+            'project_id' => ['nullable', 'integer',
+                Rule::exists('projects', 'id')->where('is_active', true)->whereNull('deleted_at')],
             'title' => ['required', 'string', 'max:150'],
             'description' => ['nullable', 'string'],
             'reason' => ['required', 'string'],                 // alasan wajib

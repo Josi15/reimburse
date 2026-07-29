@@ -7,6 +7,7 @@ use App\Models\Bank;
 use App\Models\Category;
 use App\Models\Department;
 use App\Models\Permission;
+use App\Models\Project;
 use App\Models\Role;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
@@ -34,6 +35,14 @@ class OptionsController extends Controller
         return response()->json([
             'data' => Cache::remember('options.departments', self::CACHE_SECONDS,
                 fn () => Department::active()->orderBy('name')->get(['id', 'name', 'code'])),
+        ]);
+    }
+
+    public function projects(): JsonResponse
+    {
+        return response()->json([
+            'data' => Cache::remember('options.projects', self::CACHE_SECONDS,
+                fn () => Project::active()->orderBy('name')->get(['id', 'name', 'code'])),
         ]);
     }
 

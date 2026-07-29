@@ -28,6 +28,7 @@ class ReimbursementResource extends JsonResource
             'submitted_at' => $this->submitted_at,
             'completed_at' => $this->completed_at,
             'category_id' => $this->category_id,
+            'project_id' => $this->project_id,
             'department_id' => $this->department_id,
             'bank_account_id' => $this->bank_account_id,
             'user' => $this->whenLoaded('user', fn () => [
@@ -35,6 +36,7 @@ class ReimbursementResource extends JsonResource
                 'name' => $this->user->name,
             ]),
             'category' => new CategoryResource($this->whenLoaded('category')),
+            'project' => new ProjectResource($this->whenLoaded('project')),
             'department' => new DepartmentResource($this->whenLoaded('department')),
             'attachments' => AttachmentResource::collection($this->whenLoaded('attachments')),
             'created_at' => $this->created_at,

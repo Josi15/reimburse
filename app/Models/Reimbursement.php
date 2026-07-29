@@ -32,6 +32,7 @@ class Reimbursement extends Model
         'user_id',
         'department_id',
         'category_id',
+        'project_id',
         'bank_account_id',
         'title',
         'description',
@@ -70,6 +71,11 @@ class Reimbursement extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
     }
 
     public function bankAccount(): BelongsTo

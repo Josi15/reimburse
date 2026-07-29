@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\OptionsController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\ReimbursementController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\RoleController;
@@ -35,6 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // ---- Opsi dropdown untuk form (Phase 17) ------------------------------
     Route::get('options/categories', [OptionsController::class, 'categories']);
     Route::get('options/departments', [OptionsController::class, 'departments']);
+    Route::get('options/projects', [OptionsController::class, 'projects']);
     Route::get('options/banks', [OptionsController::class, 'banks']);
     Route::get('options/roles', [OptionsController::class, 'roles'])->middleware('permission:user.view');
     Route::get('options/permissions', [OptionsController::class, 'permissions'])->middleware('permission:role.manage');
@@ -77,6 +79,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('permission:category.manage')->group(function () {
         Route::apiResource('categories', CategoryController::class);
         Route::post('categories/{id}/restore', [CategoryController::class, 'restore']);
+    });
+
+    // ---- Project (permission: project.manage) ----------------------------
+    Route::middleware('permission:project.manage')->group(function () {
+        Route::apiResource('projects', ProjectController::class);
+        Route::post('projects/{id}/restore', [ProjectController::class, 'restore']);
     });
 
     // ---- User (permission granular per aksi) -----------------------------
