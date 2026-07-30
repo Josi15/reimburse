@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\ReimbursementStatus;
 use App\Models\Concerns\Auditable;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -143,6 +144,23 @@ class User extends Authenticatable
         }
 
         return (int) $limits->max();
+    }
+
+    /**
+     * Total nominal reimbursement milik user pada BULAN BERJALAN (berdasarkan
+     * created_at), tidak termasuk yang ditolak. Dipakai untuk plafon bulanan
+     * per jabatan. $excludeId mengecualikan pengajuan yang sedang diedit.
+     */
+    public function monthlyReimbursementUsed(?int $excludeId = null): int
+    {
+        return (int) $this->reimbursements()
+            ->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])
+            ->whereNotIn('status', [
+                ReimbursementStatus::ManagerRejected->value,
+                ReimbursementStatus::FinanceRejected->value,
+            ])
+            ->when($excludeId, fn ($q) => $q->whereKeyNot($excludeId))
+            ->sum('amount');
     }
 
     // ---- Scopes ----------------------------------------------------------

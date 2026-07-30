@@ -113,6 +113,8 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // ---- Reimbursement (Phase 9) — otorisasi via ReimbursementPolicy -----
+    // Kuota plafon bulanan user (sebelum route wildcard {reimbursement}).
+    Route::get('reimbursements/quota', [ReimbursementController::class, 'quota']);
     Route::post('reimbursements/{reimbursement}/submit', [ReimbursementController::class, 'submit']);
     Route::delete('reimbursements/{reimbursement}/attachments/{attachment}', [ReimbursementController::class, 'destroyAttachment']);
 

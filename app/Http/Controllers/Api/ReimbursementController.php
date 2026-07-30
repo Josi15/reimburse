@@ -22,6 +22,21 @@ class ReimbursementController extends Controller
 
     public function __construct(private readonly ReimbursementService $service) {}
 
+    /** Kuota plafon bulanan jabatan user (untuk hint di form pengajuan). */
+    public function quota(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $limit = $user->reimbursementLimit();
+        $used = $user->monthlyReimbursementUsed();
+
+        return response()->json([
+            'limit' => $limit,
+            'used' => $used,
+            'remaining' => $limit === null ? null : max(0, $limit - $used),
+            'month' => now()->translatedFormat('F Y'),
+        ]);
+    }
+
     public function index(Request $request): AnonymousResourceCollection
     {
         $this->authorize('viewAny', Reimbursement::class);

@@ -8,7 +8,6 @@ import Card from '@/Components/ui/Card';
 import SelectInput from '@/Components/ui/SelectInput';
 import { Loading } from '@/Components/ui/Spinner';
 import TextareaInput from '@/Components/ui/TextareaInput';
-import useAuth from '@/hooks/useAuth';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { api, handleApiError } from '@/lib/api';
 import { rupiah } from '@/lib/format';
@@ -21,13 +20,13 @@ const MAX_FILES = 10;
 
 export default function Form({ id = null }) {
     const isEdit = id !== null;
-    const { user } = useAuth();
     const [loading, setLoading] = useState(isEdit);
     const [busy, setBusy] = useState(false);
     const [errors, setErrors] = useState({});
     const [categories, setCategories] = useState([]);
     const [accounts, setAccounts] = useState([]);
     const [projects, setProjects] = useState([]);
+    const [quota, setQuota] = useState(null);
     const [existingFiles, setExistingFiles] = useState([]);
     const [deleteIds, setDeleteIds] = useState([]);
     const [form, setForm] = useState({
@@ -59,7 +58,10 @@ export default function Form({ id = null }) {
             );
             return {
                 ...f,
-                attachments: [...f.attachments, ...incoming].slice(0, MAX_FILES),
+                attachments: [...f.attachments, ...incoming].slice(
+                    0,
+                    MAX_FILES,
+                ),
             };
         });
         setErrors((prev) => ({
@@ -84,6 +86,9 @@ export default function Form({ id = null }) {
             .catch(() => {});
         api.get('/api/options/projects')
             .then((d) => setProjects(d.data))
+            .catch(() => {});
+        api.get('/api/reimbursements/quota')
+            .then((d) => setQuota(d))
             .catch(() => {});
 
         if (isEdit) {
@@ -247,11 +252,19 @@ export default function Form({ id = null }) {
                                         required
                                     />
                                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                        Plafon jabatan:{' '}
-                                        {typeof user?.reimbursement_limit ===
-                                        'number'
-                                            ? rupiah(user.reimbursement_limit)
-                                            : 'tanpa batas'}
+                                        {quota && quota.limit !== null ? (
+                                            <>
+                                                Plafon bulan ini ({quota.month}
+                                                ): sisa{' '}
+                                                <span className="font-medium text-gray-700 dark:text-gray-200">
+                                                    {rupiah(quota.remaining)}
+                                                </span>{' '}
+                                                dari {rupiah(quota.limit)}{' '}
+                                                (terpakai {rupiah(quota.used)})
+                                            </>
+                                        ) : (
+                                            'Plafon jabatan: tanpa batas'
+                                        )}
                                     </p>
                                     <InputError
                                         message={errors.amount?.[0]}
@@ -455,7 +468,8 @@ export default function Form({ id = null }) {
                                                         {Math.max(
                                                             1,
                                                             Math.round(
-                                                                file.size / 1024,
+                                                                file.size /
+                                                                    1024,
                                                             ),
                                                         )}{' '}
                                                         KB)
@@ -463,7 +477,9 @@ export default function Form({ id = null }) {
                                                 </span>
                                                 <button
                                                     type="button"
-                                                    onClick={() => removeFile(i)}
+                                                    onClick={() =>
+                                                        removeFile(i)
+                                                    }
                                                     className="shrink-0 text-red-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                                                 >
                                                     Hapus

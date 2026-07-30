@@ -54,6 +54,32 @@ test('role ceiling blocks an amount above the employee reimbursement limit', fun
         ->assertCreated();
 });
 
+test('monthly role ceiling accumulates across submissions in the same month', function () {
+    Role::where('name', 'employee')->update(['reimbursement_limit' => 1_000_000]);
+    Sanctum::actingAs(employeeUser());
+
+    // Pengajuan pertama Rp700rb → oke (terpakai 0).
+    $this->postJson('/api/reimbursements', draftPayload(['amount' => 700_000]))->assertCreated();
+
+    // Kedua Rp400rb → terpakai 700rb, 700+400 = 1,1jt > 1jt → ditolak.
+    $this->postJson('/api/reimbursements', draftPayload(['amount' => 400_000]))
+        ->assertUnprocessable()->assertJsonValidationErrors(['amount']);
+
+    // Yang pas sisa (Rp300rb) → 700+300 = 1jt → oke.
+    $this->postJson('/api/reimbursements', draftPayload(['amount' => 300_000]))->assertCreated();
+});
+
+test('the monthly quota endpoint reports limit, used, and remaining', function () {
+    Role::where('name', 'employee')->update(['reimbursement_limit' => 1_000_000]);
+    Sanctum::actingAs(employeeUser());
+    $this->postJson('/api/reimbursements', draftPayload(['amount' => 400_000]))->assertCreated();
+
+    $this->getJson('/api/reimbursements/quota')->assertOk()
+        ->assertJsonPath('limit', 1000000)
+        ->assertJsonPath('used', 400000)
+        ->assertJsonPath('remaining', 600000);
+});
+
 test('reason and amount are required', function () {
     Sanctum::actingAs(employeeUser());
 

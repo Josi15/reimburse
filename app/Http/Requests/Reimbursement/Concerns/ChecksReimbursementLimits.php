@@ -3,11 +3,14 @@
 namespace App\Http\Requests\Reimbursement\Concerns;
 
 use App\Models\Category;
+use App\Models\Reimbursement;
 use Illuminate\Validation\Validator;
 
 /**
- * Validasi plafon nominal reimbursement: yang paling ketat antara plafon
- * KATEGORI (max_amount) dan plafon JABATAN/role (reimbursementLimit()).
+ * Validasi plafon nominal reimbursement:
+ *  - KATEGORI: batas per pengajuan (max_amount).
+ *  - JABATAN/role: batas BULANAN — total pengajuan user pada bulan berjalan
+ *    (tidak termasuk yang ditolak) + nominal ini tidak boleh melebihi plafon.
  * Dipakai bersama oleh Store & Update request agar aturannya satu sumber.
  */
 trait ChecksReimbursementLimits
@@ -21,21 +24,33 @@ trait ChecksReimbursementLimits
 
         $amount = (int) $this->input('amount');
 
-        // Plafon kategori.
+        // Plafon kategori (per pengajuan).
         $category = Category::find($this->input('category_id'));
         if ($category && $category->max_amount !== null && $amount > $category->max_amount) {
-            $validator->errors()->add('amount', $this->ceilingMessage('kategori', $category->max_amount));
+            $validator->errors()->add('amount',
+                'Nominal melebihi plafon kategori (Rp '.number_format($category->max_amount, 0, ',', '.').').');
         }
 
-        // Plafon jabatan (role). null = tanpa batas.
+        // Plafon jabatan (BULANAN). null = tanpa batas.
         $limit = $this->user()->reimbursementLimit();
-        if ($limit !== null && $amount > $limit) {
-            $validator->errors()->add('amount', $this->ceilingMessage('jabatan Anda', $limit));
+        if ($limit !== null) {
+            $used = $this->user()->monthlyReimbursementUsed($this->currentReimbursementId());
+
+            if ($used + $amount > $limit) {
+                $sisa = max(0, $limit - $used);
+                $validator->errors()->add('amount',
+                    'Melebihi plafon bulanan jabatan Anda (Rp '.number_format($limit, 0, ',', '.').'). '.
+                    'Terpakai bulan ini Rp '.number_format($used, 0, ',', '.').
+                    ', sisa Rp '.number_format($sisa, 0, ',', '.').'.');
+            }
         }
     }
 
-    private function ceilingMessage(string $scope, int $max): string
+    /** ID reimbursement yang sedang diedit (agar tak dihitung ganda); null saat create. */
+    private function currentReimbursementId(): ?int
     {
-        return "Nominal melebihi plafon {$scope} (Rp ".number_format($max, 0, ',', '.').').';
+        $current = $this->route('reimbursement');
+
+        return $current instanceof Reimbursement ? $current->getKey() : ($current ? (int) $current : null);
     }
 }
