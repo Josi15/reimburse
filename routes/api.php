@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AuditLogController;
 use App\Http\Controllers\Api\BankAccountController;
 use App\Http\Controllers\Api\BankController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\CompanyAccountDepositController;
 use App\Http\Controllers\Api\CompanyBankAccountController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DepartmentController;
@@ -97,6 +98,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('company-accounts', CompanyBankAccountController::class)
             ->parameters(['company-accounts' => 'companyAccount']);
         Route::post('company-accounts/{id}/restore', [CompanyBankAccountController::class, 'restore']);
+
+        // Pemasukan (top-up) rekening perusahaan + buku kas / arus kas bulanan.
+        Route::get('company-deposits', [CompanyAccountDepositController::class, 'index']);
+        Route::post('company-deposits', [CompanyAccountDepositController::class, 'store']);
+        Route::delete('company-deposits/{deposit}', [CompanyAccountDepositController::class, 'destroy']);
+        Route::get('reports/cashflow', [ReportController::class, 'cashflow']);
     });
 
     // ---- User (permission granular per aksi) -----------------------------

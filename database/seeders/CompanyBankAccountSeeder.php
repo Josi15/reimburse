@@ -15,9 +15,9 @@ class CompanyBankAccountSeeder extends Seeder
     public function run(): void
     {
         $accounts = [
-            ['bank' => 'BCA', 'label' => 'Kas Operasional', 'number' => '1234567890', 'holder' => 'PT Reimburse Nusantara'],
-            ['bank' => 'MANDIRI', 'label' => 'Payroll', 'number' => '9876543210', 'holder' => 'PT Reimburse Nusantara'],
-            ['bank' => 'BRI', 'label' => 'Kas Proyek', 'number' => '5551112223', 'holder' => 'PT Reimburse Nusantara'],
+            ['bank' => 'BCA', 'label' => 'Kas Operasional', 'number' => '1234567890', 'holder' => 'PT Reimburse Nusantara', 'opening' => 100_000_000],
+            ['bank' => 'MANDIRI', 'label' => 'Payroll', 'number' => '9876543210', 'holder' => 'PT Reimburse Nusantara', 'opening' => 50_000_000],
+            ['bank' => 'BRI', 'label' => 'Kas Proyek', 'number' => '5551112223', 'holder' => 'PT Reimburse Nusantara', 'opening' => 75_000_000],
         ];
 
         foreach ($accounts as $a) {
@@ -32,6 +32,7 @@ class CompanyBankAccountSeeder extends Seeder
                     'bank_id' => $bank->id,
                     'label' => $a['label'],
                     'account_holder_name' => $a['holder'],
+                    'opening_balance' => $a['opening'],
                     'is_active' => true,
                 ],
             );

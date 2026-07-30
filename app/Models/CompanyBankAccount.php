@@ -25,6 +25,7 @@ class CompanyBankAccount extends Model
         'label',
         'account_number',
         'account_holder_name',
+        'opening_balance',
         'is_active',
     ];
 
@@ -32,6 +33,7 @@ class CompanyBankAccount extends Model
     {
         return [
             'is_active' => 'boolean',
+            'opening_balance' => 'integer',
         ];
     }
 
@@ -43,6 +45,11 @@ class CompanyBankAccount extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class, 'source_account_id');
+    }
+
+    public function deposits(): HasMany
+    {
+        return $this->hasMany(CompanyAccountDeposit::class);
     }
 
     /** Nomor rekening tersamar untuk tampilan, mis. "******7890". */

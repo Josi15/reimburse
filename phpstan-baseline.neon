@@ -70,6 +70,18 @@ parameters:
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:onlyTrashed\(\)\.$#'
 			identifier: method.notFound
 			count: 1
+			path: app/Http/Controllers/Api/CompanyAccountDepositController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:withTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/CompanyAccountDepositController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:onlyTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
 			path: app/Http/Controllers/Api/CompanyBankAccountController.php
 
 		-
@@ -511,6 +523,54 @@ parameters:
 			path: app/Http/Resources/CategoryResource.php
 
 		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\CompanyAccountDepositResource\:\:\$amount\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/CompanyAccountDepositResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\CompanyAccountDepositResource\:\:\$company_bank_account_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/CompanyAccountDepositResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\CompanyAccountDepositResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/CompanyAccountDepositResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\CompanyAccountDepositResource\:\:\$created_by\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/CompanyAccountDepositResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\CompanyAccountDepositResource\:\:\$creator\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/CompanyAccountDepositResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\CompanyAccountDepositResource\:\:\$deposited_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/CompanyAccountDepositResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\CompanyAccountDepositResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/CompanyAccountDepositResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\CompanyAccountDepositResource\:\:\$note\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/CompanyAccountDepositResource.php
+
+		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\CompanyBankAccountResource\:\:\$account_holder_name\.$#'
 			identifier: property.notFound
 			count: 1
@@ -560,6 +620,12 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\CompanyBankAccountResource\:\:\$masked_number\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/CompanyBankAccountResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\CompanyBankAccountResource\:\:\$opening_balance\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Resources/CompanyBankAccountResource.php
@@ -1299,7 +1365,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
 			identifier: property.notFound
-			count: 1
+			count: 2
 			path: app/Services/ReportService.php
 
 		-
@@ -1330,6 +1396,12 @@ parameters:
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$total\.$#'
 			identifier: property.notFound
 			count: 2
+			path: app/Services/ReportService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\CompanyBankAccount\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
 			path: app/Services/ReportService.php
 
 		-

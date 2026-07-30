@@ -19,6 +19,7 @@ class CompanyBankAccountUpdateRequest extends FormRequest
             'label' => ['sometimes', 'required', 'string', 'max:100'],
             'account_number' => ['sometimes', 'required', 'string', 'max:40', 'regex:/^[0-9]+$/'],
             'account_holder_name' => ['sometimes', 'required', 'string', 'max:150'],
+            'opening_balance' => ['nullable', 'integer', 'min:0'],
             'is_active' => ['boolean'],
         ];
     }

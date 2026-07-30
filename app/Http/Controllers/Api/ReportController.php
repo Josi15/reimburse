@@ -48,6 +48,19 @@ class ReportController extends Controller
         ]);
     }
 
+    /** Buku kas rekening perusahaan: pemasukan vs pengeluaran + saldo per periode. */
+    public function cashflow(Request $request): JsonResponse
+    {
+        $request->validate([
+            'date_from' => ['nullable', 'date'],
+            'date_to' => ['nullable', 'date'],
+        ]);
+
+        return response()->json(
+            $this->service->cashflow($request->only(['date_from', 'date_to'])),
+        );
+    }
+
     /** Export laporan ke csv/xlsx/pdf. */
     public function export(Request $request): BinaryFileResponse|Response
     {

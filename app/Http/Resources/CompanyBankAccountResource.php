@@ -17,6 +17,7 @@ class CompanyBankAccountResource extends JsonResource
             'account_number' => $this->account_number,
             'masked_number' => $this->masked_number,
             'account_holder_name' => $this->account_holder_name,
+            'opening_balance' => $this->opening_balance,
             'is_active' => $this->is_active,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

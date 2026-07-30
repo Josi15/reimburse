@@ -4,9 +4,11 @@ namespace App\Services;
 
 use App\Enums\PaymentStatus;
 use App\Enums\ReimbursementStatus;
+use App\Models\CompanyBankAccount;
 use App\Models\Payment;
 use App\Models\Reimbursement;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 
 /**
  * Membangun query laporan reimbursement dengan filter lintas-dimensi
@@ -140,5 +142,50 @@ class ReportService
                 'total_amount' => (int) $r->total,
             ])
             ->all();
+    }
+
+    /**
+     * Buku kas rekening perusahaan untuk sebuah periode (default: bulan berjalan).
+     * Per rekening: saldo awal (opening_balance + mutasi sebelum periode),
+     * pemasukan (top-up), pengeluaran (pembayaran keluar), saldo akhir.
+     */
+    public function cashflow(array $f): array
+    {
+        $start = ! empty($f['date_from']) ? Carbon::parse($f['date_from'])->startOfDay() : now()->startOfMonth();
+        $end = ! empty($f['date_to']) ? Carbon::parse($f['date_to'])->endOfDay() : now()->endOfMonth();
+
+        $rows = CompanyBankAccount::query()->with('bank:id,code')->orderBy('label')->get()
+            ->map(function (CompanyBankAccount $acc) use ($start, $end) {
+                $depIn = (int) $acc->deposits()->whereBetween('deposited_at', [$start, $end])->sum('amount');
+                $depBefore = (int) $acc->deposits()->where('deposited_at', '<', $start)->sum('amount');
+
+                $paid = fn () => $acc->payments()->where('status', PaymentStatus::Paid->value);
+                $payIn = (int) $paid()->whereBetween('paid_at', [$start, $end])->sum('amount');
+                $payBefore = (int) $paid()->where('paid_at', '<', $start)->sum('amount');
+
+                $opening = (int) $acc->opening_balance + $depBefore - $payBefore;
+
+                return [
+                    'account_id' => $acc->id,
+                    'label' => $acc->label,
+                    'bank_code' => $acc->bank?->code,
+                    'masked_number' => $acc->masked_number,
+                    'opening_balance' => $opening,
+                    'pemasukan' => $depIn,
+                    'pengeluaran' => $payIn,
+                    'ending_balance' => $opening + $depIn - $payIn,
+                ];
+            });
+
+        return [
+            'period' => ['from' => $start->toDateString(), 'to' => $end->toDateString()],
+            'accounts' => $rows->values()->all(),
+            'totals' => [
+                'opening_balance' => (int) $rows->sum('opening_balance'),
+                'pemasukan' => (int) $rows->sum('pemasukan'),
+                'pengeluaran' => (int) $rows->sum('pengeluaran'),
+                'ending_balance' => (int) $rows->sum('ending_balance'),
+            ],
+        ];
     }
 }
