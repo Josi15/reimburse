@@ -16,6 +16,9 @@ import { toast } from '@/lib/toast';
 import { Head, router } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
+// Selaras dengan config reimbursement.max_files_per_request (backend).
+const MAX_FILES = 10;
+
 export default function Form({ id = null }) {
     const isEdit = id !== null;
     const { user } = useAuth();
@@ -44,6 +47,33 @@ export default function Form({ id = null }) {
         // Bersihkan error field ini begitu user memperbaikinya.
         setErrors((prev) => (prev[key] ? { ...prev, [key]: undefined } : prev));
     };
+
+    // Tambah bukti secara bertahap (menumpuk, bukan menimpa) — bisa banyak struk.
+    const addFiles = (fileList) => {
+        setForm((f) => {
+            const incoming = Array.from(fileList).filter(
+                (nf) =>
+                    !f.attachments.some(
+                        (ef) => ef.name === nf.name && ef.size === nf.size,
+                    ),
+            );
+            return {
+                ...f,
+                attachments: [...f.attachments, ...incoming].slice(0, MAX_FILES),
+            };
+        });
+        setErrors((prev) => ({
+            ...prev,
+            attachments: undefined,
+            'attachments.0': undefined,
+        }));
+    };
+
+    const removeFile = (index) =>
+        setForm((f) => ({
+            ...f,
+            attachments: f.attachments.filter((_, i) => i !== index),
+        }));
 
     useEffect(() => {
         api.get('/api/options/categories')
@@ -389,21 +419,66 @@ export default function Form({ id = null }) {
                             <div>
                                 <InputLabel
                                     htmlFor="attachments"
-                                    value="Upload Bukti (JPG/PNG/PDF, maks 5 MB per file)"
+                                    value={`Upload Bukti (JPG/PNG/PDF, maks 5 MB/file, sampai ${MAX_FILES} file)`}
                                 />
                                 <input
                                     id="attachments"
                                     type="file"
                                     multiple
                                     accept=".jpg,.jpeg,.png,.pdf"
-                                    className="mt-1 block w-full text-sm text-gray-500 file:mr-3 file:rounded-md file:border-0 file:bg-indigo-50 file:px-3 file:py-2 file:text-indigo-700 hover:file:bg-indigo-100 dark:text-gray-400 dark:file:bg-indigo-900/40 dark:file:text-indigo-300 dark:hover:file:bg-indigo-900/60"
-                                    onChange={(e) =>
-                                        setForm((f) => ({
-                                            ...f,
-                                            attachments: e.target.files,
-                                        }))
+                                    disabled={
+                                        form.attachments.length >= MAX_FILES
                                     }
+                                    className="mt-1 block w-full text-sm text-gray-500 file:mr-3 file:rounded-md file:border-0 file:bg-indigo-50 file:px-3 file:py-2 file:text-indigo-700 hover:file:bg-indigo-100 disabled:opacity-50 dark:text-gray-400 dark:file:bg-indigo-900/40 dark:file:text-indigo-300 dark:hover:file:bg-indigo-900/60"
+                                    onChange={(e) => {
+                                        addFiles(e.target.files);
+                                        e.target.value = ''; // reset agar bisa menambah lagi / file sama
+                                    }}
                                 />
+                                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                    Bisa pilih beberapa sekaligus, atau tambah
+                                    satu per satu (menumpuk).
+                                </p>
+
+                                {/* Daftar bukti yang akan diunggah */}
+                                {form.attachments.length > 0 && (
+                                    <ul className="mt-2 space-y-1 text-sm">
+                                        {form.attachments.map((file, i) => (
+                                            <li
+                                                key={`${file.name}-${file.size}-${i}`}
+                                                className="flex items-center justify-between gap-3 rounded-md border border-gray-200 px-3 py-1.5 dark:border-gray-700"
+                                            >
+                                                <span className="min-w-0 truncate text-gray-700 dark:text-gray-200">
+                                                    {file.name}{' '}
+                                                    <span className="text-xs text-gray-400">
+                                                        (
+                                                        {Math.max(
+                                                            1,
+                                                            Math.round(
+                                                                file.size / 1024,
+                                                            ),
+                                                        )}{' '}
+                                                        KB)
+                                                    </span>
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeFile(i)}
+                                                    className="shrink-0 text-red-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                                                >
+                                                    Hapus
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                                {form.attachments.length > 0 && (
+                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        {form.attachments.length}/{MAX_FILES}{' '}
+                                        file dipilih
+                                    </p>
+                                )}
+
                                 <InputError
                                     message={
                                         errors['attachments.0']?.[0] ??
