@@ -66,12 +66,6 @@ const ICONS = {
             <path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" />
         </>,
     ),
-    project: icon(
-        <>
-            <rect x="3" y="7" width="18" height="13" rx="2" />
-            <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18" />
-        </>,
-    ),
     bank: icon(
         <>
             <path d="M3 10 12 4l9 6M4 10v9m16-9v9M4 19h16M8 10v9m4-9v9m4-9v9" />
@@ -87,7 +81,6 @@ function iconFor(href = '') {
     if (h.includes('reimburs')) return ICONS.reimburs;
     if (h.includes('approval') || h.includes('approv')) return ICONS.approval;
     if (h.includes('payment') || h.includes('bayar')) return ICONS.payment;
-    if (h.includes('project')) return ICONS.project;
     if (h.includes('report') || h.includes('laporan')) return ICONS.report;
     if (h.includes('audit') || h.includes('log')) return ICONS.audit;
     if (h.includes('bank')) return ICONS.bank;

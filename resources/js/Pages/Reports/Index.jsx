@@ -24,11 +24,13 @@ export default function Index() {
         date_to: '',
         status: '',
         department_id: '',
+        project_id: '',
         category_id: '',
         q: '',
     });
     const [departments, setDepartments] = useState([]);
     const [categories, setCategories] = useState([]);
+    const [projects, setProjects] = useState([]);
     const [rows, setRows] = useState(null);
     const [meta, setMeta] = useState(null);
     const [summary, setSummary] = useState(null);
@@ -64,6 +66,9 @@ export default function Index() {
             .catch(() => {});
         api.get('/api/options/categories')
             .then((d) => setCategories(d.data))
+            .catch(() => {});
+        api.get('/api/options/projects')
+            .then((d) => setProjects(d.data))
             .catch(() => {});
     }, []);
 
@@ -160,7 +165,7 @@ export default function Index() {
             <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
                 {/* Filter */}
                 <Card className="p-4">
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
                         <div>
                             <InputLabel
                                 value="Dari Tanggal"
@@ -210,6 +215,21 @@ export default function Index() {
                                 {departments.map((d) => (
                                     <option key={d.id} value={d.id}>
                                         {d.name}
+                                    </option>
+                                ))}
+                            </SelectInput>
+                        </div>
+                        <div>
+                            <InputLabel value="Project" className="text-xs" />
+                            <SelectInput
+                                className="mt-1 w-full text-sm"
+                                value={filters.project_id}
+                                onChange={set('project_id')}
+                            >
+                                <option value="">Semua</option>
+                                {projects.map((p) => (
+                                    <option key={p.id} value={p.id}>
+                                        {p.code ? `${p.code} — ${p.name}` : p.name}
                                     </option>
                                 ))}
                             </SelectInput>

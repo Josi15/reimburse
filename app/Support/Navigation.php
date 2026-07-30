@@ -28,8 +28,6 @@ class Navigation
                 'permissions' => ['user.view', 'department.manage', 'category.manage', 'bank.manage', 'project.manage', 'company_account.manage']],
             ['label' => 'Laporan', 'href' => '/reports', 'icon' => 'chart-bar',
                 'permissions' => ['report.view']],
-            ['label' => 'Laporan Project', 'href' => '/project-reports', 'icon' => 'briefcase',
-                'permissions' => ['report.view']],
             ['label' => 'Audit Log', 'href' => '/audit-logs', 'icon' => 'shield-check',
                 'permissions' => ['audit.view']],
         ];

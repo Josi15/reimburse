@@ -59,10 +59,6 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
     Route::get('/reports', fn () => Inertia::render('Reports/Index'))
         ->middleware('permission:report.view')->name('reports.index');
 
-    // Laporan khusus per project (akses cepat dari sidebar)
-    Route::get('/project-reports', fn () => Inertia::render('ProjectReports/Index'))
-        ->middleware('permission:report.view')->name('project-reports.index');
-
     // Activity log (Auditor/Admin)
     Route::get('/audit-logs', fn () => Inertia::render('AuditLogs/Index'))
         ->middleware('permission:audit.view')->name('audit-logs.index');
