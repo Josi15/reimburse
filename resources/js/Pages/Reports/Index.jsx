@@ -1,4 +1,7 @@
+import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
+import Modal from '@/Components/Modal';
+import PrimaryButton from '@/Components/PrimaryButton';
 import { StatusCell } from '@/Components/ReimbursementRow';
 import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
@@ -10,13 +13,17 @@ import SelectInput from '@/Components/ui/SelectInput';
 import { TableSkeleton } from '@/Components/ui/Skeleton';
 import StatCard from '@/Components/ui/StatCard';
 import { Table, TBody, TD, TH, THead, TR } from '@/Components/ui/Table';
+import useAuth from '@/hooks/useAuth';
 import useDebouncedValue from '@/hooks/useDebouncedValue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { api, handleApiError } from '@/lib/api';
 import { formatDate, rupiah } from '@/lib/format';
 import { REIMBURSEMENT_STATUSES } from '@/lib/statuses';
+import { toast } from '@/lib/toast';
 import { Head } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
+
+const today = () => new Date().toISOString().slice(0, 10);
 
 export default function Index() {
     const [filters, setFilters] = useState({
@@ -45,6 +52,19 @@ export default function Index() {
     const [accountRows, setAccountRows] = useState(null);
     const [accountLoading, setAccountLoading] = useState(false);
     const [accountError, setAccountError] = useState(null);
+    const [cashflow, setCashflow] = useState(null);
+    const [cashflowLoading, setCashflowLoading] = useState(false);
+    const [cashflowError, setCashflowError] = useState(null);
+    const [depositOpen, setDepositOpen] = useState(false);
+    const [deposit, setDeposit] = useState({
+        company_bank_account_id: '',
+        amount: '',
+        deposited_at: today(),
+        note: '',
+    });
+    const [depositErrors, setDepositErrors] = useState({});
+    const [savingDeposit, setSavingDeposit] = useState(false);
+    const { can } = useAuth();
     const dq = useDebouncedValue(filters.q);
 
     const set = (key) => (e) => {
@@ -143,7 +163,61 @@ export default function Index() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [tab, JSON.stringify({ ...filters, q: dq }), nonce]);
 
+    useEffect(() => {
+        if (tab !== 'cashflow') return;
+        let active = true;
+        setCashflowLoading(true);
+        setCashflowError(null);
+        const params = query(dq);
+        params.delete('page');
+        api.get(`/api/reports/cashflow?${params}`)
+            .then((d) => {
+                if (!active) return;
+                setCashflow(d);
+            })
+            .catch((e) => {
+                if (!active) return;
+                setCashflowError(true);
+                handleApiError(e);
+            })
+            .finally(() => active && setCashflowLoading(false));
+        return () => {
+            active = false;
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [tab, JSON.stringify({ ...filters, q: dq }), nonce]);
+
     const reload = () => setNonce((n) => n + 1);
+
+    const closeDeposit = () => setDepositOpen(false);
+
+    const setDepositField = (key) => (e) =>
+        setDeposit((d) => ({ ...d, [key]: e.target.value }));
+
+    function submitDeposit(e) {
+        e.preventDefault();
+        setSavingDeposit(true);
+        setDepositErrors({});
+        api.post('/api/company-deposits', {
+            company_bank_account_id: deposit.company_bank_account_id,
+            amount: deposit.amount,
+            deposited_at: deposit.deposited_at,
+            note: deposit.note,
+        })
+            .then(() => {
+                toast('Pemasukan dicatat.');
+                setDepositOpen(false);
+                setDeposit({
+                    company_bank_account_id: '',
+                    amount: '',
+                    deposited_at: today(),
+                    note: '',
+                });
+                setNonce((n) => n + 1);
+            })
+            .catch((err) => setDepositErrors(handleApiError(err)))
+            .finally(() => setSavingDeposit(false));
+    }
 
     function exportAs(format) {
         const params = query();
@@ -282,6 +356,9 @@ export default function Index() {
                         ['reimbursements', 'Reimbursement'],
                         ['projects', 'Rekap per Project'],
                         ['company-accounts', 'Rekap per Rekening Perusahaan'],
+                        ...(can('company_account.manage')
+                            ? [['cashflow', 'Arus Kas']]
+                            : []),
                     ].map(([v, l]) => (
                         <button
                             key={v}
@@ -453,7 +530,207 @@ export default function Index() {
                         )}
                     </Card>
                 )}
+
+                {/* Arus Kas */}
+                {tab === 'cashflow' && (
+                    <div className="space-y-4">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {cashflow?.period
+                                    ? `Periode: ${cashflow.period.from} s/d ${cashflow.period.to}`
+                                    : 'Periode: —'}
+                            </p>
+                            <PrimaryButton
+                                type="button"
+                                onClick={() => setDepositOpen(true)}
+                            >
+                                + Catat Pemasukan
+                            </PrimaryButton>
+                        </div>
+
+                        <Card>
+                            {cashflowLoading ? (
+                                <TableSkeleton rows={6} cols={5} />
+                            ) : cashflowError ? (
+                                <ErrorState onRetry={reload} />
+                            ) : (cashflow?.accounts ?? []).length === 0 ? (
+                                <EmptyState title="Belum ada rekening perusahaan" />
+                            ) : (
+                                <Table>
+                                    <THead>
+                                        <TR>
+                                            <TH>Rekening</TH>
+                                            <TH>Saldo Awal</TH>
+                                            <TH>Pemasukan</TH>
+                                            <TH>Pengeluaran</TH>
+                                            <TH>Saldo Akhir</TH>
+                                        </TR>
+                                    </THead>
+                                    <TBody>
+                                        {(cashflow?.accounts ?? []).map((a) => (
+                                            <TR key={a.account_id}>
+                                                <TD className="font-medium">
+                                                    {a.label} · {a.bank_code}{' '}
+                                                    {a.masked_number}
+                                                </TD>
+                                                <TD>
+                                                    {rupiah(a.opening_balance)}
+                                                </TD>
+                                                <TD className="text-green-600 dark:text-green-400">
+                                                    {rupiah(a.pemasukan)}
+                                                </TD>
+                                                <TD className="text-red-600 dark:text-red-400">
+                                                    {rupiah(a.pengeluaran)}
+                                                </TD>
+                                                <TD className="font-semibold">
+                                                    {rupiah(a.ending_balance)}
+                                                </TD>
+                                            </TR>
+                                        ))}
+                                        {cashflow?.totals && (
+                                            <TR className="bg-gray-50 font-semibold dark:bg-gray-900/40">
+                                                <TD>Total</TD>
+                                                <TD>
+                                                    {rupiah(
+                                                        cashflow.totals
+                                                            .opening_balance,
+                                                    )}
+                                                </TD>
+                                                <TD className="text-green-600 dark:text-green-400">
+                                                    {rupiah(
+                                                        cashflow.totals.pemasukan,
+                                                    )}
+                                                </TD>
+                                                <TD className="text-red-600 dark:text-red-400">
+                                                    {rupiah(
+                                                        cashflow.totals
+                                                            .pengeluaran,
+                                                    )}
+                                                </TD>
+                                                <TD>
+                                                    {rupiah(
+                                                        cashflow.totals
+                                                            .ending_balance,
+                                                    )}
+                                                </TD>
+                                            </TR>
+                                        )}
+                                    </TBody>
+                                </Table>
+                            )}
+                        </Card>
+                    </div>
+                )}
             </div>
+
+            {/* Modal Catat Pemasukan */}
+            <Modal show={depositOpen} onClose={closeDeposit} maxWidth="md">
+                <form onSubmit={submitDeposit} className="p-6">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                        Catat Pemasukan
+                    </h3>
+
+                    <div className="mt-4 space-y-4">
+                        <div>
+                            <InputLabel
+                                htmlFor="deposit-account"
+                                value="Rekening Perusahaan"
+                            />
+                            <SelectInput
+                                id="deposit-account"
+                                required
+                                className="mt-1 block w-full"
+                                value={deposit.company_bank_account_id}
+                                onChange={setDepositField(
+                                    'company_bank_account_id',
+                                )}
+                            >
+                                <option value="">— pilih rekening —</option>
+                                {(cashflow?.accounts ?? []).map((a) => (
+                                    <option
+                                        key={a.account_id}
+                                        value={a.account_id}
+                                    >
+                                        {a.label} · {a.bank_code}{' '}
+                                        {a.masked_number}
+                                    </option>
+                                ))}
+                            </SelectInput>
+                            <InputError
+                                message={
+                                    depositErrors.company_bank_account_id?.[0]
+                                }
+                                className="mt-1"
+                            />
+                        </div>
+
+                        <div>
+                            <InputLabel
+                                htmlFor="deposit-amount"
+                                value="Nominal (Rp)"
+                            />
+                            <TextInput
+                                id="deposit-amount"
+                                type="number"
+                                min="1"
+                                required
+                                className="mt-1 block w-full"
+                                value={deposit.amount}
+                                onChange={setDepositField('amount')}
+                            />
+                            <InputError
+                                message={depositErrors.amount?.[0]}
+                                className="mt-1"
+                            />
+                        </div>
+
+                        <div>
+                            <InputLabel
+                                htmlFor="deposit-date"
+                                value="Tanggal"
+                            />
+                            <TextInput
+                                id="deposit-date"
+                                type="date"
+                                required
+                                className="mt-1 block w-full"
+                                value={deposit.deposited_at}
+                                onChange={setDepositField('deposited_at')}
+                            />
+                            <InputError
+                                message={depositErrors.deposited_at?.[0]}
+                                className="mt-1"
+                            />
+                        </div>
+
+                        <div>
+                            <InputLabel
+                                htmlFor="deposit-note"
+                                value="Catatan"
+                            />
+                            <TextInput
+                                id="deposit-note"
+                                className="mt-1 block w-full"
+                                value={deposit.note}
+                                onChange={setDepositField('note')}
+                            />
+                            <InputError
+                                message={depositErrors.note?.[0]}
+                                className="mt-1"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="mt-6 flex justify-end gap-3">
+                        <SecondaryButton type="button" onClick={closeDeposit}>
+                            Batal
+                        </SecondaryButton>
+                        <PrimaryButton type="submit" disabled={savingDeposit}>
+                            {savingDeposit ? 'Menyimpan…' : 'Simpan'}
+                        </PrimaryButton>
+                    </div>
+                </form>
+            </Modal>
         </AuthenticatedLayout>
     );
 }
