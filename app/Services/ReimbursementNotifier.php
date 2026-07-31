@@ -47,7 +47,7 @@ class ReimbursementNotifier
     public function forwardedToFinance(Reimbursement $reimbursement): void
     {
         Notification::send(
-            $this->financeApprovers(),
+            $this->financeApprovers($reimbursement),
             new ReimbursementSubmitted($reimbursement, 'finance'),
         );
     }
@@ -56,7 +56,7 @@ class ReimbursementNotifier
     public function readyForPayment(Reimbursement $reimbursement): void
     {
         Notification::send(
-            $this->paymentProcessors(),
+            $this->excludeOwner($this->paymentProcessors(), $reimbursement),
             new ReimbursementReadyForPayment($reimbursement),
         );
     }
@@ -93,16 +93,35 @@ class ReimbursementNotifier
     {
         $manager = $reimbursement->user?->manager;
 
-        if ($manager && $manager->is_active) {
+        if ($manager && $manager->is_active && $manager->id !== $reimbursement->user_id) {
             return collect([$manager]);
         }
 
-        return User::query()->active()->withRole('manager')->get();
+        return $this->excludeOwner(
+            User::query()->active()->withRole('manager')->get(),
+            $reimbursement,
+        );
     }
 
-    private function financeApprovers(): Collection
+    private function financeApprovers(Reimbursement $reimbursement): Collection
     {
-        return User::query()->active()->withRole('finance')->get();
+        return $this->excludeOwner(
+            User::query()->active()->withRole('finance')->get(),
+            $reimbursement,
+        );
+    }
+
+    /**
+     * Buang pengaju dari daftar penerima.
+     *
+     * Manager & Finance juga boleh mengajukan reimbursement, tapi tidak boleh
+     * memutuskan klaimnya sendiri (lihat ReimbursementPolicy). Mengabari mereka
+     * sebagai approver atas klaim sendiri hanya jadi notifikasi yang tak bisa
+     * ditindaklanjuti — pengaju sudah dapat notifikasi terpisah sebagai pemilik.
+     */
+    private function excludeOwner(Collection $users, Reimbursement $reimbursement): Collection
+    {
+        return $users->reject(fn (User $u) => $u->id === $reimbursement->user_id)->values();
     }
 
     /**

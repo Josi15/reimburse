@@ -56,11 +56,21 @@ class RolePermissionSeeder extends Seeder
 
         $all = array_keys($permissions);
 
+        // Hak dasar "bisa mengajukan reimbursement untuk diri sendiri".
+        // Dipakai semua role operasional; yang membedakan hanya JENIS yang
+        // boleh dipilih (lihat reimbursement.procurement di bawah).
+        $canSubmitClaims = [
+            'reimbursement.view', 'reimbursement.create', 'reimbursement.update',
+            'reimbursement.delete', 'reimbursement.submit',
+            'bankaccount.manage',   // butuh rekening sendiri untuk dibayar
+        ];
+
         // ---- Pemetaan role → [display, permissions, plafon] --------------
         // Plafon (IDR/pengajuan): null = tanpa batas, 0 = tak boleh mengajukan.
         $map = [
             'super_admin' => ['Super Admin', $all, 50_000_000], // akses penuh
             'admin' => ['Admin', [
+                ...$canSubmitClaims,
                 'user.view', 'user.create', 'user.update', 'user.delete',
                 'department.manage', 'category.manage', 'bank.manage', 'project.manage',
                 'company_account.manage',
@@ -68,19 +78,21 @@ class RolePermissionSeeder extends Seeder
                 'report.view', 'report.export', 'audit.view',
                 'reimbursement.procurement',
             ], 25_000_000],
+            // Satu-satunya role yang jenis pengajuannya dibatasi: biaya & lembur.
             'employee' => ['Employee', [
-                'reimbursement.view', 'reimbursement.create', 'reimbursement.update',
-                'reimbursement.delete', 'reimbursement.submit',
-                'bankaccount.manage', 'report.export',
+                ...$canSubmitClaims,
+                'report.export',
             ], 1_500_000],
             'manager' => ['Manager', [
+                ...$canSubmitClaims,
                 'reimbursement.viewAny', 'reimbursement.approve.manager',
-                'bankaccount.manage', 'dashboard.viewAll', 'report.view', 'report.export',
+                'dashboard.viewAll', 'report.view', 'report.export',
                 'reimbursement.procurement',
             ], 5_000_000],
             'finance' => ['Finance', [
+                ...$canSubmitClaims,
                 'reimbursement.viewAny', 'reimbursement.approve.finance',
-                'payment.view', 'payment.process', 'bankaccount.manage',
+                'payment.view', 'payment.process',
                 'company_account.manage',
                 'dashboard.viewAll', 'report.view', 'report.export',
                 'reimbursement.procurement',

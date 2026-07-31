@@ -10,6 +10,11 @@ use App\Models\User;
 /**
  * Otorisasi reimbursement: gabungan permission (RBAC) + kepemilikan + status
  * (state machine). Super Admin di-bypass oleh Gate::before.
+ *
+ * Pemisahan tugas: setiap role boleh mengajukan reimbursement untuk dirinya
+ * sendiri, termasuk Manager dan Finance. Karena itu approver DILARANG
+ * memutuskan pengajuannya sendiri — klaim mereka harus dinilai approver lain
+ * di tingkat yang sama.
  */
 class ReimbursementPolicy
 {
@@ -55,6 +60,7 @@ class ReimbursementPolicy
     public function approveManager(User $user, Reimbursement $reimbursement): bool
     {
         return $user->hasPermission('reimbursement.approve.manager')
+            && ! $this->owns($user, $reimbursement)
             && $reimbursement->status->approvalLevel() === ApprovalLevel::Manager;
     }
 
@@ -62,6 +68,7 @@ class ReimbursementPolicy
     public function approveFinance(User $user, Reimbursement $reimbursement): bool
     {
         return $user->hasPermission('reimbursement.approve.finance')
+            && ! $this->owns($user, $reimbursement)
             && $reimbursement->status->approvalLevel() === ApprovalLevel::Finance;
     }
 

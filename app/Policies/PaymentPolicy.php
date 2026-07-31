@@ -32,8 +32,17 @@ class PaymentPolicy
             return false;
         }
 
-        return $reimbursement === null
-            || $reimbursement->status === ReimbursementStatus::FinanceApproved;
+        if ($reimbursement === null) {
+            return true;
+        }
+
+        // Pemisahan tugas: staf Finance boleh mengajukan reimbursement, tetapi
+        // tidak boleh mencairkan dana untuk klaimnya sendiri.
+        if ($reimbursement->user_id === $user->id) {
+            return false;
+        }
+
+        return $reimbursement->status === ReimbursementStatus::FinanceApproved;
     }
 
     /**
