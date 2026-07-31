@@ -303,7 +303,9 @@ export default function Index() {
                                 <option value="">Semua</option>
                                 {projects.map((p) => (
                                     <option key={p.id} value={p.id}>
-                                        {p.code ? `${p.code} — ${p.name}` : p.name}
+                                        {p.code
+                                            ? `${p.code} — ${p.name}`
+                                            : p.name}
                                     </option>
                                 ))}
                             </SelectInput>
@@ -410,49 +412,55 @@ export default function Index() {
 
                 {/* Tabel reimbursement */}
                 {tab === 'reimbursements' && (
-                <Card>
-                    {loading ? (
-                        <TableSkeleton rows={6} cols={8} />
-                    ) : error ? (
-                        <ErrorState onRetry={reload} />
-                    ) : rows?.length === 0 ? (
-                        <EmptyState title="Tidak ada data untuk filter ini" />
-                    ) : (
-                        <>
-                            <Table>
-                                <THead>
-                                    <TR>
-                                        <TH>Nomor</TH>
-                                        <TH>Judul</TH>
-                                        <TH>Pengaju</TH>
-                                        <TH>Department</TH>
-                                        <TH>Kategori</TH>
-                                        <TH>Nominal</TH>
-                                        <TH>Status</TH>
-                                        <TH>Tanggal</TH>
-                                    </TR>
-                                </THead>
-                                <TBody>
-                                    {(rows ?? []).map((r) => (
-                                        <TR key={r.id}>
-                                            <TD className="font-medium">
-                                                {r.reimbursement_number}
-                                            </TD>
-                                            <TD>{r.title}</TD>
-                                            <TD>{r.user?.name ?? '-'}</TD>
-                                            <TD>{r.department?.name ?? '-'}</TD>
-                                            <TD>{r.category?.name ?? '-'}</TD>
-                                            <TD>{r.formatted_amount}</TD>
-                                            <StatusCell status={r.status} />
-                                            <TD>{formatDate(r.created_at)}</TD>
+                    <Card>
+                        {loading ? (
+                            <TableSkeleton rows={6} cols={8} />
+                        ) : error ? (
+                            <ErrorState onRetry={reload} />
+                        ) : rows?.length === 0 ? (
+                            <EmptyState title="Tidak ada data untuk filter ini" />
+                        ) : (
+                            <>
+                                <Table>
+                                    <THead>
+                                        <TR>
+                                            <TH>Nomor</TH>
+                                            <TH>Judul</TH>
+                                            <TH>Pengaju</TH>
+                                            <TH>Department</TH>
+                                            <TH>Kategori</TH>
+                                            <TH>Nominal</TH>
+                                            <TH>Status</TH>
+                                            <TH>Tanggal</TH>
                                         </TR>
-                                    ))}
-                                </TBody>
-                            </Table>
-                            <Pagination meta={meta} onPage={setPage} />
-                        </>
-                    )}
-                </Card>
+                                    </THead>
+                                    <TBody>
+                                        {(rows ?? []).map((r) => (
+                                            <TR key={r.id}>
+                                                <TD className="font-medium">
+                                                    {r.reimbursement_number}
+                                                </TD>
+                                                <TD>{r.title}</TD>
+                                                <TD>{r.user?.name ?? '-'}</TD>
+                                                <TD>
+                                                    {r.department?.name ?? '-'}
+                                                </TD>
+                                                <TD>
+                                                    {r.category?.name ?? '-'}
+                                                </TD>
+                                                <TD>{r.formatted_amount}</TD>
+                                                <StatusCell status={r.status} />
+                                                <TD>
+                                                    {formatDate(r.created_at)}
+                                                </TD>
+                                            </TR>
+                                        ))}
+                                    </TBody>
+                                </Table>
+                                <Pagination meta={meta} onPage={setPage} />
+                            </>
+                        )}
+                    </Card>
                 )}
 
                 {/* Rekap per Project */}
@@ -598,7 +606,8 @@ export default function Index() {
                                                 </TD>
                                                 <TD className="text-green-600 dark:text-green-400">
                                                     {rupiah(
-                                                        cashflow.totals.pemasukan,
+                                                        cashflow.totals
+                                                            .pemasukan,
                                                     )}
                                                 </TD>
                                                 <TD className="text-red-600 dark:text-red-400">

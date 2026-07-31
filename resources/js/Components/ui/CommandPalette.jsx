@@ -134,11 +134,12 @@ export default function CommandPalette() {
                                     </ComboboxOptions>
                                 )}
 
-                                {query.trim() !== '' && filtered.length === 0 && (
-                                    <div className="border-t border-gray-100 px-6 py-10 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
-                                        Tidak ada hasil
-                                    </div>
-                                )}
+                                {query.trim() !== '' &&
+                                    filtered.length === 0 && (
+                                        <div className="border-t border-gray-100 px-6 py-10 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                                            Tidak ada hasil
+                                        </div>
+                                    )}
                             </Combobox>
 
                             <div className="flex items-center justify-end gap-1 border-t border-gray-100 px-4 py-2 text-[11px] text-gray-400 dark:border-gray-700">

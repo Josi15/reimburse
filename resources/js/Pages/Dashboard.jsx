@@ -38,7 +38,11 @@ const PENDING_LABELS = {
 /** Singkat nominal rupiah: 12500000 -> "12,5jt", 1500 -> "1,5rb". */
 function abbrevRupiah(value) {
     const n = Number(value ?? 0);
-    const fmt = (x) => x.toFixed(1).replace(/[.,]0$/, '').replace('.', ',');
+    const fmt = (x) =>
+        x
+            .toFixed(1)
+            .replace(/[.,]0$/, '')
+            .replace('.', ',');
     if (n >= 1_000_000_000) return fmt(n / 1_000_000_000) + 'M';
     if (n >= 1_000_000) return fmt(n / 1_000_000) + 'jt';
     if (n >= 1_000) return fmt(n / 1_000) + 'rb';
@@ -85,7 +89,9 @@ function MonthlyChart({ data }) {
                                     <div
                                         role="tooltip"
                                         className="absolute left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-[10px] font-medium text-white shadow-lg dark:bg-gray-700"
-                                        style={{ bottom: `calc(${pct}% + 6px)` }}
+                                        style={{
+                                            bottom: `calc(${pct}% + 6px)`,
+                                        }}
                                     >
                                         {label}
                                     </div>

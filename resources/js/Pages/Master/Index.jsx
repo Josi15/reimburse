@@ -602,7 +602,7 @@ function RolesSection() {
                     </div>
                     <div className="mt-4">
                         <InputLabel value="Permissions" />
-                        <div className="mt-2 grid max-h-64 grid-cols-2 gap-1 overflow-y-auto rounded-md border border-gray-200 p-3 text-sm sm:grid-cols-3 dark:border-gray-700">
+                        <div className="mt-2 grid max-h-64 grid-cols-2 gap-1 overflow-y-auto rounded-md border border-gray-200 p-3 text-sm dark:border-gray-700 sm:grid-cols-3">
                             {permissions.map((p) => (
                                 <label
                                     key={p.id}
@@ -951,7 +951,8 @@ export default function Index() {
                         ]}
                         transform={(f) => ({
                             ...f,
-                            bank_id: f.bank_id === '' ? null : Number(f.bank_id),
+                            bank_id:
+                                f.bank_id === '' ? null : Number(f.bank_id),
                         })}
                     />
                 )}

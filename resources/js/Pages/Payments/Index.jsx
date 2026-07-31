@@ -199,7 +199,9 @@ export default function Index() {
                                                         <TD className="font-medium">
                                                             {p.payment_number}
                                                         </TD>
-                                                        <TD>{p.method.label}</TD>
+                                                        <TD>
+                                                            {p.method.label}
+                                                        </TD>
                                                         <TD>
                                                             {p.bank_account
                                                                 ? `${p.bank_account.bank?.code ?? ''} · ${p.bank_account.masked_number}`
@@ -229,8 +231,8 @@ export default function Index() {
                                                             )}
                                                         </TD>
                                                         <TD>
-                                                            {p.processor?.name ??
-                                                                '-'}
+                                                            {p.processor
+                                                                ?.name ?? '-'}
                                                         </TD>
                                                     </TR>
                                                 ))}
@@ -245,7 +247,9 @@ export default function Index() {
                                                     <span className="font-medium text-gray-800 dark:text-gray-200">
                                                         {p.payment_number}
                                                     </span>
-                                                    <Badge color={p.status.color}>
+                                                    <Badge
+                                                        color={p.status.color}
+                                                    >
                                                         {p.status.label}
                                                     </Badge>
                                                 </div>
@@ -254,8 +258,12 @@ export default function Index() {
                                                 </p>
                                                 <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                                     {p.method.label} ·{' '}
-                                                    {p.reference_number ?? '-'} ·{' '}
-                                                    {formatDate(p.paid_at, true)}
+                                                    {p.reference_number ?? '-'}{' '}
+                                                    ·{' '}
+                                                    {formatDate(
+                                                        p.paid_at,
+                                                        true,
+                                                    )}
                                                 </p>
                                             </MobileListItem>
                                         ))}
