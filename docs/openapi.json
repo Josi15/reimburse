@@ -2883,6 +2883,7 @@
         "/options/claim-types": {
             "get": {
                 "operationId": "options.claimTypes",
+                "description": "Disaring per user: Employee hanya menerima biaya & lembur, sedangkan\npengadaan barang/layanan butuh permission reimbursement.procurement.",
                 "summary": "Jenis pengajuan + definisi field tambahannya (form dinamis di frontend).\nSumbernya enum ClaimType, jadi tidak perlu cache/DB",
                 "tags": [
                     "Options"
@@ -7860,8 +7861,6 @@
                         "type": "string",
                         "enum": [
                             "expense",
-                            "goods",
-                            "service",
                             "overtime"
                         ]
                     },
@@ -7952,8 +7951,6 @@
                         "type": "string",
                         "enum": [
                             "expense",
-                            "goods",
-                            "service",
                             "overtime"
                         ]
                     },

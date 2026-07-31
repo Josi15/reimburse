@@ -2,6 +2,8 @@
 
 namespace App\Enums;
 
+use App\Models\User;
+
 /**
  * Jenis pengajuan. Selain reimbursement biaya (uang sudah keluar duluan),
  * sistem juga menerima permintaan dana untuk pengadaan barang, penambahan
@@ -57,6 +59,43 @@ enum ClaimType: string
             self::Service => 'blue',
             self::Overtime => 'amber',
         };
+    }
+
+    /** Permission yang harus dimiliki untuk memakai jenis ini; null = bebas. */
+    public function requiredPermission(): ?string
+    {
+        return match ($this) {
+            // Biaya & lembur: semua pengaju (termasuk Employee).
+            self::Expense, self::Overtime => null,
+            // Pengadaan barang/layanan: hanya pemegang reimbursement.procurement.
+            self::Goods, self::Service => 'reimbursement.procurement',
+        };
+    }
+
+    public function allowedFor(?User $user): bool
+    {
+        $permission = $this->requiredPermission();
+
+        if ($permission === null) {
+            return true;
+        }
+
+        return (bool) $user?->hasPermission($permission);
+    }
+
+    /**
+     * Jenis pengajuan yang boleh dipakai user ini. Dipakai untuk menyusun
+     * pilihan di form sekaligus daftar nilai yang sah saat validasi, agar
+     * tampilan dan aturan tidak pernah berbeda.
+     *
+     * @return array<int, self>
+     */
+    public static function casesFor(?User $user): array
+    {
+        return array_values(array_filter(
+            self::cases(),
+            fn (self $type) => $type->allowedFor($user),
+        ));
     }
 
     /**
@@ -240,9 +279,13 @@ enum ClaimType: string
         ];
     }
 
-    /** @return array<int, array<string, mixed>> */
-    public static function options(): array
+    /**
+     * Opsi form, hanya berisi jenis yang boleh dipakai user tersebut.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public static function options(?User $user = null): array
     {
-        return array_map(fn (self $type) => $type->toOption(), self::cases());
+        return array_map(fn (self $type) => $type->toOption(), self::casesFor($user));
     }
 }

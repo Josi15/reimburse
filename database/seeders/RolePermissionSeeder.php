@@ -33,6 +33,9 @@ class RolePermissionSeeder extends Seeder
             'reimbursement.update' => 'Ubah Reimbursement',
             'reimbursement.delete' => 'Hapus Draft Reimbursement',
             'reimbursement.submit' => 'Submit Reimbursement',
+            // Employee hanya boleh mengajukan biaya & lembur; pengadaan barang
+            // dan layanan/server butuh permission tambahan ini.
+            'reimbursement.procurement' => 'Ajukan Pengadaan Barang & Layanan',
             'reimbursement.approve.manager' => 'Approve/Reject (Manager)',
             'reimbursement.approve.finance' => 'Approve/Reject (Finance)',
             'payment.view' => 'Lihat Pembayaran',
@@ -63,6 +66,7 @@ class RolePermissionSeeder extends Seeder
                 'company_account.manage',
                 'reimbursement.viewAny', 'dashboard.viewAll',
                 'report.view', 'report.export', 'audit.view',
+                'reimbursement.procurement',
             ], 25_000_000],
             'employee' => ['Employee', [
                 'reimbursement.view', 'reimbursement.create', 'reimbursement.update',
@@ -72,12 +76,14 @@ class RolePermissionSeeder extends Seeder
             'manager' => ['Manager', [
                 'reimbursement.viewAny', 'reimbursement.approve.manager',
                 'bankaccount.manage', 'dashboard.viewAll', 'report.view', 'report.export',
+                'reimbursement.procurement',
             ], 5_000_000],
             'finance' => ['Finance', [
                 'reimbursement.viewAny', 'reimbursement.approve.finance',
                 'payment.view', 'payment.process', 'bankaccount.manage',
                 'company_account.manage',
                 'dashboard.viewAll', 'report.view', 'report.export',
+                'reimbursement.procurement',
             ], 10_000_000],
             'auditor' => ['Auditor', [ // read-only penuh, tak mengajukan
                 'reimbursement.viewAny', 'payment.view', 'dashboard.viewAll',

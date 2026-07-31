@@ -12,14 +12,29 @@ beforeEach(function () {
 
     // Fokus tes ini pada jenis pengajuan, bukan plafon bulanan jabatan —
     // (nominal barang/server memang besar). Plafon diuji terpisah.
-    Role::where('name', 'employee')->update(['reimbursement_limit' => null]);
+    Role::query()->update(['reimbursement_limit' => null]);
 
     $this->employee = employeeUser();
     $this->category = Category::factory()->create(['max_amount' => null]);
+
+    // Pengaju yang berhak mengajukan pengadaan: punya reimbursement.create
+    // (dari role employee) sekaligus reimbursement.procurement (dari manager).
+    $this->buyer = employeeUser();
+    $this->buyer->roles()->attach(Role::where('name', 'manager')->firstOrFail());
+    $this->buyer = $this->buyer->fresh();
+
     Sanctum::actingAs($this->employee);
 });
 
+/** Bertindak sebagai pengaju yang boleh memakai jenis pengadaan. */
+function actAsBuyer(): void
+{
+    Sanctum::actingAs(test()->buyer);
+}
+
 test('the claim type catalogue exposes every type with its input fields', function () {
+    Sanctum::actingAs(userWithRole('super_admin'));
+
     $response = $this->getJson('/api/options/claim-types')->assertOk();
 
     expect($response->json('data.*.value'))
@@ -31,7 +46,73 @@ test('the claim type catalogue exposes every type with its input fields', functi
         ->and(array_column($goods['fields'], 'key'))->toContain('item_name', 'quantity', 'unit_price');
 });
 
+// ---- Pembatasan jenis per role -------------------------------------------
+
+test('an employee is only offered expense and overtime', function () {
+    $response = $this->getJson('/api/options/claim-types')->assertOk();
+
+    expect($response->json('data.*.value'))->toBe(['expense', 'overtime']);
+});
+
+test('roles holding the procurement permission are offered all four', function () {
+    foreach (['manager', 'finance', 'admin'] as $role) {
+        Sanctum::actingAs(userWithRole($role));
+
+        expect($this->getJson('/api/options/claim-types')->json('data.*.value'))
+            ->toBe(['expense', 'goods', 'service', 'overtime'], "role {$role}");
+    }
+});
+
+test('an employee submitting a goods claim through the API is rejected', function () {
+    $response = $this->postJson('/api/reimbursements', [
+        'claim_type' => 'goods',
+        'category_id' => $this->category->id,
+        'title' => 'Beli server',
+        'reason' => 'Kapasitas penuh',
+        'details' => ['item_name' => 'Server', 'quantity' => 1, 'unit_price' => 1_000_000, 'urgency' => 'normal'],
+    ])->assertStatus(422)->assertJsonValidationErrors('claim_type');
+
+    // Pesannya menyebut jenis yang memang boleh dipakai.
+    expect($response->json('errors.claim_type.0'))
+        ->toContain('Reimbursement Biaya')
+        ->toContain('Lembur');
+});
+
+test('an employee submitting a service claim through the API is rejected', function () {
+    $this->postJson('/api/reimbursements', [
+        'claim_type' => 'service',
+        'category_id' => $this->category->id,
+        'title' => 'Perpanjangan VPS',
+        'reason' => 'Masa aktif habis',
+        'details' => ['service_name' => 'VPS', 'billing_cycle' => 'monthly', 'quantity' => 1, 'unit_price' => 500_000],
+    ])->assertStatus(422)->assertJsonValidationErrors('claim_type');
+});
+
+test('an employee can still submit expense and overtime claims', function () {
+    $this->postJson('/api/reimbursements', [
+        'category_id' => $this->category->id,
+        'title' => 'Taksi ke klien',
+        'reason' => 'Meeting',
+        'amount' => 150_000,
+    ])->assertCreated();
+
+    $this->postJson('/api/reimbursements', [
+        'claim_type' => 'overtime',
+        'category_id' => $this->category->id,
+        'title' => 'Lembur rilis',
+        'reason' => 'Deploy malam',
+        'details' => [
+            'overtime_date' => now()->subDay()->toDateString(),
+            'start_time' => '19:00', 'end_time' => '21:00',
+            'hours' => 2, 'hourly_rate' => 50_000,
+            'work_description' => 'Deploy',
+        ],
+    ])->assertCreated();
+});
+
 test('a goods request stores its details and derives the amount', function () {
+    actAsBuyer();
+
     $response = $this->postJson('/api/reimbursements', [
         'claim_type' => 'goods',
         'category_id' => $this->category->id,
@@ -78,6 +159,8 @@ test('an overtime request derives the amount from hours times rate', function ()
 });
 
 test('required detail fields of the chosen type are enforced', function () {
+    actAsBuyer();
+
     $this->postJson('/api/reimbursements', [
         'claim_type' => 'goods',
         'category_id' => $this->category->id,
@@ -91,6 +174,8 @@ test('required detail fields of the chosen type are enforced', function () {
 });
 
 test('unknown detail keys are dropped instead of stored', function () {
+    actAsBuyer();
+
     $response = $this->postJson('/api/reimbursements', [
         'claim_type' => 'service',
         'category_id' => $this->category->id,

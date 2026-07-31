@@ -12,6 +12,7 @@ use App\Models\Permission;
 use App\Models\Project;
 use App\Models\Role;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -35,10 +36,13 @@ class OptionsController extends Controller
     /**
      * Jenis pengajuan + definisi field tambahannya (form dinamis di frontend).
      * Sumbernya enum ClaimType, jadi tidak perlu cache/DB.
+     *
+     * Disaring per user: Employee hanya menerima biaya & lembur, sedangkan
+     * pengadaan barang/layanan butuh permission reimbursement.procurement.
      */
-    public function claimTypes(): JsonResponse
+    public function claimTypes(Request $request): JsonResponse
     {
-        return response()->json(['data' => ClaimType::options()]);
+        return response()->json(['data' => ClaimType::options($request->user())]);
     }
 
     public function departments(): JsonResponse
