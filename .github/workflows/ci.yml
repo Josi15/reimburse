@@ -1,5 +1,5 @@
 # =========================================================================
-# CI/CD — Reimbursement Management System (Phase 22, dari outline Phase 3)
+# CI/CD — FundBack (Phase 22, dari outline Phase 3)
 # Tahap: lint -> audit -> build asset -> test (PostgreSQL) -> build image.
 # Catatan: asset dibangun SEBELUM test karena feature test merender halaman
 # Inertia yang membutuhkan manifest Vite.

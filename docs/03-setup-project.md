@@ -393,21 +393,21 @@ Herd menyajikan project di domain `.test` lewat nginx + PHP-nya sendiri (mesin i
 
 ```powershell
 # dari root project
-herd link reimburse           # → http://reimburse.test (Herd meng-update APP_URL)
+herd link fundback           # → http://fundback.test (Herd meng-update APP_URL)
 herd php artisan migrate --seed
 npm run build                 # asset produksi disajikan Herd (tanpa Vite dev server)
 ```
 
 **Wajib untuk Sanctum SPA** (auth berbasis cookie di `.test`): pastikan `.env` memuat domain Herd di daftar stateful, jika tidak, panggilan `/api/*` dari React akan 401.
 ```env
-APP_URL=http://reimburse.test
-SANCTUM_STATEFUL_DOMAINS=reimburse.test,localhost,localhost:5173,127.0.0.1,127.0.0.1:8000
+APP_URL=http://fundback.test
+SANCTUM_STATEFUL_DOMAINS=fundback.test,localhost,localhost:5173,127.0.0.1,127.0.0.1:8000
 ```
-Lalu `php artisan config:clear`. Buka `http://reimburse.test` dan login.
+Lalu `php artisan config:clear`. Buka `http://fundback.test` dan login.
 
 Catatan:
 - **HMR (Vite dev)**: untuk `npm run dev` di domain `.test`, jalankan dengan `--host`; cara paling sederhana saat demo adalah `npm run build` lalu Herd menyajikan asset statis.
-- **HTTPS**: `herd secure reimburse` → `https://reimburse.test`; jika diaktifkan, ubah `APP_URL` ke `https://…` dan set `SESSION_SECURE_COOKIE=true`.
+- **HTTPS**: `herd secure fundback` → `https://fundback.test`; jika diaktifkan, ubah `APP_URL` ke `https://…` dan set `SESSION_SECURE_COOKIE=true`.
 - **502 pada request pertama**: umum saat php-fpm cold-start setelah `config:clear`; request berikutnya normal.
 
 ## 13. Verifikasi Setup

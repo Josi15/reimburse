@@ -24,14 +24,14 @@ class UserSeeder extends Seeder
         $bca = Bank::where('code', 'BCA')->first();
 
         // Buat manager lebih dulu agar bisa jadi atasan employee.
-        $manager = $this->makeUser('Budi Manager', 'manager@rms.test', 'manager', $it?->id);
+        $manager = $this->makeUser('Budi Manager', 'manager@fundback.test', 'manager', $it?->id);
 
         $definitions = [
-            ['Super Admin', 'super@rms.test', 'super_admin', $it?->id, null],
-            ['Andi Admin', 'admin@rms.test', 'admin', $it?->id, null],
-            ['Citra Employee', 'employee@rms.test', 'employee', $it?->id, $manager->id],
-            ['Dewi Finance', 'finance@rms.test', 'finance', $fin?->id, null],
-            ['Eka Auditor', 'auditor@rms.test', 'auditor', $fin?->id, null],
+            ['Super Admin', 'super@fundback.test', 'super_admin', $it?->id, null],
+            ['Andi Admin', 'admin@fundback.test', 'admin', $it?->id, null],
+            ['Citra Employee', 'employee@fundback.test', 'employee', $it?->id, $manager->id],
+            ['Dewi Finance', 'finance@fundback.test', 'finance', $fin?->id, null],
+            ['Eka Auditor', 'auditor@fundback.test', 'auditor', $fin?->id, null],
         ];
 
         foreach ($definitions as [$name, $email, $roleSlug, $deptId, $managerId]) {

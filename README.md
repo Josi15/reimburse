@@ -1,19 +1,20 @@
-# Reimbursement Management System
+# FundBack — Reimbursement Management System
 
-Aplikasi manajemen reimbursement modern: pengajuan → persetujuan berjenjang (Manager → Finance) → pembayaran — lengkap dengan RBAC 6 role, notifikasi multi-channel, audit trail, laporan + export, dan REST API terdokumentasi.
+Aplikasi pengajuan & pencairan dana modern: pengajuan → persetujuan berjenjang (Manager → Finance) → pembayaran — lengkap dengan RBAC 6 role, notifikasi multi-channel, audit trail, laporan + export, dan REST API terdokumentasi.
 
 **Stack:** Laravel 12 · React (Inertia + Breeze) · Vite · Tailwind CSS · PostgreSQL · Sanctum
 
 ## Fitur Utama
 
 - **Reimbursement lifecycle** dengan state machine eksplisit: `draft → submitted → manager_approved → finance_approved → paid` (+ reject & revisi/resubmit)
-- **RBAC penuh** — Super Admin, Admin, Employee, Manager, Finance, Auditor; menu & aksi dinamis per role
+- **4 jenis pengajuan** dengan form yang menyesuaikan sendiri — Reimbursement Biaya, Pengadaan Barang, Layanan/Server, dan Lembur. Nominal barang/layanan/lembur dihitung server dari detailnya (jumlah × harga satuan, jam × upah). Definisi field tunggal ada di `app/Enums/ClaimType.php`; menambah jenis atau kolom isian cukup di file itu — API `/api/options/claim-types` dan form React ikut otomatis
+- **RBAC penuh** — Super Admin, Admin, Employee, Manager, Finance, Auditor; menu & aksi dinamis per role, label role tampil di sidebar
 - **Payment management** — master bank, rekening karyawan (satu rekening utama), pembayaran race-safe (`lockForUpdate` + partial unique index anti double-pay), bukti transfer
-- **Notifikasi** in-app + email (queue) pada submit/approve/reject/revisi/paid
+- **Notifikasi rantai penuh** — pengaju dapat tanda terima saat mengirim, dikabari tiap keputusan, sampai dana cair; approver Manager → Finance → petugas pembayaran dikabari saat gilirannya tiba (lihat `ReimbursementNotifier`)
 - **Audit log generik** — login/logout/CRUD/approve/reject/payment dengan old/new data, IP, browser; read-only untuk Auditor
 - **Laporan & export** PDF/Excel/CSV, global search, dashboard analitik per role
 - **File management** terpusat — multi-upload, preview, download, replace, deep MIME check
-- **API docs** OpenAPI 3.1 auto-generated di `/docs/api` (49 endpoint)
+- **API docs** OpenAPI 3.1 auto-generated di `/docs/api` (92 endpoint)
 
 ## Quickstart (Development)
 
@@ -24,15 +25,20 @@ php artisan key:generate
 php artisan migrate --seed         # role, permission, master data, akun demo
 npm run dev                        # terminal 1 — Vite
 php artisan serve                  # terminal 2 — http://127.0.0.1:8000
-php artisan queue:work             # terminal 3 — email notifikasi
+php artisan queue:work             # terminal 3 — OPSIONAL, hanya untuk email
 ```
 
-**Akun demo** (password: `password`): `super@rms.test`, `admin@rms.test`, `manager@rms.test`, `employee@rms.test`, `finance@rms.test`, `auditor@rms.test`
+> **Notifikasi in-app tidak butuh queue worker.** Channel `database` dijalankan
+> pada koneksi `sync` (lihat `App\Notifications\Concerns\DeliversInAppImmediately`),
+> jadi lonceng notifikasi langsung terisi begitu aksi dilakukan. Hanya channel
+> `mail` yang mengantre — jalankan `queue:work` bila ingin email ikut terkirim.
+
+**Akun demo** (password: `password`): `super@fundback.test`, `admin@fundback.test`, `manager@fundback.test`, `employee@fundback.test`, `finance@fundback.test`, `auditor@fundback.test`
 
 ## Test
 
 ```bash
-php artisan test        # 159 test / 483 assertion (butuh DB reimbursement_testing)
+php artisan test        # 196 test / 617 assertion (butuh DB reimbursement_testing)
 ./vendor/bin/pint       # code style
 ```
 

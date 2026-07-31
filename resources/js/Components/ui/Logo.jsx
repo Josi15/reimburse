@@ -1,8 +1,8 @@
 import { cn } from '@/lib/format';
 
 /**
- * Wordmark RMS (Reimbursement Management System).
- * Ikon rounded-square brand + glyph receipt/checkmark, teks "RMS".
+ * Wordmark FundBack — aplikasi pengajuan & penggantian dana.
+ * Ikon rounded-square brand + glyph receipt/checkmark, teks "FundBack".
  */
 export default function Logo({ className = '', showText = true }) {
     return (
@@ -26,7 +26,10 @@ export default function Logo({ className = '', showText = true }) {
             {showText && (
                 <span className="flex flex-col leading-none">
                     <span className="text-lg font-bold tracking-tight text-gray-900 dark:text-gray-100">
-                        RMS
+                        Fund
+                        <span className="text-brand-600 dark:text-brand-400">
+                            Back
+                        </span>
                     </span>
                     <span className="text-[10px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
                         Reimbursement

@@ -1,5 +1,5 @@
 # =========================================================================
-# Reimbursement Management System — single-host production stack (Phase 22)
+# FundBack — single-host production stack (Phase 22)
 # Jalankan dari root repo di server: docker compose up -d --build
 # Langkah pasca-boot (sekali): lihat docs/22-deployment.md
 # =========================================================================
