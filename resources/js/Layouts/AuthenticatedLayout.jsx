@@ -1,5 +1,6 @@
 import CommandPalette from '@/Components/ui/CommandPalette';
 import NotificationBell from '@/Components/ui/NotificationBell';
+import RoleBadge from '@/Components/ui/RoleBadge';
 import Sidebar from '@/Components/ui/Sidebar';
 import ThemeToggle from '@/Components/ui/ThemeToggle';
 import Toaster from '@/Components/ui/Toaster';
@@ -107,13 +108,24 @@ export default function AuthenticatedLayout({ header, children }) {
                             </svg>
                         </button>
 
-                        <Link href="/" className="lg:hidden" aria-label="Beranda">
+                        <Link
+                            href="/"
+                            className="lg:hidden"
+                            aria-label="Beranda"
+                        >
                             <Logo showText={false} />
                         </Link>
 
                         <div className="min-w-0 flex-1">{header}</div>
 
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-2">
+                            {/* Label role: di mobile sidebar tersembunyi, jadi
+                                identitas role tetap terlihat dari header. */}
+                            <RoleBadge
+                                role={user.role}
+                                label={user.role_label}
+                                className="hidden sm:inline-flex lg:hidden"
+                            />
                             <ThemeToggle className="lg:hidden" />
                             <NotificationBell />
                         </div>

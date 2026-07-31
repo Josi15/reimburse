@@ -1,5 +1,6 @@
 import Dropdown from '@/Components/Dropdown';
 import Logo from '@/Components/ui/Logo';
+import RoleBadge from '@/Components/ui/RoleBadge';
 import ThemeToggle from '@/Components/ui/ThemeToggle';
 import { Link } from '@inertiajs/react';
 
@@ -167,6 +168,11 @@ export default function Sidebar({ navigation, user, isActive, onNavigate }) {
                         <div className="truncate text-xs text-gray-500 dark:text-gray-400">
                             {user.email}
                         </div>
+                        <RoleBadge
+                            role={user.role}
+                            label={user.role_label}
+                            className="mt-1.5"
+                        />
                     </div>
                     <ThemeToggle />
                     <Dropdown>

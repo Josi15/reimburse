@@ -45,6 +45,11 @@ class HandleInertiaRequests extends Middleware
                     'email' => $user->email,
                     'email_verified_at' => $user->email_verified_at,
                     'roles' => $user->roles->pluck('name'),
+                    // Role utama (untuk label identitas di UI). Diambil dari
+                    // display_name agar sumber teksnya tetap master data role.
+                    'role' => $user->roles->pluck('name')->first(),
+                    'role_label' => $user->roles->pluck('display_name')->first()
+                        ?? $user->roles->pluck('name')->first(),
                     'permissions' => $user->roles->flatMap->permissions->pluck('name')->unique()->values(),
                     'reimbursement_limit' => $user->reimbursementLimit(),
                 ] : null,
