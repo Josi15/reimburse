@@ -110,11 +110,13 @@ class ApprovalService
             return $locked->refresh();
         });
 
-        // Notifikasi dikirim setelah commit.
+        // Notifikasi dikirim setelah commit: pertama balik ke pengaju...
         $this->notifier->actioned($reimbursement, $level, $action, $notes);
 
-        if ($action === ApprovalAction::Approved && $target === ReimbursementStatus::ManagerApproved) {
-            $this->notifier->forwardedToFinance($reimbursement);
+        // ...lalu diteruskan ke pihak yang harus bertindak berikutnya
+        // (Finance setelah Manager, petugas bayar setelah Finance).
+        if ($action === ApprovalAction::Approved) {
+            $this->notifier->advancedTo($reimbursement, $target);
         }
 
         return $reimbursement;

@@ -10,17 +10,15 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
- * Dikirim ke approver (Manager atau Finance) ketika sebuah reimbursement
- * memasuki tahap yang menunggu persetujuannya. Email diproses lewat Queue.
+ * Dikirim ke petugas pembayaran (pemegang permission payment.process) setelah
+ * Finance menyetujui: pengajuan siap dibayarkan. Tanpa ini, mata rantai
+ * terakhir sebelum dana cair tidak punya pemicu.
  */
-class ReimbursementSubmitted extends Notification implements ShouldQueue
+class ReimbursementReadyForPayment extends Notification implements ShouldQueue
 {
     use DeliversInAppImmediately, Queueable;
 
-    public function __construct(
-        public Reimbursement $reimbursement,
-        public string $stage, // 'manager' | 'finance'
-    ) {}
+    public function __construct(public Reimbursement $reimbursement) {}
 
     public function via(object $notifiable): array
     {
@@ -30,25 +28,24 @@ class ReimbursementSubmitted extends Notification implements ShouldQueue
     public function toDatabase(object $notifiable): array
     {
         return [
-            'type' => 'reimbursement_submitted',
+            'type' => 'reimbursement_ready_for_payment',
             'reimbursement_id' => $this->reimbursement->id,
             'number' => $this->reimbursement->reimbursement_number,
             'title' => $this->reimbursement->title,
             'amount' => $this->reimbursement->amount,
-            'stage' => $this->stage,
             'url' => '/reimbursements/'.$this->reimbursement->id,
-            'message' => "Pengajuan {$this->reimbursement->reimbursement_number} menunggu persetujuan {$this->stage}.",
+            'message' => "Pengajuan {$this->reimbursement->reimbursement_number} telah disetujui Finance dan siap dibayarkan.",
         ];
     }
 
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Reimbursement menunggu persetujuan Anda')
+            ->subject('Reimbursement siap dibayarkan')
             ->greeting('Halo '.$notifiable->name)
-            ->line("Pengajuan {$this->reimbursement->reimbursement_number} menunggu persetujuan Anda.")
-            ->line('Judul: '.$this->reimbursement->title)
+            ->line("Pengajuan {$this->reimbursement->reimbursement_number} sudah disetujui Finance dan menunggu pembayaran.")
+            ->line('Pengaju: '.($this->reimbursement->user?->name ?? '-'))
             ->line('Jumlah: '.$this->reimbursement->formatted_amount)
-            ->action('Lihat Pengajuan', url('/reimbursements/'.$this->reimbursement->id));
+            ->action('Proses Pembayaran', url('/reimbursements/'.$this->reimbursement->id));
     }
 }

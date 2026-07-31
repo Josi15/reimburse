@@ -20,7 +20,7 @@ export default function NotificationBell() {
         };
 
         load();
-        const timer = setInterval(tick, 60_000);
+        const timer = setInterval(tick, 30_000);
 
         const onVisibility = () => {
             if (!document.hidden) load();

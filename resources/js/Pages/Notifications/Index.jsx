@@ -11,6 +11,15 @@ import { toast } from '@/lib/toast';
 import { Head, Link } from '@inertiajs/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+/** Ikon per tahap rantai notifikasi (kunci = data.type dari backend). */
+const NOTIFICATION_ICONS = {
+    reimbursement_submitted_receipt: '📤',
+    reimbursement_submitted: '📥',
+    reimbursement_actioned: '✅',
+    reimbursement_ready_for_payment: '🏦',
+    reimbursement_paid: '💸',
+};
+
 export default function Index() {
     const [items, setItems] = useState(null);
     const [meta, setMeta] = useState(null);
@@ -105,13 +114,8 @@ export default function Index() {
                                         )}
                                     >
                                         <span className="mt-1 text-lg">
-                                            {n.data?.type ===
-                                            'reimbursement_paid'
-                                                ? '💸'
-                                                : n.data?.type ===
-                                                    'reimbursement_submitted'
-                                                  ? '📥'
-                                                  : '🔔'}
+                                            {NOTIFICATION_ICONS[n.data?.type] ??
+                                                '🔔'}
                                         </span>
                                         <div className="min-w-0 flex-1">
                                             <p className="text-sm text-gray-700 dark:text-gray-200">
@@ -123,9 +127,18 @@ export default function Index() {
                                             </p>
                                         </div>
                                         <div className="flex shrink-0 flex-col items-end gap-1 text-xs">
-                                            {n.data?.reimbursement_id && (
+                                            {(n.data?.url ||
+                                                n.data?.reimbursement_id) && (
                                                 <Link
-                                                    href={`/reimbursements/${n.data.reimbursement_id}`}
+                                                    href={
+                                                        n.data.url ??
+                                                        `/reimbursements/${n.data.reimbursement_id}`
+                                                    }
+                                                    // Dibuka = dianggap dibaca.
+                                                    onClick={() =>
+                                                        !n.read_at &&
+                                                        markRead(n.id)
+                                                    }
                                                     className="text-indigo-600 hover:underline"
                                                 >
                                                     Lihat →

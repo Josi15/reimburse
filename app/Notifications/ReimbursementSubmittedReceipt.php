@@ -10,16 +10,17 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
- * Dikirim ke approver (Manager atau Finance) ketika sebuah reimbursement
- * memasuki tahap yang menunggu persetujuannya. Email diproses lewat Queue.
+ * Tanda terima untuk PENGAJU: pengajuannya sudah masuk sistem dan sedang
+ * menunggu persetujuan. Ini titik awal rantai notifikasi — pengaju tahu
+ * berkasnya terkirim, lalu terus dikabari sampai dana cair.
  */
-class ReimbursementSubmitted extends Notification implements ShouldQueue
+class ReimbursementSubmittedReceipt extends Notification implements ShouldQueue
 {
     use DeliversInAppImmediately, Queueable;
 
     public function __construct(
         public Reimbursement $reimbursement,
-        public string $stage, // 'manager' | 'finance'
+        public ?string $approverName = null,
     ) {}
 
     public function via(object $notifiable): array
@@ -27,28 +28,35 @@ class ReimbursementSubmitted extends Notification implements ShouldQueue
         return ['database', 'mail'];
     }
 
+    private function waitingOn(): string
+    {
+        return $this->approverName
+            ? "persetujuan {$this->approverName} (Manager)"
+            : 'persetujuan Manager';
+    }
+
     public function toDatabase(object $notifiable): array
     {
         return [
-            'type' => 'reimbursement_submitted',
+            'type' => 'reimbursement_submitted_receipt',
             'reimbursement_id' => $this->reimbursement->id,
             'number' => $this->reimbursement->reimbursement_number,
             'title' => $this->reimbursement->title,
             'amount' => $this->reimbursement->amount,
-            'stage' => $this->stage,
             'url' => '/reimbursements/'.$this->reimbursement->id,
-            'message' => "Pengajuan {$this->reimbursement->reimbursement_number} menunggu persetujuan {$this->stage}.",
+            'message' => "Pengajuan {$this->reimbursement->reimbursement_number} berhasil dikirim dan menunggu {$this->waitingOn()}.",
         ];
     }
 
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Reimbursement menunggu persetujuan Anda')
+            ->subject('Pengajuan Anda telah dikirim')
             ->greeting('Halo '.$notifiable->name)
-            ->line("Pengajuan {$this->reimbursement->reimbursement_number} menunggu persetujuan Anda.")
+            ->line("Pengajuan {$this->reimbursement->reimbursement_number} berhasil dikirim.")
             ->line('Judul: '.$this->reimbursement->title)
             ->line('Jumlah: '.$this->reimbursement->formatted_amount)
+            ->line('Saat ini menunggu '.$this->waitingOn().'. Anda akan dikabari setiap ada perkembangan.')
             ->action('Lihat Pengajuan', url('/reimbursements/'.$this->reimbursement->id));
     }
 }

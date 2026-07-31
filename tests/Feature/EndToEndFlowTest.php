@@ -81,10 +81,10 @@ test('full lifecycle: draft -> submit -> manager -> finance -> paid', function (
     $timeline = collect($this->getJson("/api/reimbursements/{$id}")->json('timeline'));
     expect($timeline->pluck('status'))->toContain('draft', 'submitted', 'approved', 'paid');
 
-    // Notifikasi in-app tepat sasaran
-    expect($employee->notifications()->count())->toBe(3)  // manager ok, finance ok, paid
+    // Notifikasi in-app tepat sasaran — rantai penuh kembali ke pengaju
+    expect($employee->notifications()->count())->toBe(4)     // tanda terima, manager ok, finance ok, dibayar
         ->and($manager->notifications()->count())->toBe(1)   // pengajuan masuk
-        ->and($finance->notifications()->count())->toBe(1);  // diteruskan ke finance
+        ->and($finance->notifications()->count())->toBe(2);  // diteruskan ke finance + siap dibayar
 
     // Jejak audit semantik lengkap
     expect(AuditLog::where('event', 'approve')->count())->toBe(2)

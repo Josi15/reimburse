@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Models\Payment;
 use App\Models\Reimbursement;
+use App\Notifications\Concerns\DeliversInAppImmediately;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -14,7 +15,7 @@ use Illuminate\Notifications\Notification;
  */
 class ReimbursementPaid extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use DeliversInAppImmediately, Queueable;
 
     public function __construct(
         public Reimbursement $reimbursement,
@@ -34,6 +35,7 @@ class ReimbursementPaid extends Notification implements ShouldQueue
             'number' => $this->reimbursement->reimbursement_number,
             'payment_number' => $this->payment->payment_number,
             'amount' => $this->payment->amount,
+            'url' => '/reimbursements/'.$this->reimbursement->id,
             'message' => "Pengajuan {$this->reimbursement->reimbursement_number} telah dibayar ({$this->payment->payment_number}).",
         ];
     }

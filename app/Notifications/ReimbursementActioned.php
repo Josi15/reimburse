@@ -5,6 +5,7 @@ namespace App\Notifications;
 use App\Enums\ApprovalAction;
 use App\Enums\ApprovalLevel;
 use App\Models\Reimbursement;
+use App\Notifications\Concerns\DeliversInAppImmediately;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -16,7 +17,7 @@ use Illuminate\Notifications\Notification;
  */
 class ReimbursementActioned extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use DeliversInAppImmediately, Queueable;
 
     public function __construct(
         public Reimbursement $reimbursement,
@@ -45,6 +46,7 @@ class ReimbursementActioned extends Notification implements ShouldQueue
             'action' => $this->action->value,
             'status' => $this->reimbursement->status->value,
             'notes' => $this->notes,
+            'url' => '/reimbursements/'.$this->reimbursement->id,
             'message' => "Pengajuan {$this->reimbursement->reimbursement_number}: {$this->headline()}.",
         ];
     }
