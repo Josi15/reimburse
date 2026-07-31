@@ -112,6 +112,44 @@ class ReportService
     }
 
     /**
+     * Rekap pengeluaran per departemen (menghormati filter yang sama).
+     * Dipakai Finance untuk melihat unit mana yang paling banyak mengajukan dan
+     * berapa yang benar-benar sudah dicairkan.
+     */
+    public function departmentRecap(array $f): array
+    {
+        return $this->apply($f)
+            ->join('departments', 'departments.id', '=', 'reimbursements.department_id')
+            ->selectRaw(
+                'departments.id as did, departments.code, departments.name, '.
+                'COUNT(*) as c, '.
+                'COALESCE(SUM(reimbursements.amount),0) as total, '.
+                'COALESCE(SUM(CASE WHEN reimbursements.status = ? THEN reimbursements.amount ELSE 0 END),0) as paid, '.
+                'COALESCE(SUM(CASE WHEN reimbursements.status IN (?,?,?,?) THEN reimbursements.amount ELSE 0 END),0) as pending',
+                [
+                    ReimbursementStatus::Paid->value,
+                    ReimbursementStatus::Submitted->value,
+                    ReimbursementStatus::ManagerApproved->value,
+                    ReimbursementStatus::FinanceApproved->value,
+                    ReimbursementStatus::RevisionRequested->value,
+                ],
+            )
+            ->groupBy('departments.id', 'departments.code', 'departments.name')
+            ->orderByDesc('total')
+            ->get()
+            ->map(fn ($r) => [
+                'department_id' => (int) $r->did,
+                'code' => $r->code,
+                'name' => $r->name,
+                'count' => (int) $r->c,
+                'total_amount' => (int) $r->total,
+                'paid_amount' => (int) $r->paid,
+                'pending_amount' => (int) $r->pending,
+            ])
+            ->all();
+    }
+
+    /**
      * Rekap pembayaran per rekening perusahaan (sumber). Memakai rentang tanggal
      * dari filter (paid_at) sehingga bisa dipakai untuk rekap bulanan.
      */

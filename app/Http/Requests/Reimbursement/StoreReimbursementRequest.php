@@ -34,6 +34,9 @@ class StoreReimbursementRequest extends FormRequest
             // Jenis pengajuan + field khusus jenisnya (default: expense).
             ...$this->claimTypeRules(required: false),
             'category_id' => ['required', 'integer', Rule::exists('categories', 'id')->whereNull('deleted_at')],
+            // Departemen yang menanggung biaya. Kosong = ikut departemen pengaju.
+            'department_id' => ['nullable', 'integer',
+                Rule::exists('departments', 'id')->where('is_active', true)->whereNull('deleted_at')],
             'project_id' => ['nullable', 'integer',
                 Rule::exists('projects', 'id')->where('is_active', true)->whereNull('deleted_at')],
             'title' => ['required', 'string', 'max:150'],

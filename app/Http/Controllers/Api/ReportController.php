@@ -40,6 +40,14 @@ class ReportController extends Controller
         ]);
     }
 
+    /** Rekap pengeluaran per departemen (menghormati filter laporan). */
+    public function departments(Request $request): JsonResponse
+    {
+        return response()->json([
+            'data' => $this->service->departmentRecap($this->validatedFilters($request)),
+        ]);
+    }
+
     /** Rekap pembayaran per rekening perusahaan (rekap bulanan via filter tanggal). */
     public function companyAccounts(Request $request): JsonResponse
     {

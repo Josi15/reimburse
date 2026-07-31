@@ -10,6 +10,7 @@ import Card from '@/Components/ui/Card';
 import SelectInput from '@/Components/ui/SelectInput';
 import { Loading } from '@/Components/ui/Spinner';
 import TextareaInput from '@/Components/ui/TextareaInput';
+import useAuth from '@/hooks/useAuth';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { api, handleApiError } from '@/lib/api';
 import { rupiah } from '@/lib/format';
@@ -22,6 +23,7 @@ const MAX_FILES = 10;
 
 export default function Form({ id = null }) {
     const isEdit = id !== null;
+    const { user } = useAuth();
     const [loading, setLoading] = useState(isEdit);
     const [busy, setBusy] = useState(false);
     const [errors, setErrors] = useState({});
@@ -29,6 +31,7 @@ export default function Form({ id = null }) {
     const [accounts, setAccounts] = useState([]);
     const [projects, setProjects] = useState([]);
     const [claimTypes, setClaimTypes] = useState([]);
+    const [departments, setDepartments] = useState([]);
     const [quota, setQuota] = useState(null);
     const [existingFiles, setExistingFiles] = useState([]);
     const [deleteIds, setDeleteIds] = useState([]);
@@ -40,6 +43,7 @@ export default function Form({ id = null }) {
         expense_date: '',
         bank_account_id: '',
         project_id: '',
+        department_id: '',
         reason: '',
         description: '',
         details: {},
@@ -113,6 +117,9 @@ export default function Form({ id = null }) {
         api.get('/api/options/claim-types')
             .then((d) => setClaimTypes(d.data))
             .catch(() => {});
+        api.get('/api/options/departments')
+            .then((d) => setDepartments(d.data))
+            .catch(() => {});
 
         if (isEdit) {
             api.get(`/api/reimbursements/${id}`)
@@ -128,6 +135,7 @@ export default function Form({ id = null }) {
                         expense_date: r.expense_date ?? '',
                         bank_account_id: r.bank_account_id ?? '',
                         project_id: r.project_id ?? '',
+                        department_id: r.department_id ?? '',
                         reason: r.reason ?? '',
                         description: r.description ?? '',
                     }));
@@ -137,6 +145,15 @@ export default function Form({ id = null }) {
                 .finally(() => setLoading(false));
         }
     }, [id, isEdit]);
+
+    // Saat membuat baru, departemen pengaju dipakai sebagai default (tetap
+    // bisa diganti bila biayanya ditanggung unit lain).
+    useEffect(() => {
+        if (isEdit || !user?.department_id) return;
+        setForm((f) =>
+            f.department_id ? f : { ...f, department_id: user.department_id },
+        );
+    }, [isEdit, user?.department_id]);
 
     const selectedCategory = categories.find(
         (c) => String(c.id) === String(form.category_id),
@@ -168,6 +185,7 @@ export default function Form({ id = null }) {
             'expense_date',
             'bank_account_id',
             'project_id',
+            'department_id',
             'reason',
             'description',
         ].forEach((k) => {
@@ -399,6 +417,40 @@ export default function Form({ id = null }) {
                                     </p>
                                     <InputError
                                         message={errors.bank_account_id?.[0]}
+                                        className="mt-1"
+                                    />
+                                </div>
+
+                                <div>
+                                    <InputLabel
+                                        htmlFor="department_id"
+                                        value="Departemen Pengaju *"
+                                    />
+                                    <SelectInput
+                                        id="department_id"
+                                        className="mt-1 block w-full"
+                                        value={form.department_id}
+                                        onChange={set('department_id')}
+                                        required
+                                    >
+                                        <option value="">
+                                            — pilih departemen —
+                                        </option>
+                                        {departments.map((d) => (
+                                            <option key={d.id} value={d.id}>
+                                                {d.code
+                                                    ? `${d.code} — ${d.name}`
+                                                    : d.name}
+                                            </option>
+                                        ))}
+                                    </SelectInput>
+                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        Departemen yang menanggung biaya ini —
+                                        dasar rekap Finance. Ganti bila biayanya
+                                        untuk unit lain.
+                                    </p>
+                                    <InputError
+                                        message={errors.department_id?.[0]}
                                         className="mt-1"
                                     />
                                 </div>

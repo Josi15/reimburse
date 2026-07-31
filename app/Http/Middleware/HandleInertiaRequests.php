@@ -33,7 +33,7 @@ class HandleInertiaRequests extends Middleware
         $user = $request->user();
 
         if ($user) {
-            $user->loadMissing('roles.permissions');
+            $user->loadMissing('roles.permissions', 'department');
         }
 
         return [
@@ -52,6 +52,9 @@ class HandleInertiaRequests extends Middleware
                         ?? $user->roles->pluck('name')->first(),
                     'permissions' => $user->roles->flatMap->permissions->pluck('name')->unique()->values(),
                     'reimbursement_limit' => $user->reimbursementLimit(),
+                    // Dipakai form pengajuan sebagai departemen default.
+                    'department_id' => $user->department_id,
+                    'department_name' => $user->department?->name,
                 ] : null,
             ],
             // Menu sidebar dinamis sesuai hak akses user.

@@ -34,6 +34,8 @@ class UpdateReimbursementRequest extends FormRequest
             // Jenis pengajuan + field khusus jenisnya (fallback: jenis tersimpan).
             ...$this->claimTypeRules(required: false),
             'category_id' => ['sometimes', 'required', 'integer', Rule::exists('categories', 'id')->whereNull('deleted_at')],
+            'department_id' => ['nullable', 'integer',
+                Rule::exists('departments', 'id')->where('is_active', true)->whereNull('deleted_at')],
             'project_id' => ['nullable', 'integer',
                 Rule::exists('projects', 'id')->where('is_active', true)->whereNull('deleted_at')],
             'title' => ['sometimes', 'required', 'string', 'max:150'],

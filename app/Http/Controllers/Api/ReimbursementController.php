@@ -41,7 +41,7 @@ class ReimbursementController extends Controller
     {
         $this->authorize('viewAny', Reimbursement::class);
 
-        $query = Reimbursement::query()->with(['category', 'user', 'project']);
+        $query = Reimbursement::query()->with(['category', 'user', 'project', 'department']);
 
         // Employee tanpa izin viewAny hanya melihat miliknya sendiri.
         if (! $request->user()->hasPermission('reimbursement.viewAny')
@@ -51,7 +51,8 @@ class ReimbursementController extends Controller
 
         $items = $this->paginateResource($query, $request, [
             'searchable' => ['reimbursement_number', 'title'],
-            'filters' => ['status' => 'status', 'claim_type' => 'claim_type', 'category_id' => 'category_id', 'user_id' => 'user_id', 'project_id' => 'project_id'],
+            'filters' => ['status' => 'status', 'claim_type' => 'claim_type', 'category_id' => 'category_id',
+                'user_id' => 'user_id', 'project_id' => 'project_id', 'department_id' => 'department_id'],
             'sortable' => ['created_at', 'submitted_at', 'amount', 'status'],
             'default_sort' => ['created_at', 'desc'],
         ]);

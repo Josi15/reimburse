@@ -31,6 +31,8 @@ export default function Index() {
     const [status, setStatus] = useState('');
     const [claimType, setClaimType] = useState('');
     const [claimTypes, setClaimTypes] = useState([]);
+    const [departmentId, setDepartmentId] = useState('');
+    const [departments, setDepartments] = useState([]);
     const [q, setQ] = useState('');
     const [page, setPage] = useState(1);
     const [nonce, setNonce] = useState(0);
@@ -39,6 +41,9 @@ export default function Index() {
     useEffect(() => {
         api.get('/api/options/claim-types')
             .then((d) => setClaimTypes(d.data))
+            .catch(() => {});
+        api.get('/api/options/departments')
+            .then((d) => setDepartments(d.data))
             .catch(() => {});
     }, []);
 
@@ -50,6 +55,7 @@ export default function Index() {
             page,
             ...(status && { status }),
             ...(claimType && { claim_type: claimType }),
+            ...(departmentId && { department_id: departmentId }),
             ...(dq && { q: dq }),
         });
         api.get(`/api/reimbursements?${params}`)
@@ -67,7 +73,7 @@ export default function Index() {
         return () => {
             active = false;
         };
-    }, [page, status, claimType, dq, nonce]);
+    }, [page, status, claimType, departmentId, dq, nonce]);
 
     const reload = () => setNonce((n) => n + 1);
 
@@ -131,10 +137,26 @@ export default function Index() {
                                 </option>
                             ))}
                         </SelectInput>
+                        <SelectInput
+                            className="text-sm"
+                            aria-label="Filter departemen"
+                            value={departmentId}
+                            onChange={(e) => {
+                                setDepartmentId(e.target.value);
+                                setPage(1);
+                            }}
+                        >
+                            <option value="">Semua Departemen</option>
+                            {departments.map((d) => (
+                                <option key={d.id} value={d.id}>
+                                    {d.name}
+                                </option>
+                            ))}
+                        </SelectInput>
                     </div>
 
                     {loading ? (
-                        <TableSkeleton rows={6} cols={8} />
+                        <TableSkeleton rows={6} cols={9} />
                     ) : error ? (
                         <ErrorState onRetry={reload} />
                     ) : rows?.length === 0 ? (
@@ -152,6 +174,7 @@ export default function Index() {
                                             <TH>Jenis</TH>
                                             <TH>Judul</TH>
                                             <TH>Kategori</TH>
+                                            <TH>Departemen</TH>
                                             <TH>Pengaju</TH>
                                             <TH>Nominal</TH>
                                             <TH>Status</TH>
@@ -183,6 +206,9 @@ export default function Index() {
                                                 <TD>{r.title}</TD>
                                                 <TD>
                                                     {r.category?.name ?? '-'}
+                                                </TD>
+                                                <TD>
+                                                    {r.department?.name ?? '-'}
                                                 </TD>
                                                 <TD>{r.user?.name ?? '-'}</TD>
                                                 <TD>{r.formatted_amount}</TD>
@@ -216,6 +242,9 @@ export default function Index() {
                                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                             {r.claim_type
                                                 ? `${r.claim_type.icon} ${r.claim_type.label} · `
+                                                : ''}
+                                            {r.department?.name
+                                                ? `${r.department.name} · `
                                                 : ''}
                                             {r.user?.name ?? '-'} ·{' '}
                                             {r.formatted_amount} ·{' '}

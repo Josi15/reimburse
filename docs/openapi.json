@@ -6,7 +6,7 @@
     },
     "servers": [
         {
-            "url": "http://reimburse.test/api"
+            "url": "http://fundback.test/api"
         }
     ],
     "security": [
@@ -4682,6 +4682,41 @@
                 }
             }
         },
+        "/reports/departments": {
+            "get": {
+                "operationId": "report.departments",
+                "summary": "Rekap pengeluaran per departemen (menghormati filter laporan)",
+                "tags": [
+                    "Report"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
         "/reports/company-accounts": {
             "get": {
                 "operationId": "report.companyAccounts",
@@ -7842,6 +7877,13 @@
                     "category_id": {
                         "type": "integer"
                     },
+                    "department_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "description": "Departemen yang menanggung biaya. Kosong = ikut departemen pengaju."
+                    },
                     "project_id": {
                         "type": [
                             "integer",
@@ -7926,6 +7968,12 @@
                     },
                     "category_id": {
                         "type": "integer"
+                    },
+                    "department_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
                     },
                     "project_id": {
                         "type": [

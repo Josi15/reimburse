@@ -30,7 +30,7 @@ class ReimbursementService
 
             $reimbursement = Reimbursement::create([
                 'user_id' => $user->id,
-                'department_id' => $user->department_id,
+                'department_id' => $this->resolveDepartment($user, $data['department_id'] ?? null),
                 'claim_type' => $claimType,
                 'details' => $this->cleanDetails($claimType, $data['details'] ?? null),
                 'category_id' => $data['category_id'],
@@ -56,9 +56,14 @@ class ReimbursementService
     {
         return DB::transaction(function () use ($reimbursement, $user, $data, $files, $deleteAttachmentIds) {
             $payload = collect($data)->only([
-                'category_id', 'project_id', 'bank_account_id', 'title', 'description',
+                'category_id', 'project_id', 'department_id', 'bank_account_id', 'title', 'description',
                 'reason', 'amount', 'expense_date',
             ])->toArray();
+
+            // department_id tidak boleh dikosongkan (kolomnya NOT NULL).
+            if (array_key_exists('department_id', $payload) && ! $payload['department_id']) {
+                $payload['department_id'] = $this->resolveDepartment($user, null);
+            }
 
             // Ganti jenis pengajuan → detail lama dibuang, diganti detail jenis baru.
             $claimType = ClaimType::tryFrom($data['claim_type'] ?? '') ?? $reimbursement->claim_type;
@@ -110,6 +115,26 @@ class ReimbursementService
         $this->notifier->submitted($reimbursement);
 
         return $reimbursement;
+    }
+
+    /**
+     * Departemen yang menanggung biaya pengajuan.
+     *
+     * Pengaju boleh menunjuk departemen lain (mis. staf IT membelikan barang
+     * untuk Marketing) supaya rekap Finance jatuh ke unit yang benar. Bila
+     * tidak ditunjuk, dipakai departemen pengaju sendiri.
+     */
+    private function resolveDepartment(User $user, ?int $departmentId): int
+    {
+        $resolved = $departmentId ?? $user->department_id;
+
+        if (! $resolved) {
+            throw ValidationException::withMessages([
+                'department_id' => 'Pilih departemen yang mengajukan — akun Anda belum terdaftar di departemen mana pun.',
+            ]);
+        }
+
+        return $resolved;
     }
 
     /**

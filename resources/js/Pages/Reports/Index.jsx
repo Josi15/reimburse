@@ -49,6 +49,9 @@ export default function Index() {
     const [projectRows, setProjectRows] = useState(null);
     const [projectLoading, setProjectLoading] = useState(false);
     const [projectError, setProjectError] = useState(null);
+    const [deptRows, setDeptRows] = useState(null);
+    const [deptLoading, setDeptLoading] = useState(false);
+    const [deptError, setDeptError] = useState(null);
     const [accountRows, setAccountRows] = useState(null);
     const [accountLoading, setAccountLoading] = useState(false);
     const [accountError, setAccountError] = useState(null);
@@ -133,6 +136,30 @@ export default function Index() {
                 handleApiError(e);
             })
             .finally(() => active && setProjectLoading(false));
+        return () => {
+            active = false;
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [tab, JSON.stringify({ ...filters, q: dq }), nonce]);
+
+    useEffect(() => {
+        if (tab !== 'departments') return;
+        let active = true;
+        setDeptLoading(true);
+        setDeptError(null);
+        const params = query(dq);
+        params.delete('page');
+        api.get(`/api/reports/departments?${params}`)
+            .then((d) => {
+                if (!active) return;
+                setDeptRows(d.data);
+            })
+            .catch((e) => {
+                if (!active) return;
+                setDeptError(true);
+                handleApiError(e);
+            })
+            .finally(() => active && setDeptLoading(false));
         return () => {
             active = false;
         };
@@ -356,6 +383,7 @@ export default function Index() {
                 <div className="flex flex-wrap gap-2 border-b border-gray-200 dark:border-gray-700">
                     {[
                         ['reimbursements', 'Reimbursement'],
+                        ['departments', 'Rekap per Departemen'],
                         ['projects', 'Rekap per Project'],
                         ['company-accounts', 'Rekap per Rekening Perusahaan'],
                         ...(can('company_account.manage')
@@ -459,6 +487,89 @@ export default function Index() {
                                 </Table>
                                 <Pagination meta={meta} onPage={setPage} />
                             </>
+                        )}
+                    </Card>
+                )}
+
+                {/* Rekap per Departemen */}
+                {tab === 'departments' && (
+                    <Card>
+                        {deptLoading ? (
+                            <TableSkeleton rows={6} cols={5} />
+                        ) : deptError ? (
+                            <ErrorState onRetry={reload} />
+                        ) : deptRows?.length === 0 ? (
+                            <EmptyState title="Tidak ada data untuk filter ini" />
+                        ) : (
+                            <Table>
+                                <THead>
+                                    <TR>
+                                        <TH>Departemen</TH>
+                                        <TH>Jumlah</TH>
+                                        <TH>Total Diajukan</TH>
+                                        <TH>Sudah Dibayar</TH>
+                                        <TH>Masih Berjalan</TH>
+                                    </TR>
+                                </THead>
+                                <TBody>
+                                    {(deptRows ?? []).map((r) => (
+                                        <TR key={r.department_id}>
+                                            <TD className="font-medium">
+                                                {r.code
+                                                    ? `${r.code} — ${r.name}`
+                                                    : r.name}
+                                            </TD>
+                                            <TD>{r.count}</TD>
+                                            <TD>{rupiah(r.total_amount)}</TD>
+                                            <TD className="text-green-600 dark:text-green-400">
+                                                {rupiah(r.paid_amount)}
+                                            </TD>
+                                            <TD className="text-amber-600 dark:text-amber-400">
+                                                {rupiah(r.pending_amount)}
+                                            </TD>
+                                        </TR>
+                                    ))}
+                                    {(deptRows ?? []).length > 0 && (
+                                        <TR className="bg-gray-50 font-semibold dark:bg-gray-900/40">
+                                            <TD>Total</TD>
+                                            <TD>
+                                                {deptRows.reduce(
+                                                    (s, r) => s + r.count,
+                                                    0,
+                                                )}
+                                            </TD>
+                                            <TD>
+                                                {rupiah(
+                                                    deptRows.reduce(
+                                                        (s, r) =>
+                                                            s + r.total_amount,
+                                                        0,
+                                                    ),
+                                                )}
+                                            </TD>
+                                            <TD className="text-green-600 dark:text-green-400">
+                                                {rupiah(
+                                                    deptRows.reduce(
+                                                        (s, r) =>
+                                                            s + r.paid_amount,
+                                                        0,
+                                                    ),
+                                                )}
+                                            </TD>
+                                            <TD className="text-amber-600 dark:text-amber-400">
+                                                {rupiah(
+                                                    deptRows.reduce(
+                                                        (s, r) =>
+                                                            s +
+                                                            r.pending_amount,
+                                                        0,
+                                                    ),
+                                                )}
+                                            </TD>
+                                        </TR>
+                                    )}
+                                </TBody>
+                            </Table>
                         )}
                     </Card>
                 )}
