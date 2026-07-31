@@ -7,8 +7,10 @@ export const REIMBURSEMENT_STATUSES = [
     ['submitted', 'Menunggu Manager'],
     ['manager_approved', 'Disetujui Manager'],
     ['finance_approved', 'Disetujui Finance'],
+    ['director_approved', 'Disetujui Direksi'],
     ['manager_rejected', 'Ditolak Manager'],
     ['finance_rejected', 'Ditolak Finance'],
+    ['director_rejected', 'Ditolak Direksi'],
     ['revision_requested', 'Perlu Revisi'],
     ['paid', 'Dibayar'],
 ];

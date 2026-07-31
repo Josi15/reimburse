@@ -65,9 +65,11 @@ enum ClaimType: string
     public function requiredPermission(): ?string
     {
         return match ($this) {
-            // Biaya & lembur: semua pengaju (termasuk Employee).
-            self::Expense, self::Overtime => null,
-            // Pengadaan barang/layanan: hanya pemegang reimbursement.procurement.
+            // Penggantian biaya: hak paling dasar, semua pengaju (termasuk Magang).
+            self::Expense => null,
+            // Lembur: Employee ke atas, tidak untuk Magang.
+            self::Overtime => 'reimbursement.overtime',
+            // Pengadaan barang/layanan: Supervisor ke atas, tidak untuk Employee.
             self::Goods, self::Service => 'reimbursement.procurement',
         };
     }

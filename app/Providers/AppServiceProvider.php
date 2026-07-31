@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Enums\AuditEvent;
+use App\Models\Reimbursement;
 use App\Services\AuditLogger;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
@@ -64,16 +65,30 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Super Admin melewati semua cek. Ability bergaya permission (mengandung
-     * titik, mis. "payment.process") diselesaikan lewat RBAC saat pengecekan —
-     * selalu akurat tanpa query per-request dan tanpa masalah staleness.
-     * Ability model policy (mis. "view", "update") diteruskan ke policy.
+     * Ability yang TIDAK boleh dilewati Super Admin: keputusan atas uang.
+     * Pemisahan tugas berlaku untuk semua orang — kalau Super Admin bisa
+     * menyetujui lalu mencairkan klaimnya sendiri, seluruh rantai kontrol
+     * runtuh pada satu akun. Ability ini diteruskan ke policy, yang tetap
+     * mengizinkan Super Admin memutuskan klaim ORANG LAIN.
+     */
+    private const SEPARATION_OF_DUTIES_ABILITIES = [
+        'approveManager',
+        'approveFinance',
+        'approveDirector',
+    ];
+
+    /**
+     * Super Admin melewati semua cek, KECUALI ability pemisahan tugas di atas.
+     * Ability bergaya permission (mengandung titik, mis. "payment.process")
+     * diselesaikan lewat RBAC saat pengecekan — selalu akurat tanpa query
+     * per-request dan tanpa masalah staleness. Ability model policy (mis.
+     * "view", "update") diteruskan ke policy.
      */
     private function configureAuthorization(): void
     {
-        Gate::before(function ($user, string $ability) {
+        Gate::before(function ($user, string $ability, array $arguments = []) {
             if ($user->hasRole('super_admin')) {
-                return true;
+                return $this->bypassesSeparationOfDuties($ability, $arguments) ? null : true;
             }
 
             if (str_contains($ability, '.')) {
@@ -84,6 +99,36 @@ class AppServiceProvider extends ServiceProvider
 
             return null;
         });
+    }
+
+    /**
+     * Benarkah ability ini menyangkut pemisahan tugas (sehingga bypass Super
+     * Admin harus dinonaktifkan dan keputusannya diserahkan ke policy)?
+     *
+     * `create` sengaja diperiksa lewat argumennya: PaymentPolicy::create
+     * menyertakan Reimbursement (pencairan dana — dijaga), sedangkan
+     * ReimbursementPolicy::create tidak menyertakan apa pun (membuat pengajuan
+     * — tidak dijaga). Seluruh argumen dipindai, bukan hanya yang pertama,
+     * karena pemanggilnya memakai bentuk authorize('create', [Payment::class,
+     * $reimbursement]).
+     */
+    private function bypassesSeparationOfDuties(string $ability, array $arguments): bool
+    {
+        if (in_array($ability, self::SEPARATION_OF_DUTIES_ABILITIES, true)) {
+            return true;
+        }
+
+        if ($ability !== 'create') {
+            return false;
+        }
+
+        foreach ($arguments as $argument) {
+            if ($argument instanceof Reimbursement) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

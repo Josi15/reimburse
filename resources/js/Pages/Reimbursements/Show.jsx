@@ -304,10 +304,14 @@ export default function Show({ id }) {
         isOwner && claim?.is_editable && can('reimbursement.update');
     const canDelete =
         isOwner && status === 'draft' && can('reimbursement.delete');
+    // Tahap yang sedang ditunggu dihitung backend (memperhitungkan ambang
+    // nominal Direksi), jadi frontend tinggal mencocokkan permission-nya.
+    const pendingLevel = claim?.pending_approval_level?.value ?? null;
     const canApprove =
-        (status === 'submitted' && can('reimbursement.approve.manager')) ||
-        (status === 'manager_approved' && can('reimbursement.approve.finance'));
-    const canPay = status === 'finance_approved' && can('payment.process');
+        pendingLevel !== null &&
+        !isOwner &&
+        can(`reimbursement.approve.${pendingLevel}`);
+    const canPay = claim?.is_ready_for_payment && can('payment.process');
 
     async function doSubmit() {
         setBusy(true);

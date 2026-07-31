@@ -3,20 +3,26 @@ import { badgeClass, cn } from '@/lib/format';
 /** Warna badge per role kanonik (nama role = key di tabel roles). */
 const ROLE_COLORS = {
     super_admin: 'red',
+    director: 'red',
     admin: 'indigo',
     manager: 'blue',
+    supervisor: 'blue',
     finance: 'green',
     employee: 'gray',
+    intern: 'gray',
     auditor: 'amber',
 };
 
 /** Cadangan label bila display_name role belum diisi di master data. */
 const ROLE_LABELS = {
     super_admin: 'Super Admin',
+    director: 'Direktur',
     admin: 'Admin',
     manager: 'Manager',
+    supervisor: 'Supervisor',
     finance: 'Finance',
     employee: 'Karyawan',
+    intern: 'Staf Magang',
     auditor: 'Auditor',
 };
 

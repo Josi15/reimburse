@@ -33,11 +33,14 @@ class RolePermissionSeeder extends Seeder
             'reimbursement.update' => 'Ubah Reimbursement',
             'reimbursement.delete' => 'Hapus Draft Reimbursement',
             'reimbursement.submit' => 'Submit Reimbursement',
-            // Employee hanya boleh mengajukan biaya & lembur; pengadaan barang
-            // dan layanan/server butuh permission tambahan ini.
+            // Jenis pengajuan berjenjang: biaya bebas untuk semua pengaju,
+            // lembur & pengadaan masing-masing butuh permission sendiri.
+            // Magang: biaya saja. Employee: + lembur. Selebihnya: semua jenis.
+            'reimbursement.overtime' => 'Ajukan Lembur',
             'reimbursement.procurement' => 'Ajukan Pengadaan Barang & Layanan',
             'reimbursement.approve.manager' => 'Approve/Reject (Manager)',
             'reimbursement.approve.finance' => 'Approve/Reject (Finance)',
+            'reimbursement.approve.director' => 'Approve/Reject (Direksi)',
             'payment.view' => 'Lihat Pembayaran',
             'payment.process' => 'Proses Pembayaran',
             'dashboard.viewAll' => 'Lihat Dashboard Keseluruhan',
@@ -58,45 +61,63 @@ class RolePermissionSeeder extends Seeder
 
         // Hak dasar "bisa mengajukan reimbursement untuk diri sendiri".
         // Dipakai semua role operasional; yang membedakan hanya JENIS yang
-        // boleh dipilih (lihat reimbursement.procurement di bawah).
+        // boleh dipilih (reimbursement.overtime & .procurement di bawah).
         $canSubmitClaims = [
             'reimbursement.view', 'reimbursement.create', 'reimbursement.update',
             'reimbursement.delete', 'reimbursement.submit',
             'bankaccount.manage',   // butuh rekening sendiri untuk dibayar
         ];
 
+        // Jenis pengajuan penuh: biaya (bebas) + lembur + pengadaan.
+        $allClaimTypes = ['reimbursement.overtime', 'reimbursement.procurement'];
+
         // ---- Pemetaan role → [display, permissions, plafon] --------------
-        // Plafon (IDR/pengajuan): null = tanpa batas, 0 = tak boleh mengajukan.
+        // Plafon (IDR/bulan): null = tanpa batas, 0 = tak boleh mengajukan.
         $map = [
             'super_admin' => ['Super Admin', $all, 50_000_000], // akses penuh
+            'director' => ['Direktur', [
+                ...$canSubmitClaims, ...$allClaimTypes,
+                // Gerbang terakhir untuk pengajuan bernilai besar.
+                'reimbursement.approve.director',
+                'reimbursement.viewAny', 'payment.view',
+                'dashboard.viewAll', 'report.view', 'report.export', 'audit.view',
+            ], 50_000_000],
             'admin' => ['Admin', [
-                ...$canSubmitClaims,
+                ...$canSubmitClaims, ...$allClaimTypes,
                 'user.view', 'user.create', 'user.update', 'user.delete',
                 'department.manage', 'category.manage', 'bank.manage', 'project.manage',
                 'company_account.manage',
                 'reimbursement.viewAny', 'dashboard.viewAll',
                 'report.view', 'report.export', 'audit.view',
-                'reimbursement.procurement',
             ], 25_000_000],
-            // Satu-satunya role yang jenis pengajuannya dibatasi: biaya & lembur.
-            'employee' => ['Employee', [
-                ...$canSubmitClaims,
-                'report.export',
-            ], 1_500_000],
-            'manager' => ['Manager', [
-                ...$canSubmitClaims,
-                'reimbursement.viewAny', 'reimbursement.approve.manager',
-                'dashboard.viewAll', 'report.view', 'report.export',
-                'reimbursement.procurement',
-            ], 5_000_000],
             'finance' => ['Finance', [
-                ...$canSubmitClaims,
+                ...$canSubmitClaims, ...$allClaimTypes,
                 'reimbursement.viewAny', 'reimbursement.approve.finance',
                 'payment.view', 'payment.process',
                 'company_account.manage',
                 'dashboard.viewAll', 'report.view', 'report.export',
-                'reimbursement.procurement',
             ], 10_000_000],
+            'manager' => ['Manager', [
+                ...$canSubmitClaims, ...$allClaimTypes,
+                'reimbursement.viewAny', 'reimbursement.approve.manager',
+                'dashboard.viewAll', 'report.view', 'report.export',
+            ], 5_000_000],
+            'supervisor' => ['Supervisor', [
+                ...$canSubmitClaims, ...$allClaimTypes,
+                // Atasan lini pertama: menilai di tingkat yang sama dengan Manager.
+                'reimbursement.viewAny', 'reimbursement.approve.manager',
+                'dashboard.viewAll', 'report.view', 'report.export',
+            ], 3_000_000],
+            // Biaya & lembur saja — tidak boleh mengajukan pengadaan.
+            'employee' => ['Employee', [
+                ...$canSubmitClaims,
+                'reimbursement.overtime',
+                'report.export',
+            ], 1_500_000],
+            // Paling terbatas: hanya penggantian biaya.
+            'intern' => ['Staf Magang', [
+                ...$canSubmitClaims,
+            ], 500_000],
             'auditor' => ['Auditor', [ // read-only penuh, tak mengajukan
                 'reimbursement.viewAny', 'payment.view', 'dashboard.viewAll',
                 'report.view', 'report.export', 'audit.view',

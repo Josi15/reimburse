@@ -37,12 +37,6 @@ parameters:
 			path: app/Exports/ReimbursementsExport.php
 
 		-
-			message: '#^Cannot call method approvalLevel\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: app/Http/Controllers/Api/ApprovalController.php
-
-		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:onlyTrashed\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -985,6 +979,24 @@ parameters:
 			path: app/Http/Resources/ReimbursementResource.php
 
 		-
+			message: '#^Call to an undefined method App\\Http\\Resources\\ReimbursementResource\:\:isReadyForPayment\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/ReimbursementResource.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Resources\\ReimbursementResource\:\:needsDirectorApproval\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/ReimbursementResource.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Resources\\ReimbursementResource\:\:pendingApprovalLevel\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: app/Http/Resources/ReimbursementResource.php
+
+		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\RoleResource\:\:\$created_at\.$#'
 			identifier: property.notFound
 			count: 1
@@ -1117,8 +1129,26 @@ parameters:
 			path: app/Models/Reimbursement.php
 
 		-
+			message: '#^Cannot call method approvalLevel\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Models/Reimbursement.php
+
+		-
 			message: '#^Cannot call method canTransitionTo\(\) on string\.$#'
 			identifier: method.nonObject
+			count: 1
+			path: app/Models/Reimbursement.php
+
+		-
+			message: '#^Match arm comparison between ''draft''\|''finance_approved''\|''finance_rejected''\|''manager_approved''\|''manager_rejected''\|''paid''\|''revision_requested''\|''submitted'' and App\\Enums\\ReimbursementStatus\:\:DirectorApproved is always false\.$#'
+			identifier: match.alwaysFalse
+			count: 1
+			path: app/Models/Reimbursement.php
+
+		-
+			message: '#^Match arm comparison between ''draft''\|''finance_approved''\|''finance_rejected''\|''manager_approved''\|''manager_rejected''\|''paid''\|''revision_requested''\|''submitted'' and App\\Enums\\ReimbursementStatus\:\:FinanceApproved is always false\.$#'
+			identifier: match.alwaysFalse
 			count: 1
 			path: app/Models/Reimbursement.php
 
@@ -1153,18 +1183,6 @@ parameters:
 			path: app/Policies/PaymentPolicy.php
 
 		-
-			message: '#^Strict comparison using \=\=\= between ''draft''\|''finance_approved''\|''finance_rejected''\|''manager_approved''\|''manager_rejected''\|''paid''\|''revision_requested''\|''submitted'' and App\\Enums\\ReimbursementStatus\:\:FinanceApproved will always evaluate to false\.$#'
-			identifier: identical.alwaysFalse
-			count: 1
-			path: app/Policies/PaymentPolicy.php
-
-		-
-			message: '#^Cannot call method approvalLevel\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 2
-			path: app/Policies/ReimbursementPolicy.php
-
-		-
 			message: '#^Result of && is always false\.$#'
 			identifier: booleanAnd.alwaysFalse
 			count: 2
@@ -1185,24 +1203,6 @@ parameters:
 		-
 			message: '#^Cannot call method canTransitionTo\(\) on string\.$#'
 			identifier: method.nonObject
-			count: 1
-			path: app/Services/ApprovalService.php
-
-		-
-			message: '#^Parameter \#1 \$status of method App\\Services\\ApprovalService\:\:resolveApprove\(\) expects App\\Enums\\ReimbursementStatus, string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Services/ApprovalService.php
-
-		-
-			message: '#^Parameter \#1 \$status of method App\\Services\\ApprovalService\:\:resolveLevel\(\) expects App\\Enums\\ReimbursementStatus, string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Services/ApprovalService.php
-
-		-
-			message: '#^Parameter \#1 \$status of method App\\Services\\ApprovalService\:\:resolveReject\(\) expects App\\Enums\\ReimbursementStatus, string given\.$#'
-			identifier: argument.type
 			count: 1
 			path: app/Services/ApprovalService.php
 
@@ -1279,50 +1279,20 @@ parameters:
 			path: app/Services/DashboardService.php
 
 		-
-			message: '#^Method App\\Services\\PaymentService\:\:process\(\) should return App\\Models\\Payment but returns null\.$#'
-			identifier: return.type
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\HasMany\:\:active\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: app/Services/PaymentService.php
 
 		-
-			message: '#^Method App\\Services\\PaymentService\:\:resolveAccount\(\) is unused\.$#'
-			identifier: method.unused
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
 			count: 1
 			path: app/Services/PaymentService.php
 
 		-
-			message: '#^Parameter \#2 \$payment of method App\\Services\\ReimbursementNotifier\:\:paid\(\) expects App\\Models\\Payment, null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Services/PaymentService.php
-
-		-
-			message: '#^Property App\\Services\\PaymentService\:\:\$attachments is never read, only written\.$#'
-			identifier: property.onlyWritten
-			count: 1
-			path: app/Services/PaymentService.php
-
-		-
-			message: '#^Property App\\Services\\PaymentService\:\:\$audit is never read, only written\.$#'
-			identifier: property.onlyWritten
-			count: 1
-			path: app/Services/PaymentService.php
-
-		-
-			message: '#^Result of static method Illuminate\\Database\\Connection\:\:transaction\(\) \(void\) is used\.$#'
-			identifier: staticMethod.void
-			count: 1
-			path: app/Services/PaymentService.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between ''draft''\|''finance_approved''\|''finance_rejected''\|''manager_approved''\|''manager_rejected''\|''paid''\|''revision_requested''\|''submitted'' and App\\Enums\\ReimbursementStatus\:\:FinanceApproved will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: app/Services/PaymentService.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
+			message: '#^Strict comparison using \=\=\= between ''draft''\|''finance_approved''\|''finance_rejected''\|''manager_approved''\|''manager_rejected''\|''paid''\|''revision_requested''\|''submitted'' and App\\Enums\\ReimbursementStatus\:\:FinanceApproved will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
 			count: 1
 			path: app/Services/PaymentService.php
 

@@ -2,7 +2,6 @@
 
 namespace App\Policies;
 
-use App\Enums\ReimbursementStatus;
 use App\Models\Payment;
 use App\Models\Reimbursement;
 use App\Models\User;
@@ -42,7 +41,9 @@ class PaymentPolicy
             return false;
         }
 
-        return $reimbursement->status === ReimbursementStatus::FinanceApproved;
+        // Seluruh persetujuan harus lengkap dulu — untuk nominal besar itu
+        // berarti termasuk persetujuan Direksi.
+        return $reimbursement->isReadyForPayment();
     }
 
     /**

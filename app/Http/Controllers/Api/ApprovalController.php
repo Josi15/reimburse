@@ -56,7 +56,7 @@ class ApprovalController extends Controller
     /** Otorisasi berdasarkan level yang berlaku untuk status sekarang. */
     private function authorizeAction(Reimbursement $reimbursement): void
     {
-        $level = $reimbursement->status->approvalLevel()
+        $level = $reimbursement->pendingApprovalLevel()
             ?? abort(422, 'Reimbursement tidak berada pada status yang dapat diproses.');
 
         $this->authorize($level->ability(), $reimbursement);

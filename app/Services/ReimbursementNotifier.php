@@ -52,12 +52,21 @@ class ReimbursementNotifier
         );
     }
 
-    /** Disetujui Finance → beri tahu petugas yang berhak memproses pembayaran. */
+    /** Seluruh persetujuan lengkap → beri tahu petugas yang berhak mencairkan. */
     public function readyForPayment(Reimbursement $reimbursement): void
     {
         Notification::send(
             $this->excludeOwner($this->paymentProcessors(), $reimbursement),
             new ReimbursementReadyForPayment($reimbursement),
+        );
+    }
+
+    /** Nominal besar → diteruskan ke Direksi sebelum boleh dicairkan. */
+    public function forwardedToDirector(Reimbursement $reimbursement): void
+    {
+        Notification::send(
+            $this->directorApprovers($reimbursement),
+            new ReimbursementSubmitted($reimbursement, 'direksi'),
         );
     }
 
@@ -83,7 +92,12 @@ class ReimbursementNotifier
     {
         match ($status) {
             ReimbursementStatus::ManagerApproved => $this->forwardedToFinance($reimbursement),
-            ReimbursementStatus::FinanceApproved => $this->readyForPayment($reimbursement),
+            // Setelah Finance: nominal besar mampir ke Direksi dulu, sisanya
+            // langsung ke antrean pembayaran.
+            ReimbursementStatus::FinanceApproved => $reimbursement->needsDirectorApproval()
+                ? $this->forwardedToDirector($reimbursement)
+                : $this->readyForPayment($reimbursement),
+            ReimbursementStatus::DirectorApproved => $this->readyForPayment($reimbursement),
             default => null,
         };
     }
@@ -107,6 +121,20 @@ class ReimbursementNotifier
     {
         return $this->excludeOwner(
             User::query()->active()->withRole('finance')->get(),
+            $reimbursement,
+        );
+    }
+
+    /**
+     * Pemegang permission approval Direksi (bukan sekadar role "director"),
+     * agar jabatan lain yang diberi wewenang sama ikut dikabari.
+     */
+    private function directorApprovers(Reimbursement $reimbursement): Collection
+    {
+        return $this->excludeOwner(
+            User::query()->active()
+                ->whereHas('roles.permissions', fn ($q) => $q->where('permissions.name', ApprovalLevel::Director->permission()))
+                ->get(),
             $reimbursement,
         );
     }

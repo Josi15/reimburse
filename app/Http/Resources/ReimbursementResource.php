@@ -33,6 +33,15 @@ class ReimbursementResource extends JsonResource
                 'color' => $this->status->color(),
             ],
             'is_editable' => $this->isEditable(),
+            // Tahap persetujuan yang sedang ditunggu (null bila tidak ada).
+            // Sudah memperhitungkan ambang nominal Direksi, sehingga frontend
+            // tak perlu menduplikasi aturannya.
+            'pending_approval_level' => $this->pendingApprovalLevel() === null ? null : [
+                'value' => $this->pendingApprovalLevel()->value,
+                'label' => $this->pendingApprovalLevel()->label(),
+            ],
+            'is_ready_for_payment' => $this->isReadyForPayment(),
+            'needs_director_approval' => $this->needsDirectorApproval(),
             'expense_date' => $this->expense_date?->toDateString(),
             'submitted_at' => $this->submitted_at,
             'completed_at' => $this->completed_at,

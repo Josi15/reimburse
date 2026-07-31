@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\ApprovalAction;
 use App\Enums\ApprovalLevel;
 use App\Enums\ReimbursementStatus;
 use App\Models\Reimbursement;
@@ -12,9 +13,12 @@ use App\Models\User;
  * (state machine). Super Admin di-bypass oleh Gate::before.
  *
  * Pemisahan tugas: setiap role boleh mengajukan reimbursement untuk dirinya
- * sendiri, termasuk Manager dan Finance. Karena itu approver DILARANG
+ * sendiri, termasuk Manager, Finance, dan Direksi. Karena itu approver DILARANG
  * memutuskan pengajuannya sendiri — klaim mereka harus dinilai approver lain
- * di tingkat yang sama.
+ * di tingkat yang sama. Satu orang juga tidak boleh meloloskan klaim yang sama
+ * di lebih dari satu tingkat, sekalipun ia memegang beberapa permission
+ * approval. Aturan ini berlaku untuk Super Admin juga (lihat Gate::before di
+ * AppServiceProvider).
  */
 class ReimbursementPolicy
 {
@@ -59,17 +63,52 @@ class ReimbursementPolicy
     /** Persetujuan tingkat Manager (hanya saat level berlaku = Manager). */
     public function approveManager(User $user, Reimbursement $reimbursement): bool
     {
-        return $user->hasPermission('reimbursement.approve.manager')
-            && ! $this->owns($user, $reimbursement)
-            && $reimbursement->status->approvalLevel() === ApprovalLevel::Manager;
+        return $this->mayApproveAt(ApprovalLevel::Manager, $user, $reimbursement);
     }
 
     /** Persetujuan tingkat Finance (hanya saat level berlaku = Finance). */
     public function approveFinance(User $user, Reimbursement $reimbursement): bool
     {
-        return $user->hasPermission('reimbursement.approve.finance')
+        return $this->mayApproveAt(ApprovalLevel::Finance, $user, $reimbursement);
+    }
+
+    /** Persetujuan tingkat Direksi (pengajuan bernilai besar). */
+    public function approveDirector(User $user, Reimbursement $reimbursement): bool
+    {
+        return $this->mayApproveAt(ApprovalLevel::Director, $user, $reimbursement);
+    }
+
+    /**
+     * Syarat menyetujui pada suatu tingkat. Empat lapis, semuanya harus lolos:
+     *
+     * 1. Punya permission tingkat tersebut.
+     * 2. Bukan pengajunya sendiri.
+     * 3. Tingkat itu memang yang sedang ditunggu (memperhitungkan ambang Direksi).
+     * 4. Belum pernah memutuskan klaim ini di tingkat mana pun — mencegah satu
+     *    orang meloloskan sebuah klaim melewati beberapa gerbang sekaligus
+     *    hanya karena kebetulan memegang lebih dari satu permission approval.
+     */
+    private function mayApproveAt(ApprovalLevel $level, User $user, Reimbursement $reimbursement): bool
+    {
+        return $user->hasPermission($level->permission())
             && ! $this->owns($user, $reimbursement)
-            && $reimbursement->status->approvalLevel() === ApprovalLevel::Finance;
+            && $reimbursement->pendingApprovalLevel() === $level
+            && ! $this->hasAlreadyDecided($user, $reimbursement);
+    }
+
+    /**
+     * Pernahkah user ini menyetujui/menolak klaim tersebut sebelumnya?
+     *
+     * Permintaan revisi tidak dihitung: itu mengembalikan klaim ke pengaju
+     * untuk diperbaiki, bukan meloloskannya ke tahap berikutnya, jadi orang
+     * yang sama tetap boleh menilai hasil perbaikannya.
+     */
+    private function hasAlreadyDecided(User $user, Reimbursement $reimbursement): bool
+    {
+        return $reimbursement->approvals()
+            ->where('approver_id', $user->id)
+            ->whereIn('action', [ApprovalAction::Approved->value, ApprovalAction::Rejected->value])
+            ->exists();
     }
 
     private function owns(User $user, Reimbursement $reimbursement): bool

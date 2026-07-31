@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ApprovalLevel;
 use App\Enums\ClaimType;
 use App\Enums\ReimbursementStatus;
 use App\Models\Concerns\Auditable;
@@ -135,6 +136,45 @@ class Reimbursement extends Model
         return $this->status->canTransitionTo($target);
     }
 
+    /**
+     * Pengajuan ini wajib lewat Direksi? Ditentukan nominal terhadap ambang
+     * di config/reimbursement.php (null = tahap Direksi dimatikan).
+     */
+    public function needsDirectorApproval(): bool
+    {
+        $threshold = config('reimbursement.director_approval_threshold');
+
+        return $threshold !== null && (int) $this->amount > (int) $threshold;
+    }
+
+    /**
+     * Level approval yang SEDANG menunggu tindakan, sudah memperhitungkan
+     * ambang Direksi. Ini sumber tunggal "siapa yang harus bertindak sekarang"
+     * — dipakai policy, service, controller, dan notifier.
+     */
+    public function pendingApprovalLevel(): ?ApprovalLevel
+    {
+        $level = $this->status->approvalLevel();
+
+        // Status FinanceApproved memetakan ke Direksi, tapi hanya berlaku bila
+        // nominalnya memang di atas ambang; kalau tidak, tak ada yang ditunggu.
+        if ($level === ApprovalLevel::Director && ! $this->needsDirectorApproval()) {
+            return null;
+        }
+
+        return $level;
+    }
+
+    /** Seluruh persetujuan yang diperlukan sudah lengkap → boleh dicairkan. */
+    public function isReadyForPayment(): bool
+    {
+        return match ($this->status) {
+            ReimbursementStatus::DirectorApproved => true,
+            ReimbursementStatus::FinanceApproved => ! $this->needsDirectorApproval(),
+            default => false,
+        };
+    }
+
     public function isEditable(): bool
     {
         return in_array($this->status, [
@@ -160,9 +200,36 @@ class Reimbursement extends Model
         return $query->where('user_id', $userId);
     }
 
-    /** Menunggu tindakan Finance (siap dibayar). */
+    /**
+     * Siap dibayar: sudah lolos Direksi, atau lolos Finance dengan nominal di
+     * bawah ambang sehingga tak perlu Direksi. Padanan SQL dari
+     * isReadyForPayment().
+     */
     public function scopeAwaitingPayment(Builder $query): Builder
     {
-        return $query->where('status', ReimbursementStatus::FinanceApproved->value);
+        $threshold = config('reimbursement.director_approval_threshold');
+
+        return $query->where(function (Builder $q) use ($threshold) {
+            $q->where('status', ReimbursementStatus::DirectorApproved->value)
+                ->orWhere(function (Builder $sub) use ($threshold) {
+                    $sub->where('status', ReimbursementStatus::FinanceApproved->value);
+
+                    if ($threshold !== null) {
+                        $sub->where('amount', '<=', (int) $threshold);
+                    }
+                });
+        });
+    }
+
+    /** Menunggu persetujuan Direksi (nominal di atas ambang). */
+    public function scopeAwaitingDirector(Builder $query): Builder
+    {
+        $threshold = config('reimbursement.director_approval_threshold');
+
+        $query->where('status', ReimbursementStatus::FinanceApproved->value);
+
+        return $threshold === null
+            ? $query->whereRaw('1 = 0')          // tahap Direksi dimatikan
+            : $query->where('amount', '>', (int) $threshold);
     }
 }

@@ -33,7 +33,7 @@ php artisan queue:work             # terminal 3 — OPSIONAL, hanya untuk email
 > jadi lonceng notifikasi langsung terisi begitu aksi dilakukan. Hanya channel
 > `mail` yang mengantre — jalankan `queue:work` bila ingin email ikut terkirim.
 
-**Akun demo** (password: `password`): `super@fundback.test`, `admin@fundback.test`, `manager@fundback.test`, `employee@fundback.test`, `finance@fundback.test`, `auditor@fundback.test`
+**Akun demo** (password: `password`): `super@`, `direktur@`, `admin@`, `finance@`, `manager@`, `supervisor@`, `employee@`, `magang@`, `auditor@` (semuanya `@fundback.test`)
 
 ## Test
 

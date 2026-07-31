@@ -14,6 +14,8 @@ enum ReimbursementStatus: string
     case ManagerRejected = 'manager_rejected';
     case FinanceApproved = 'finance_approved';
     case FinanceRejected = 'finance_rejected';
+    case DirectorApproved = 'director_approved';
+    case DirectorRejected = 'director_rejected';
     case RevisionRequested = 'revision_requested';
     case Paid = 'paid';
 
@@ -27,6 +29,8 @@ enum ReimbursementStatus: string
             self::ManagerRejected => 'Ditolak Manager',
             self::FinanceApproved => 'Disetujui Finance',
             self::FinanceRejected => 'Ditolak Finance',
+            self::DirectorApproved => 'Disetujui Direksi',
+            self::DirectorRejected => 'Ditolak Direksi',
             self::RevisionRequested => 'Perlu Revisi',
             self::Paid => 'Dibayar',
         };
@@ -38,8 +42,8 @@ enum ReimbursementStatus: string
         return match ($this) {
             self::Draft => 'gray',
             self::Submitted, self::ManagerApproved => 'blue',
-            self::FinanceApproved => 'indigo',
-            self::ManagerRejected, self::FinanceRejected => 'red',
+            self::FinanceApproved, self::DirectorApproved => 'indigo',
+            self::ManagerRejected, self::FinanceRejected, self::DirectorRejected => 'red',
             self::RevisionRequested => 'amber',
             self::Paid => 'green',
         };
@@ -61,7 +65,12 @@ enum ReimbursementStatus: string
             self::RevisionRequested => [self::Draft, self::Submitted],
             self::ManagerRejected => [self::RevisionRequested],
             self::FinanceRejected => [self::RevisionRequested],
-            self::FinanceApproved => [self::Paid],
+            self::DirectorRejected => [self::RevisionRequested],
+            // Nominal di bawah ambang langsung dibayar; di atas ambang wajib
+            // lewat Direksi dulu. Yang menentukan mana yang berlaku adalah
+            // Reimbursement::pendingApprovalLevel(), karena bergantung nominal.
+            self::FinanceApproved => [self::Paid, self::DirectorApproved, self::DirectorRejected, self::RevisionRequested],
+            self::DirectorApproved => [self::Paid],
             self::Paid => [],
         };
     }
@@ -73,14 +82,19 @@ enum ReimbursementStatus: string
     }
 
     /**
-     * Level approval yang berlaku untuk status ini (satu-satunya sumber
-     * pemetaan status → level; dipakai service, controller, & policy).
+     * Level approval yang berlaku untuk status ini.
+     *
+     * PERHATIAN: untuk FinanceApproved jawabannya bergantung nominal (klaim
+     * besar wajib lewat Direksi), yang tidak diketahui enum. Karena itu jangan
+     * memanggil ini langsung untuk menentukan siapa yang harus bertindak —
+     * pakai Reimbursement::pendingApprovalLevel() yang memperhitungkan ambang.
      */
     public function approvalLevel(): ?ApprovalLevel
     {
         return match ($this) {
             self::Submitted => ApprovalLevel::Manager,
             self::ManagerApproved => ApprovalLevel::Finance,
+            self::FinanceApproved => ApprovalLevel::Director,
             default => null,
         };
     }

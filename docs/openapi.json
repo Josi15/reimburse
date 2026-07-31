@@ -5739,7 +5739,8 @@
                         "type": "string",
                         "enum": [
                             "Manager",
-                            "Finance"
+                            "Finance",
+                            "Direksi"
                         ]
                     },
                     "action": {
@@ -7520,6 +7521,8 @@
                                     "Ditolak Manager",
                                     "Disetujui Finance",
                                     "Ditolak Finance",
+                                    "Disetujui Direksi",
+                                    "Ditolak Direksi",
                                     "Perlu Revisi",
                                     "Dibayar"
                                 ]
@@ -7543,6 +7546,36 @@
                         ]
                     },
                     "is_editable": {
+                        "type": "boolean"
+                    },
+                    "pending_approval_level": {
+                        "type": [
+                            "object",
+                            "null"
+                        ],
+                        "description": "Tahap persetujuan yang sedang ditunggu (null bila tidak ada).\nSudah memperhitungkan ambang nominal Direksi, sehingga frontend\ntak perlu menduplikasi aturannya.",
+                        "properties": {
+                            "value": {
+                                "type": "string"
+                            },
+                            "label": {
+                                "type": "string",
+                                "enum": [
+                                    "Manager",
+                                    "Finance",
+                                    "Direksi"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "value",
+                            "label"
+                        ]
+                    },
+                    "is_ready_for_payment": {
+                        "type": "boolean"
+                    },
+                    "needs_director_approval": {
                         "type": "boolean"
                     },
                     "expense_date": {
@@ -7642,6 +7675,9 @@
                     "currency",
                     "status",
                     "is_editable",
+                    "pending_approval_level",
+                    "is_ready_for_payment",
+                    "needs_director_approval",
                     "expense_date",
                     "submitted_at",
                     "completed_at",
@@ -7860,8 +7896,7 @@
                     "claim_type": {
                         "type": "string",
                         "enum": [
-                            "expense",
-                            "overtime"
+                            "expense"
                         ]
                     },
                     "details": {
@@ -7950,8 +7985,7 @@
                     "claim_type": {
                         "type": "string",
                         "enum": [
-                            "expense",
-                            "overtime"
+                            "expense"
                         ]
                     },
                     "details": {

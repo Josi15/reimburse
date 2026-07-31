@@ -36,8 +36,12 @@ class PaymentService
             // Kunci baris reimbursement untuk mencegah race condition.
             $locked = Reimbursement::whereKey($reimbursement->id)->lockForUpdate()->firstOrFail();
 
-            if ($locked->status !== ReimbursementStatus::FinanceApproved) {
-                $this->fail('Reimbursement tidak berstatus Finance Approved (kemungkinan sudah dibayar).');
+            // Seluruh persetujuan harus lengkap: untuk nominal di atas ambang
+            // itu berarti termasuk Direksi, bukan sekadar Finance.
+            if (! $locked->isReadyForPayment()) {
+                $this->fail($locked->needsDirectorApproval() && $locked->status === ReimbursementStatus::FinanceApproved
+                    ? 'Pengajuan bernilai besar ini masih menunggu persetujuan Direksi.'
+                    : 'Reimbursement belum siap dibayar (kemungkinan sudah dibayar atau belum disetujui).');
             }
 
             if ($locked->payments()->active()->exists()) {

@@ -26,21 +26,21 @@ class ApprovalService
 
     public function approve(Reimbursement $reimbursement, User $approver, ?string $notes = null): Reimbursement
     {
-        [$level, $target] = $this->resolveApprove($reimbursement->status);
+        $level = $this->resolveLevel($reimbursement);
 
-        return $this->apply($reimbursement, $approver, $level, ApprovalAction::Approved, $target, $notes);
+        return $this->apply($reimbursement, $approver, $level, ApprovalAction::Approved, $level->approvedStatus(), $notes);
     }
 
     public function reject(Reimbursement $reimbursement, User $approver, string $notes): Reimbursement
     {
-        [$level, $target] = $this->resolveReject($reimbursement->status);
+        $level = $this->resolveLevel($reimbursement);
 
-        return $this->apply($reimbursement, $approver, $level, ApprovalAction::Rejected, $target, $notes);
+        return $this->apply($reimbursement, $approver, $level, ApprovalAction::Rejected, $level->rejectedStatus(), $notes);
     }
 
     public function requestRevision(Reimbursement $reimbursement, User $approver, string $notes): Reimbursement
     {
-        $level = $this->resolveLevel($reimbursement->status);
+        $level = $this->resolveLevel($reimbursement);
 
         return $this->apply(
             $reimbursement, $approver, $level,
@@ -48,25 +48,14 @@ class ApprovalService
         );
     }
 
-    /** Level approval yang berlaku untuk status sekarang (sumber: enum). */
-    private function resolveLevel(ReimbursementStatus $status): ApprovalLevel
+    /**
+     * Level approval yang sedang ditunggu. Memakai method model (bukan enum
+     * status saja) karena tahap Direksi bergantung pada nominal pengajuan.
+     */
+    private function resolveLevel(Reimbursement $reimbursement): ApprovalLevel
     {
-        return $status->approvalLevel()
+        return $reimbursement->pendingApprovalLevel()
             ?? $this->fail('Status ini tidak menunggu persetujuan.');
-    }
-
-    private function resolveApprove(ReimbursementStatus $status): array
-    {
-        $level = $this->resolveLevel($status);
-
-        return [$level, $level->approvedStatus()];
-    }
-
-    private function resolveReject(ReimbursementStatus $status): array
-    {
-        $level = $this->resolveLevel($status);
-
-        return [$level, $level->rejectedStatus()];
     }
 
     private function apply(
@@ -84,6 +73,12 @@ class ApprovalService
 
             if (! $locked->status->canTransitionTo($target)) {
                 $this->fail("Transisi ke {$target->value} tidak diperbolehkan.");
+            }
+
+            // Setelah baris dikunci, pastikan tingkat yang ditunggu belum
+            // bergeser (mis. approver lain menyetujui lebih dulu).
+            if ($action !== ApprovalAction::RevisionRequested && $locked->pendingApprovalLevel() !== $level) {
+                $this->fail('Pengajuan ini sudah diproses approver lain.');
             }
 
             Approval::create([

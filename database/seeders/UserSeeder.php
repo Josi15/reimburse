@@ -28,8 +28,11 @@ class UserSeeder extends Seeder
 
         $definitions = [
             ['Super Admin', 'super@fundback.test', 'super_admin', $it?->id, null],
+            ['Bagas Direktur', 'direktur@fundback.test', 'director', $it?->id, null],
             ['Andi Admin', 'admin@fundback.test', 'admin', $it?->id, null],
+            ['Fajar Supervisor', 'supervisor@fundback.test', 'supervisor', $it?->id, $manager->id],
             ['Citra Employee', 'employee@fundback.test', 'employee', $it?->id, $manager->id],
+            ['Gita Magang', 'magang@fundback.test', 'intern', $it?->id, $manager->id],
             ['Dewi Finance', 'finance@fundback.test', 'finance', $fin?->id, null],
             ['Eka Auditor', 'auditor@fundback.test', 'auditor', $fin?->id, null],
         ];
