@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\ClaimType;
 use App\Http\Controllers\Controller;
 use App\Models\Bank;
 use App\Models\Category;
@@ -29,6 +30,15 @@ class OptionsController extends Controller
             'data' => Cache::remember('options.categories', self::CACHE_SECONDS,
                 fn () => Category::active()->orderBy('name')->get(['id', 'name', 'max_amount'])),
         ]);
+    }
+
+    /**
+     * Jenis pengajuan + definisi field tambahannya (form dinamis di frontend).
+     * Sumbernya enum ClaimType, jadi tidak perlu cache/DB.
+     */
+    public function claimTypes(): JsonResponse
+    {
+        return response()->json(['data' => ClaimType::options()]);
     }
 
     public function departments(): JsonResponse

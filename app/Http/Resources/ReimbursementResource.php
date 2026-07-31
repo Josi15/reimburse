@@ -12,6 +12,15 @@ class ReimbursementResource extends JsonResource
         return [
             'id' => $this->id,
             'reimbursement_number' => $this->reimbursement_number,
+            'claim_type' => [
+                'value' => $this->claim_type->value,
+                'label' => $this->claim_type->label(),
+                'color' => $this->claim_type->color(),
+                'icon' => $this->claim_type->icon(),
+            ],
+            'details' => $this->details,
+            // Detail siap tampil (label → nilai terformat) untuk halaman detail.
+            'display_details' => $this->display_details,
             'title' => $this->title,
             'description' => $this->description,
             'reason' => $this->reason,

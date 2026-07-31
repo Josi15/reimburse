@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\ClaimType;
 use App\Models\Category;
 use App\Models\Department;
 use App\Models\Reimbursement;
@@ -19,6 +20,8 @@ class ReimbursementFactory extends Factory
 
         return [
             'reimbursement_number' => 'RMB-'.date('Y').'-'.fake()->unique()->numerify('######'),
+            'claim_type' => ClaimType::Expense,
+            'details' => null,
             'user_id' => User::factory(),
             'department_id' => Department::factory(),
             'category_id' => Category::factory(),
@@ -31,6 +34,50 @@ class ReimbursementFactory extends Factory
             'status' => 'draft',
             'expense_date' => fake()->dateTimeBetween('-1 month', 'now')->format('Y-m-d'),
         ];
+    }
+
+    /** Pengajuan pengadaan barang (nominal = jumlah × harga satuan). */
+    public function goods(): static
+    {
+        return $this->state(function () {
+            $quantity = fake()->numberBetween(1, 5);
+            $unitPrice = fake()->numberBetween(500_000, 20_000_000);
+
+            return [
+                'claim_type' => ClaimType::Goods,
+                'amount' => $quantity * $unitPrice,
+                'details' => [
+                    'item_name' => fake()->randomElement(['Server Dell R650', 'Laptop ThinkPad T14', 'Switch Cisco 24-port']),
+                    'specification' => fake()->sentence(),
+                    'quantity' => $quantity,
+                    'unit_price' => $unitPrice,
+                    'vendor' => fake()->company(),
+                    'urgency' => fake()->randomElement(['normal', 'urgent', 'critical']),
+                ],
+            ];
+        });
+    }
+
+    /** Pengajuan lembur (nominal = total jam × upah per jam). */
+    public function overtime(): static
+    {
+        return $this->state(function () {
+            $hours = fake()->randomElement([2, 3, 4.5, 6]);
+            $rate = fake()->numberBetween(25_000, 75_000);
+
+            return [
+                'claim_type' => ClaimType::Overtime,
+                'amount' => (int) round($hours * $rate),
+                'details' => [
+                    'overtime_date' => now()->subDays(fake()->numberBetween(1, 20))->toDateString(),
+                    'start_time' => '18:00',
+                    'end_time' => '22:00',
+                    'hours' => $hours,
+                    'hourly_rate' => $rate,
+                    'work_description' => fake()->sentence(),
+                ],
+            ];
+        });
     }
 
     public function submitted(): static

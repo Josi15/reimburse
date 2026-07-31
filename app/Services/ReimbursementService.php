@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\AuditEvent;
+use App\Enums\ClaimType;
 use App\Enums\ReimbursementStatus;
 use App\Models\Reimbursement;
 use App\Models\User;
@@ -25,9 +26,13 @@ class ReimbursementService
     public function createDraft(User $user, array $data, iterable $files = []): Reimbursement
     {
         return DB::transaction(function () use ($user, $data, $files) {
+            $claimType = ClaimType::tryFrom($data['claim_type'] ?? '') ?? ClaimType::Expense;
+
             $reimbursement = Reimbursement::create([
                 'user_id' => $user->id,
                 'department_id' => $user->department_id,
+                'claim_type' => $claimType,
+                'details' => $this->cleanDetails($claimType, $data['details'] ?? null),
                 'category_id' => $data['category_id'],
                 'project_id' => $data['project_id'] ?? null,
                 'bank_account_id' => $data['bank_account_id'] ?? null,
@@ -50,10 +55,20 @@ class ReimbursementService
     public function updateDraft(Reimbursement $reimbursement, User $user, array $data, iterable $files = [], array $deleteAttachmentIds = []): Reimbursement
     {
         return DB::transaction(function () use ($reimbursement, $user, $data, $files, $deleteAttachmentIds) {
-            $reimbursement->update(collect($data)->only([
+            $payload = collect($data)->only([
                 'category_id', 'project_id', 'bank_account_id', 'title', 'description',
                 'reason', 'amount', 'expense_date',
-            ])->toArray());
+            ])->toArray();
+
+            // Ganti jenis pengajuan → detail lama dibuang, diganti detail jenis baru.
+            $claimType = ClaimType::tryFrom($data['claim_type'] ?? '') ?? $reimbursement->claim_type;
+
+            if (array_key_exists('claim_type', $data) || array_key_exists('details', $data)) {
+                $payload['claim_type'] = $claimType;
+                $payload['details'] = $this->cleanDetails($claimType, $data['details'] ?? null);
+            }
+
+            $reimbursement->update($payload);
 
             foreach ($reimbursement->attachments()->whereIn('id', $deleteAttachmentIds)->get() as $attachment) {
                 $this->attachments->delete($attachment);
@@ -95,6 +110,26 @@ class ReimbursementService
         $this->notifier->submitted($reimbursement);
 
         return $reimbursement;
+    }
+
+    /**
+     * Sisakan hanya field yang memang dikenal jenis pengajuan ini (buang key
+     * asing & nilai kosong), agar kolom JSON tidak menampung sampah input.
+     */
+    private function cleanDetails(ClaimType $type, ?array $details): ?array
+    {
+        if (! $details) {
+            return null;
+        }
+
+        $allowed = array_column($type->fields(), 'key');
+
+        $clean = collect($details)
+            ->only($allowed)
+            ->reject(fn ($value) => $value === null || $value === '')
+            ->all();
+
+        return $clean === [] ? null : $clean;
     }
 
     /** Validasi transisi status terhadap state machine enum. */

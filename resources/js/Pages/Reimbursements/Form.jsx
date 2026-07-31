@@ -1,3 +1,5 @@
+import ClaimTypeFields from '@/Components/ClaimTypeFields';
+import ClaimTypePicker from '@/Components/ClaimTypePicker';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
@@ -26,10 +28,12 @@ export default function Form({ id = null }) {
     const [categories, setCategories] = useState([]);
     const [accounts, setAccounts] = useState([]);
     const [projects, setProjects] = useState([]);
+    const [claimTypes, setClaimTypes] = useState([]);
     const [quota, setQuota] = useState(null);
     const [existingFiles, setExistingFiles] = useState([]);
     const [deleteIds, setDeleteIds] = useState([]);
     const [form, setForm] = useState({
+        claim_type: 'expense',
         title: '',
         category_id: '',
         amount: '',
@@ -38,6 +42,7 @@ export default function Form({ id = null }) {
         project_id: '',
         reason: '',
         description: '',
+        details: {},
         attachments: [],
     });
 
@@ -45,6 +50,21 @@ export default function Form({ id = null }) {
         setForm((f) => ({ ...f, [key]: e.target.value }));
         // Bersihkan error field ini begitu user memperbaikinya.
         setErrors((prev) => (prev[key] ? { ...prev, [key]: undefined } : prev));
+    };
+
+    // Ganti jenis pengajuan → detail lama dikosongkan (field-nya berbeda).
+    const setClaimType = (value) => {
+        setForm((f) => ({ ...f, claim_type: value, details: {} }));
+        setErrors({});
+    };
+
+    const setDetail = (key, value) => {
+        setForm((f) => ({ ...f, details: { ...f.details, [key]: value } }));
+        setErrors((prev) =>
+            prev[`details.${key}`]
+                ? { ...prev, [`details.${key}`]: undefined }
+                : prev,
+        );
     };
 
     // Tambah bukti secara bertahap (menumpuk, bukan menimpa) — bisa banyak struk.
@@ -90,6 +110,9 @@ export default function Form({ id = null }) {
         api.get('/api/reimbursements/quota')
             .then((d) => setQuota(d))
             .catch(() => {});
+        api.get('/api/options/claim-types')
+            .then((d) => setClaimTypes(d.data))
+            .catch(() => {});
 
         if (isEdit) {
             api.get(`/api/reimbursements/${id}`)
@@ -97,6 +120,8 @@ export default function Form({ id = null }) {
                     const r = d.data;
                     setForm((f) => ({
                         ...f,
+                        claim_type: r.claim_type?.value ?? 'expense',
+                        details: r.details ?? {},
                         title: r.title ?? '',
                         category_id: r.category_id ?? '',
                         amount: r.amount ?? '',
@@ -117,6 +142,19 @@ export default function Form({ id = null }) {
         (c) => String(c.id) === String(form.category_id),
     );
 
+    const selectedType = claimTypes.find((t) => t.value === form.claim_type);
+
+    // Jenis tertentu nominalnya hasil perkalian dua field (mis. jumlah × harga
+    // satuan, jam × upah). Backend menghitung ulang; ini hanya pratinjau.
+    const formula = selectedType?.amount_formula ?? null;
+    const computedAmount = formula
+        ? Math.round(
+              (Number(form.details[formula[0]]) || 0) *
+                  (Number(form.details[formula[1]]) || 0),
+          )
+        : null;
+    const effectiveAmount = formula ? computedAmount : form.amount;
+
     async function submit(e) {
         e.preventDefault();
         setBusy(true);
@@ -124,9 +162,9 @@ export default function Form({ id = null }) {
 
         const fd = new FormData();
         [
+            'claim_type',
             'title',
             'category_id',
-            'amount',
             'expense_date',
             'bank_account_id',
             'project_id',
@@ -134,6 +172,15 @@ export default function Form({ id = null }) {
             'description',
         ].forEach((k) => {
             if (form[k] !== '' && form[k] !== null) fd.append(k, form[k]);
+        });
+
+        // Nominal: manual untuk biaya, hasil hitung untuk barang/layanan/lembur.
+        if (effectiveAmount !== '' && effectiveAmount !== null)
+            fd.append('amount', effectiveAmount);
+
+        Object.entries(form.details).forEach(([k, v]) => {
+            if (v !== '' && v !== null && v !== undefined)
+                fd.append(`details[${k}]`, v);
         });
         [...form.attachments].forEach((file) =>
             fd.append('attachments[]', file),
@@ -170,9 +217,7 @@ export default function Form({ id = null }) {
                         ]}
                     />
                     <h2 className="mt-1 text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                        {isEdit
-                            ? 'Edit Pengajuan'
-                            : 'Buat Pengajuan Reimbursement'}
+                        {isEdit ? 'Edit Pengajuan' : 'Buat Pengajuan Baru'}
                     </h2>
                 </div>
             }
@@ -185,6 +230,23 @@ export default function Form({ id = null }) {
                         <Loading />
                     ) : (
                         <form onSubmit={submit} className="space-y-5">
+                            <div>
+                                <InputLabel value="Jenis Pengajuan *" />
+                                <p className="mb-2 mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                                    Pilih jenis dulu — kolom isian menyesuaikan
+                                    otomatis.
+                                </p>
+                                <ClaimTypePicker
+                                    types={claimTypes}
+                                    value={form.claim_type}
+                                    onChange={setClaimType}
+                                />
+                                <InputError
+                                    message={errors.claim_type?.[0]}
+                                    className="mt-1"
+                                />
+                            </div>
+
                             <div>
                                 <InputLabel htmlFor="title" value="Judul *" />
                                 <TextInput
@@ -240,17 +302,37 @@ export default function Form({ id = null }) {
                                 <div>
                                     <InputLabel
                                         htmlFor="amount"
-                                        value="Nominal (Rp) *"
+                                        value={
+                                            formula
+                                                ? 'Nominal (Rp) — dihitung otomatis'
+                                                : 'Nominal (Rp) *'
+                                        }
                                     />
                                     <TextInput
                                         id="amount"
                                         type="number"
                                         min="1"
-                                        className="mt-1 block w-full"
-                                        value={form.amount}
+                                        className="mt-1 block w-full disabled:bg-gray-100 disabled:text-gray-500 dark:disabled:bg-gray-900/50"
+                                        value={
+                                            formula
+                                                ? (computedAmount ?? '')
+                                                : form.amount
+                                        }
                                         onChange={set('amount')}
-                                        required
+                                        disabled={!!formula}
+                                        required={!formula}
                                     />
+                                    {formula && (
+                                        <p className="mt-1 text-xs text-brand-600 dark:text-brand-400">
+                                            {rupiah(computedAmount || 0)} ={' '}
+                                            {form.details[formula[0]] || 0} ×{' '}
+                                            {rupiah(
+                                                Number(
+                                                    form.details[formula[1]],
+                                                ) || 0,
+                                            )}
+                                        </p>
+                                    )}
                                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                         {quota && quota.limit !== null ? (
                                             <>
@@ -349,6 +431,14 @@ export default function Form({ id = null }) {
                                     />
                                 </div>
                             </div>
+
+                            {/* Field khusus jenis pengajuan (barang, layanan, lembur) */}
+                            <ClaimTypeFields
+                                type={selectedType}
+                                values={form.details}
+                                onChange={setDetail}
+                                errors={errors}
+                            />
 
                             <div>
                                 <InputLabel htmlFor="reason" value="Alasan *" />

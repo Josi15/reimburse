@@ -21,6 +21,13 @@ class CategorySeeder extends Seeder
             ['name' => 'Pelatihan', 'code' => 'TRAINING', 'max_amount' => null],
             ['name' => 'Kesehatan', 'code' => 'MEDICAL', 'max_amount' => 3_000_000],
             ['name' => 'Komunikasi', 'code' => 'COMM', 'max_amount' => 500_000],
+
+            // Kategori untuk jenis pengajuan non-reimbursement (barang, layanan, lembur).
+            ['name' => 'Pengadaan Barang & Aset', 'code' => 'GOODS', 'max_amount' => null],
+            ['name' => 'Perangkat IT & Server', 'code' => 'IT', 'max_amount' => null],
+            ['name' => 'Langganan & Layanan Cloud', 'code' => 'SUBSCRIPTION', 'max_amount' => null],
+            ['name' => 'Lembur', 'code' => 'OVERTIME', 'max_amount' => 5_000_000],
+            ['name' => 'Perawatan & Perbaikan', 'code' => 'MAINTENANCE', 'max_amount' => 10_000_000],
         ];
 
         foreach ($categories as $cat) {

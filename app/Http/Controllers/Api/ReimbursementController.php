@@ -51,7 +51,7 @@ class ReimbursementController extends Controller
 
         $items = $this->paginateResource($query, $request, [
             'searchable' => ['reimbursement_number', 'title'],
-            'filters' => ['status' => 'status', 'category_id' => 'category_id', 'user_id' => 'user_id', 'project_id' => 'project_id'],
+            'filters' => ['status' => 'status', 'claim_type' => 'claim_type', 'category_id' => 'category_id', 'user_id' => 'user_id', 'project_id' => 'project_id'],
             'sortable' => ['created_at', 'submitted_at', 'amount', 'status'],
             'default_sort' => ['created_at', 'desc'],
         ]);

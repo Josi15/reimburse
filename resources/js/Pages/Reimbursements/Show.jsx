@@ -214,7 +214,10 @@ function PayModal({ show, claim, onClose, onDone }) {
                         />
                     </div>
                     <div>
-                        <InputLabel htmlFor="pay-notes" value="Catatan Finance" />
+                        <InputLabel
+                            htmlFor="pay-notes"
+                            value="Catatan Finance"
+                        />
                         <TextareaInput
                             id="pay-notes"
                             rows={2}
@@ -341,8 +344,7 @@ export default function Show({ id }) {
                             { label: 'Dashboard', href: '/dashboard' },
                             { label: 'Reimbursement', href: '/reimbursements' },
                             {
-                                label:
-                                    claim?.reimbursement_number ?? 'Detail',
+                                label: claim?.reimbursement_number ?? 'Detail',
                             },
                         ]}
                     />
@@ -371,9 +373,19 @@ export default function Show({ id }) {
                                             {claim.title}
                                         </h3>
                                     </div>
-                                    <Badge color={claim.status.color}>
-                                        {claim.status.label}
-                                    </Badge>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        {claim.claim_type && (
+                                            <Badge
+                                                color={claim.claim_type.color}
+                                            >
+                                                {claim.claim_type.icon}{' '}
+                                                {claim.claim_type.label}
+                                            </Badge>
+                                        )}
+                                        <Badge color={claim.status.color}>
+                                            {claim.status.label}
+                                        </Badge>
+                                    </div>
                                 </div>
 
                                 <dl className="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-3">
@@ -444,8 +456,10 @@ export default function Show({ id }) {
                                                 Rekening Sumber
                                             </dt>
                                             <dd className="text-gray-700 dark:text-gray-200">
-                                                {claim.payment.source_account
-                                                    .label}
+                                                {
+                                                    claim.payment.source_account
+                                                        .label
+                                                }
                                                 {' — '}
                                                 {
                                                     claim.payment.source_account
@@ -459,6 +473,31 @@ export default function Show({ id }) {
                                         </div>
                                     )}
                                 </dl>
+
+                                {/* Detail spesifik jenis pengajuan */}
+                                {(claim.display_details ?? []).length > 0 && (
+                                    <div className="mt-5 rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+                                        <div className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            {claim.claim_type?.icon} Detail{' '}
+                                            {claim.claim_type?.label}
+                                        </div>
+                                        <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+                                            {claim.display_details.map((d) => (
+                                                <div
+                                                    key={d.label}
+                                                    className="flex justify-between gap-4 border-b border-gray-50 pb-1 dark:border-gray-700/50"
+                                                >
+                                                    <dt className="text-gray-400">
+                                                        {d.label}
+                                                    </dt>
+                                                    <dd className="text-right font-medium text-gray-700 dark:text-gray-200">
+                                                        {d.value}
+                                                    </dd>
+                                                </div>
+                                            ))}
+                                        </dl>
+                                    </div>
+                                )}
 
                                 <div className="mt-5 border-t border-gray-100 pt-4 dark:border-gray-700">
                                     <div className="text-sm text-gray-400">

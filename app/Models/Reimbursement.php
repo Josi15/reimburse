@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ClaimType;
 use App\Enums\ReimbursementStatus;
 use App\Models\Concerns\Auditable;
 use App\Observers\ReimbursementObserver;
@@ -29,6 +30,8 @@ class Reimbursement extends Model
 
     protected $fillable = [
         'reimbursement_number',
+        'claim_type',
+        'details',
         'user_id',
         'department_id',
         'category_id',
@@ -49,6 +52,8 @@ class Reimbursement extends Model
     {
         return [
             'amount' => 'integer',
+            'claim_type' => ClaimType::class,
+            'details' => 'array',
             'status' => ReimbursementStatus::class,
             'expense_date' => 'date',
             'submitted_at' => 'datetime',
@@ -112,6 +117,17 @@ class Reimbursement extends Model
         return Attribute::get(fn () => 'Rp '.number_format((int) $this->amount, 0, ',', '.'));
     }
 
+    /** Detail spesifik jenis pengajuan, siap tampil (label → nilai). */
+    protected function displayDetails(): Attribute
+    {
+        return Attribute::get(function () {
+            $details = $this->details;
+
+            return ($this->claim_type ?? ClaimType::Expense)
+                ->displayDetails(is_array($details) ? $details : null);
+        });
+    }
+
     // ---- State machine helpers ------------------------------------------
 
     public function canTransitionTo(ReimbursementStatus $target): bool
@@ -132,6 +148,11 @@ class Reimbursement extends Model
     public function scopeStatus(Builder $query, ReimbursementStatus|string $status): Builder
     {
         return $query->where('status', $status instanceof ReimbursementStatus ? $status->value : $status);
+    }
+
+    public function scopeClaimType(Builder $query, ClaimType|string $type): Builder
+    {
+        return $query->where('claim_type', $type instanceof ClaimType ? $type->value : $type);
     }
 
     public function scopeForUser(Builder $query, int $userId): Builder

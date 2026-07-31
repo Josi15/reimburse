@@ -859,6 +859,12 @@ parameters:
 			path: app/Http/Resources/ReimbursementResource.php
 
 		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ReimbursementResource\:\:\$claim_type\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Http/Resources/ReimbursementResource.php
+
+		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\ReimbursementResource\:\:\$completed_at\.$#'
 			identifier: property.notFound
 			count: 1
@@ -884,6 +890,18 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\ReimbursementResource\:\:\$description\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ReimbursementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ReimbursementResource\:\:\$details\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ReimbursementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ReimbursementResource\:\:\$display_details\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Resources/ReimbursementResource.php
@@ -1087,6 +1105,12 @@ parameters:
 			path: app/Models/Reimbursement.php
 
 		-
+			message: '#^Call to function is_array\(\) with string\|null will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Models/Reimbursement.php
+
+		-
 			message: '#^Cannot call method canTransitionTo\(\) on string\.$#'
 			identifier: method.nonObject
 			count: 1
@@ -1103,6 +1127,18 @@ parameters:
 			identifier: property.nonObject
 			count: 1
 			path: app/Notifications/ReimbursementActioned.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Notifications/ReimbursementReadyForPayment.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Notifications/ReimbursementReadyForPayment.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
@@ -1293,7 +1329,7 @@ parameters:
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:notify\(\)\.$#'
 			identifier: method.notFound
-			count: 2
+			count: 3
 			path: app/Services/ReimbursementNotifier.php
 
 		-

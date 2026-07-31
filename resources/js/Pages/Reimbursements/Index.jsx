@@ -29,10 +29,18 @@ export default function Index() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [status, setStatus] = useState('');
+    const [claimType, setClaimType] = useState('');
+    const [claimTypes, setClaimTypes] = useState([]);
     const [q, setQ] = useState('');
     const [page, setPage] = useState(1);
     const [nonce, setNonce] = useState(0);
     const dq = useDebouncedValue(q);
+
+    useEffect(() => {
+        api.get('/api/options/claim-types')
+            .then((d) => setClaimTypes(d.data))
+            .catch(() => {});
+    }, []);
 
     useEffect(() => {
         let active = true;
@@ -41,6 +49,7 @@ export default function Index() {
         const params = new URLSearchParams({
             page,
             ...(status && { status }),
+            ...(claimType && { claim_type: claimType }),
             ...(dq && { q: dq }),
         });
         api.get(`/api/reimbursements?${params}`)
@@ -58,7 +67,7 @@ export default function Index() {
         return () => {
             active = false;
         };
-    }, [page, status, dq, nonce]);
+    }, [page, status, claimType, dq, nonce]);
 
     const reload = () => setNonce((n) => n + 1);
 
@@ -106,10 +115,26 @@ export default function Index() {
                                 </option>
                             ))}
                         </SelectInput>
+                        <SelectInput
+                            className="text-sm"
+                            aria-label="Filter jenis pengajuan"
+                            value={claimType}
+                            onChange={(e) => {
+                                setClaimType(e.target.value);
+                                setPage(1);
+                            }}
+                        >
+                            <option value="">Semua Jenis</option>
+                            {claimTypes.map((t) => (
+                                <option key={t.value} value={t.value}>
+                                    {t.icon} {t.label}
+                                </option>
+                            ))}
+                        </SelectInput>
                     </div>
 
                     {loading ? (
-                        <TableSkeleton rows={6} cols={7} />
+                        <TableSkeleton rows={6} cols={8} />
                     ) : error ? (
                         <ErrorState onRetry={reload} />
                     ) : rows?.length === 0 ? (
@@ -124,6 +149,7 @@ export default function Index() {
                                     <THead>
                                         <TR>
                                             <TH>Nomor</TH>
+                                            <TH>Jenis</TH>
                                             <TH>Judul</TH>
                                             <TH>Kategori</TH>
                                             <TH>Pengaju</TH>
@@ -141,6 +167,19 @@ export default function Index() {
                                                         r.reimbursement_number
                                                     }
                                                 />
+                                                <TD>
+                                                    {r.claim_type && (
+                                                        <Badge
+                                                            color={
+                                                                r.claim_type
+                                                                    .color
+                                                            }
+                                                        >
+                                                            {r.claim_type.icon}{' '}
+                                                            {r.claim_type.label}
+                                                        </Badge>
+                                                    )}
+                                                </TD>
                                                 <TD>{r.title}</TD>
                                                 <TD>
                                                     {r.category?.name ?? '-'}
@@ -175,6 +214,9 @@ export default function Index() {
                                             {r.title}
                                         </p>
                                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                            {r.claim_type
+                                                ? `${r.claim_type.icon} ${r.claim_type.label} · `
+                                                : ''}
                                             {r.user?.name ?? '-'} ·{' '}
                                             {r.formatted_amount} ·{' '}
                                             {formatDate(r.created_at)}

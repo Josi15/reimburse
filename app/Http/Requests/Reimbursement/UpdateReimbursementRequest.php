@@ -3,17 +3,24 @@
 namespace App\Http\Requests\Reimbursement;
 
 use App\Http\Requests\Reimbursement\Concerns\ChecksReimbursementLimits;
+use App\Http\Requests\Reimbursement\Concerns\HandlesClaimTypeInput;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 class UpdateReimbursementRequest extends FormRequest
 {
-    use ChecksReimbursementLimits;
+    use ChecksReimbursementLimits, HandlesClaimTypeInput;
 
     public function authorize(): bool
     {
         return true; // Otorisasi via policy (update) di controller.
+    }
+
+    /** Nominal jenis terhitung (barang/layanan/lembur) diturunkan di server. */
+    protected function prepareForValidation(): void
+    {
+        $this->computeAmountFromDetails();
     }
 
     public function rules(): array
@@ -24,6 +31,8 @@ class UpdateReimbursementRequest extends FormRequest
         $maxFiles = config('reimbursement.max_files_per_request');
 
         return [
+            // Jenis pengajuan + field khusus jenisnya (fallback: jenis tersimpan).
+            ...$this->claimTypeRules(required: false),
             'category_id' => ['sometimes', 'required', 'integer', Rule::exists('categories', 'id')->whereNull('deleted_at')],
             'project_id' => ['nullable', 'integer',
                 Rule::exists('projects', 'id')->where('is_active', true)->whereNull('deleted_at')],

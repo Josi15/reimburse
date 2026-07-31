@@ -36,6 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index']);
 
     // ---- Opsi dropdown untuk form (Phase 17) ------------------------------
+    Route::get('options/claim-types', [OptionsController::class, 'claimTypes']);
     Route::get('options/categories', [OptionsController::class, 'categories']);
     Route::get('options/departments', [OptionsController::class, 'departments']);
     Route::get('options/projects', [OptionsController::class, 'projects']);
