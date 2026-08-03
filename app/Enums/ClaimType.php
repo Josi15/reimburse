@@ -153,9 +153,31 @@ enum ClaimType: string
                 ['key' => 'start_time', 'label' => 'Jam Mulai', 'type' => 'time', 'required' => true],
                 ['key' => 'end_time', 'label' => 'Jam Selesai', 'type' => 'time', 'required' => true],
                 ['key' => 'hours', 'label' => 'Total Jam', 'type' => 'number', 'required' => true, 'min' => 0.5, 'step' => 0.5, 'suffix' => 'jam'],
-                ['key' => 'hourly_rate', 'label' => 'Upah per Jam', 'type' => 'number', 'required' => true, 'min' => 1, 'suffix' => 'Rp'],
+                // Tarif mengikuti jabatan, bukan isian bebas. Diisi server dari
+                // roles.overtime_rate (lihat serverSourcedFields()).
+                ['key' => 'hourly_rate', 'label' => 'Upah per Jam', 'type' => 'number', 'required' => true,
+                    'min' => 1, 'suffix' => 'Rp', 'source' => 'overtime_rate',
+                    'help' => 'Ditentukan otomatis sesuai jabatan Anda.'],
                 ['key' => 'work_description', 'label' => 'Pekerjaan yang Dikerjakan', 'type' => 'textarea', 'required' => true],
             ],
+        };
+    }
+
+    /**
+     * Field yang nilainya DITENTUKAN SERVER dari profil user, bukan diisi
+     * sendiri oleh pengaju. Bentuknya [key field => sumber nilainya].
+     *
+     * Upah lembur mengikuti jabatan; kalau dibiarkan sebagai isian bebas,
+     * siapa pun bisa mengetik tarif berapa pun dan langsung menaikkan nominal
+     * klaimnya.
+     *
+     * @return array<string, string>
+     */
+    public function serverSourcedFields(): array
+    {
+        return match ($this) {
+            self::Overtime => ['hourly_rate' => 'overtime_rate'],
+            default => [],
         };
     }
 
@@ -267,18 +289,44 @@ enum ClaimType: string
         return $rows;
     }
 
-    /** Payload untuk form dinamis di frontend. */
-    public function toOption(): array
+    /**
+     * Payload untuk form dinamis di frontend.
+     *
+     * Field bersumber-server diberi `fixed_value` sesuai profil user, supaya
+     * form bisa menampilkannya terkunci beserta angkanya (mis. upah lembur
+     * sesuai jabatan) tanpa frontend perlu tahu aturannya.
+     */
+    public function toOption(?User $user = null): array
     {
+        $fields = array_map(function (array $field) use ($user) {
+            $source = $field['source'] ?? null;
+
+            if ($source !== null) {
+                $field['readonly'] = true;
+                $field['fixed_value'] = self::resolveSourcedValue($source, $user);
+            }
+
+            return $field;
+        }, $this->fields());
+
         return [
             'value' => $this->value,
             'label' => $this->label(),
             'description' => $this->description(),
             'icon' => $this->icon(),
             'color' => $this->color(),
-            'fields' => $this->fields(),
+            'fields' => $fields,
             'amount_formula' => $this->amountFormula(),
         ];
+    }
+
+    /** Ambil nilai field bersumber-server dari profil user. */
+    public static function resolveSourcedValue(string $source, ?User $user): ?int
+    {
+        return match ($source) {
+            'overtime_rate' => $user?->overtimeRate(),
+            default => null,
+        };
     }
 
     /**
@@ -288,6 +336,6 @@ enum ClaimType: string
      */
     public static function options(?User $user = null): array
     {
-        return array_map(fn (self $type) => $type->toOption(), self::casesFor($user));
+        return array_map(fn (self $type) => $type->toOption($user), self::casesFor($user));
     }
 }

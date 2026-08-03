@@ -20,6 +20,9 @@ class StoreReimbursementRequest extends FormRequest
     /** Nominal jenis terhitung (barang/layanan/lembur) diturunkan di server. */
     protected function prepareForValidation(): void
     {
+        // Urutannya penting: tarif dari jabatan dipasang dulu, baru
+        // nominalnya dihitung dari detail yang sudah bersih.
+        $this->applyServerSourcedDetails();
         $this->computeAmountFromDetails();
     }
 

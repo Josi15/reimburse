@@ -71,17 +71,19 @@ class RolePermissionSeeder extends Seeder
         // Jenis pengajuan penuh: biaya (bebas) + lembur + pengadaan.
         $allClaimTypes = ['reimbursement.overtime', 'reimbursement.procurement'];
 
-        // ---- Pemetaan role → [display, permissions, plafon] --------------
+        // ---- Pemetaan role → [display, permissions, plafon, upah lembur] --
         // Plafon (IDR/bulan): null = tanpa batas, 0 = tak boleh mengajukan.
+        // Upah lembur (IDR/jam): dimulai Rp 30.000 di Karyawan lalu naik
+        // Rp 10.000 tiap jenjang ke atas; null = tak berhak lembur.
         $map = [
-            'super_admin' => ['Super Admin', $all, 50_000_000], // akses penuh
+            'super_admin' => ['Super Admin', $all, 50_000_000, 80_000], // akses penuh
             'director' => ['Direktur', [
                 ...$canSubmitClaims, ...$allClaimTypes,
                 // Gerbang terakhir untuk pengajuan bernilai besar.
                 'reimbursement.approve.director',
                 'reimbursement.viewAny', 'payment.view',
                 'dashboard.viewAll', 'report.view', 'report.export', 'audit.view',
-            ], 50_000_000],
+            ], 50_000_000, 80_000],
             'admin' => ['Admin', [
                 ...$canSubmitClaims, ...$allClaimTypes,
                 'user.view', 'user.create', 'user.update', 'user.delete',
@@ -89,48 +91,49 @@ class RolePermissionSeeder extends Seeder
                 'company_account.manage',
                 'reimbursement.viewAny', 'dashboard.viewAll',
                 'report.view', 'report.export', 'audit.view',
-            ], 25_000_000],
+            ], 25_000_000, 70_000],
             'finance' => ['Finance', [
                 ...$canSubmitClaims, ...$allClaimTypes,
                 'reimbursement.viewAny', 'reimbursement.approve.finance',
                 'payment.view', 'payment.process',
                 'company_account.manage',
                 'dashboard.viewAll', 'report.view', 'report.export',
-            ], 10_000_000],
+            ], 10_000_000, 60_000],
             'manager' => ['Manager', [
                 ...$canSubmitClaims, ...$allClaimTypes,
                 'reimbursement.viewAny', 'reimbursement.approve.manager',
                 'dashboard.viewAll', 'report.view', 'report.export',
-            ], 5_000_000],
+            ], 5_000_000, 50_000],
             'supervisor' => ['Supervisor', [
                 ...$canSubmitClaims, ...$allClaimTypes,
                 // Atasan lini pertama: menilai di tingkat yang sama dengan Manager.
                 'reimbursement.viewAny', 'reimbursement.approve.manager',
                 'dashboard.viewAll', 'report.view', 'report.export',
-            ], 3_000_000],
+            ], 3_000_000, 40_000],
             // Biaya & lembur saja — tidak boleh mengajukan pengadaan.
             'employee' => ['Employee', [
                 ...$canSubmitClaims,
                 'reimbursement.overtime',
                 'report.export',
-            ], 1_500_000],
+            ], 1_500_000, 30_000],
             // Paling terbatas: hanya penggantian biaya.
             'intern' => ['Staf Magang', [
                 ...$canSubmitClaims,
-            ], 500_000],
+            ], 500_000, null],
             'auditor' => ['Auditor', [ // read-only penuh, tak mengajukan
                 'reimbursement.viewAny', 'payment.view', 'dashboard.viewAll',
                 'report.view', 'report.export', 'audit.view',
-            ], 0],
+            ], 0, null],
         ];
 
-        foreach ($map as $slug => [$display, $perms, $limit]) {
+        foreach ($map as $slug => [$display, $perms, $limit, $overtimeRate]) {
             $role = Role::firstOrCreate(
                 ['name' => $slug],
                 ['display_name' => $display, 'guard_name' => 'web'],
             );
-            // Perbarui plafon secara eksplisit agar re-seed menyetel ulang nilainya.
-            $role->update(['reimbursement_limit' => $limit]);
+            // Perbarui plafon & upah lembur secara eksplisit agar re-seed
+            // menyetel ulang nilainya.
+            $role->update(['reimbursement_limit' => $limit, 'overtime_rate' => $overtimeRate]);
             $ids = collect($perms)->map(fn ($p) => $permModels[$p]->id)->all();
             $role->permissions()->sync($ids);
         }

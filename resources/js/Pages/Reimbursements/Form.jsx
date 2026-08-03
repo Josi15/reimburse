@@ -161,6 +161,32 @@ export default function Form({ id = null }) {
 
     const selectedType = claimTypes.find((t) => t.value === form.claim_type);
 
+    // Isi otomatis field bersumber-server (mis. upah lembur menurut jabatan)
+    // agar pratinjau nominal ikut benar. Server tetap menimpanya saat menyimpan.
+    useEffect(() => {
+        const locked = (selectedType?.fields ?? []).filter(
+            (f) => f.readonly && f.fixed_value != null,
+        );
+        if (locked.length === 0) return;
+
+        setForm((f) => {
+            const details = { ...f.details };
+            let changed = false;
+
+            locked.forEach((field) => {
+                if (
+                    String(details[field.key] ?? '') !==
+                    String(field.fixed_value)
+                ) {
+                    details[field.key] = field.fixed_value;
+                    changed = true;
+                }
+            });
+
+            return changed ? { ...f, details } : f;
+        });
+    }, [selectedType]);
+
     // Jenis tertentu nominalnya hasil perkalian dua field (mis. jumlah × harga
     // satuan, jam × upah). Backend menghitung ulang; ini hanya pratinjau.
     const formula = selectedType?.amount_formula ?? null;

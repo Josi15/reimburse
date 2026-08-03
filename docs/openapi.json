@@ -7745,6 +7745,12 @@
                             "integer",
                             "null"
                         ]
+                    },
+                    "overtime_rate": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
                     }
                 },
                 "required": [
@@ -7755,7 +7761,8 @@
                     "description",
                     "created_at",
                     "updated_at",
-                    "reimbursement_limit"
+                    "reimbursement_limit",
+                    "overtime_rate"
                 ],
                 "title": "Role"
             },

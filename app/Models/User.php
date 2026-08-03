@@ -147,6 +147,18 @@ class User extends Authenticatable
     }
 
     /**
+     * Upah lembur per jam menurut jabatan (IDR). Bila user memegang beberapa
+     * role, yang berlaku adalah tarif TERTINGGI. NULL = tidak berhak lembur
+     * (mis. Staf Magang atau Auditor).
+     */
+    public function overtimeRate(): ?int
+    {
+        $rate = $this->roles->pluck('overtime_rate')->filter()->max();
+
+        return $rate === null ? null : (int) $rate;
+    }
+
+    /**
      * Total nominal reimbursement milik user pada BULAN BERJALAN (berdasarkan
      * created_at), tidak termasuk yang ditolak. Dipakai untuk plafon bulanan
      * per jabatan. $excludeId mengecualikan pengajuan yang sedang diedit.

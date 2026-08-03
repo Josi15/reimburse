@@ -19,12 +19,14 @@ class Role extends Model
         'guard_name',
         'description',
         'reimbursement_limit',
+        'overtime_rate',
     ];
 
     protected function casts(): array
     {
         return [
             'reimbursement_limit' => 'integer',
+            'overtime_rate' => 'integer',
         ];
     }
 

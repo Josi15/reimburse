@@ -54,6 +54,8 @@ trait HandlesClaimTypeInput
     public function messages(): array
     {
         return [
+            'details.hourly_rate.required' => 'Jabatan Anda belum memiliki tarif upah lembur. '
+                .'Hubungi Admin untuk menetapkannya di menu Master.',
             'claim_type.in' => 'Anda tidak berhak mengajukan jenis ini. '
                 .'Jenis yang tersedia untuk Anda: '
                 .implode(', ', array_map(
@@ -61,6 +63,38 @@ trait HandlesClaimTypeInput
                     ClaimType::casesFor($this->user()),
                 )).'.',
         ];
+    }
+
+    /**
+     * Timpa field yang nilainya ditentukan server dari profil user (mis. upah
+     * lembur menurut jabatan). Angka kiriman client untuk field ini diabaikan
+     * sepenuhnya — tanpa ini siapa pun bisa mengetik tarif sesukanya.
+     *
+     * Bila user tidak berhak atas nilai tersebut (jabatannya tak punya tarif),
+     * field-nya dibuang agar aturan `required` yang menolak, disertai pesan
+     * yang menjelaskan sebabnya.
+     */
+    protected function applyServerSourcedDetails(): void
+    {
+        $sources = $this->claimType()->serverSourcedFields();
+
+        if ($sources === []) {
+            return;
+        }
+
+        $details = (array) $this->input('details', []);
+
+        foreach ($sources as $key => $source) {
+            $value = ClaimType::resolveSourcedValue($source, $this->user());
+
+            if ($value === null) {
+                unset($details[$key]);
+            } else {
+                $details[$key] = $value;
+            }
+        }
+
+        $this->merge(['details' => $details]);
     }
 
     /** Isi ulang `amount` untuk jenis yang nominalnya dihitung sistem. */

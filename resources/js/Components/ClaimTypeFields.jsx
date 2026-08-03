@@ -26,9 +26,14 @@ export default function ClaimTypeFields({ type, values, onChange, errors }) {
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 {fields.map((field) => {
                     const id = `detail-${field.key}`;
-                    const value = values[field.key] ?? '';
                     const error = errors[`details.${field.key}`]?.[0];
                     const wide = field.type === 'textarea';
+                    // Field bersumber-server (mis. upah lembur menurut jabatan)
+                    // tampil terkunci; server menimpanya lagi saat menyimpan.
+                    const locked = field.readonly === true;
+                    const value = locked
+                        ? (field.fixed_value ?? '')
+                        : (values[field.key] ?? '');
 
                     return (
                         <div
@@ -77,12 +82,14 @@ export default function ClaimTypeFields({ type, values, onChange, errors }) {
                                         }
                                         min={field.min}
                                         step={field.step}
+                                        disabled={locked}
                                         className={
-                                            'block w-full' +
+                                            'block w-full disabled:bg-gray-100 disabled:text-gray-500 dark:disabled:bg-gray-900/50' +
                                             (field.suffix ? ' pr-14' : '')
                                         }
                                         value={value}
                                         onChange={(e) =>
+                                            !locked &&
                                             onChange(field.key, e.target.value)
                                         }
                                     />

@@ -150,12 +150,13 @@ test('an overtime request derives the amount from hours times rate', function ()
             'start_time' => '18:00',
             'end_time' => '22:30',
             'hours' => 4.5,
-            'hourly_rate' => 50_000,
             'work_description' => 'Deploy & monitoring rilis',
         ],
     ])->assertCreated();
 
-    expect($response->json('data.amount'))->toBe(225_000);
+    // Tarifnya dari jabatan Employee (Rp 30.000/jam), bukan isian pengaju.
+    expect($response->json('data.details.hourly_rate'))->toBe(30_000)
+        ->and($response->json('data.amount'))->toBe(135_000);   // 4,5 jam x 30rb
 });
 
 test('required detail fields of the chosen type are enforced', function () {
@@ -228,7 +229,6 @@ test('switching a draft to another type replaces its details', function () {
             'start_time' => '19:00',
             'end_time' => '21:00',
             'hours' => 2,
-            'hourly_rate' => 40_000,
             'work_description' => 'Perbaikan bug produksi',
         ],
     ])->assertOk();
@@ -237,5 +237,5 @@ test('switching a draft to another type replaces its details', function () {
 
     expect($claim->claim_type)->toBe(ClaimType::Overtime)
         ->and($claim->details)->not->toHaveKey('item_name')
-        ->and($claim->amount)->toBe(80_000);
+        ->and($claim->amount)->toBe(60_000);   // 2 jam x 30rb (tarif Employee)
 });
