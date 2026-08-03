@@ -47,6 +47,14 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
     Route::get('/payments', fn () => Inertia::render('Payments/Index'))
         ->middleware('permission:payment.view')->name('payments.index');
 
+    // Anggaran proyek (Project Manager & pemantau anggaran)
+    // Nama route sengaja "project-budgets.*" agar tidak bentrok dengan nama
+    // route API projects.* dari apiResource.
+    Route::get('/projects', fn () => Inertia::render('Projects/Index'))
+        ->middleware('permission:project.budget.view')->name('project-budgets.index');
+    Route::get('/projects/{id}', fn (int $id) => Inertia::render('Projects/Show', ['id' => $id]))
+        ->whereNumber('id')->middleware('permission:project.budget.view')->name('project-budgets.show');
+
     // Rekening bank milik sendiri
     Route::get('/bank-accounts', fn () => Inertia::render('BankAccounts/Index'))
         ->middleware('permission:bankaccount.manage')->name('bank-accounts.index');

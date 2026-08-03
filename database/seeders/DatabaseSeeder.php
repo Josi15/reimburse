@@ -6,7 +6,8 @@ use Illuminate\Database\Seeder;
 
 /**
  * Orkestrasi seeding. Urutan penting: RBAC & master data dulu, baru user
- * (user membutuhkan role, department, dan bank).
+ * (user membutuhkan role, department, dan bank), lalu project — karena tiap
+ * project ditugaskan ke seorang Project Manager.
  */
 class DatabaseSeeder extends Seeder
 {
@@ -18,8 +19,8 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             BankSeeder::class,
             CompanyBankAccountSeeder::class,
-            ProjectSeeder::class,
             UserSeeder::class,
+            ProjectSeeder::class,
         ]);
     }
 }

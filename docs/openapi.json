@@ -3105,6 +3105,41 @@
                 }
             }
         },
+        "/options/project-managers": {
+            "get": {
+                "operationId": "options.projectManagers",
+                "summary": "Kandidat pemegang proyek untuk form master project (butuh project.manage\n\u2014 dijaga di route). Berisi user aktif ber-role project_manager",
+                "tags": [
+                    "Options"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/User"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
         "/options/roles": {
             "get": {
                 "operationId": "options.roles",
@@ -3796,6 +3831,130 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/project-budgets": {
+            "get": {
+                "operationId": "projectBudget.index",
+                "tags": [
+                    "ProjectBudget"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "totals": {
+                                            "type": "object",
+                                            "properties": {
+                                                "project_count": {
+                                                    "type": "integer"
+                                                },
+                                                "budget": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "paid_amount": {
+                                                    "type": "integer"
+                                                },
+                                                "pending_amount": {
+                                                    "type": "integer"
+                                                },
+                                                "used_amount": {
+                                                    "type": "integer"
+                                                },
+                                                "remaining_amount": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "project_count",
+                                                "budget",
+                                                "paid_amount",
+                                                "pending_amount",
+                                                "used_amount",
+                                                "remaining_amount"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "totals"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/project-budgets/{project}": {
+            "get": {
+                "operationId": "projectBudget.show",
+                "tags": [
+                    "ProjectBudget"
+                ],
+                "parameters": [
+                    {
+                        "name": "project",
+                        "in": "path",
+                        "required": true,
+                        "description": "The project ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -7230,6 +7389,12 @@
                             "null"
                         ],
                         "format": "date-time"
+                    },
+                    "manager_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
                     }
                 },
                 "required": [
@@ -7243,7 +7408,8 @@
                     "is_active",
                     "created_at",
                     "updated_at",
-                    "deleted_at"
+                    "deleted_at",
+                    "manager_id"
                 ],
                 "title": "Project"
             },
@@ -7263,6 +7429,27 @@
                         "type": [
                             "string",
                             "null"
+                        ]
+                    },
+                    "manager_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "manager": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
                         ]
                     },
                     "budget": {
@@ -7319,6 +7506,7 @@
                     "code",
                     "name",
                     "description",
+                    "manager_id",
                     "budget",
                     "formatted_budget",
                     "start_date",
@@ -7347,6 +7535,12 @@
                             "null"
                         ],
                         "maxLength": 500
+                    },
+                    "manager_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
                     },
                     "budget": {
                         "type": [
@@ -7396,6 +7590,12 @@
                             "null"
                         ],
                         "maxLength": 500
+                    },
+                    "manager_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
                     },
                     "budget": {
                         "type": [

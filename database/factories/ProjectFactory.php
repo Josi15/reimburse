@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Project;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -28,5 +29,11 @@ class ProjectFactory extends Factory
     public function inactive(): static
     {
         return $this->state(fn () => ['is_active' => false]);
+    }
+
+    /** Proyek yang dipegang seorang Project Manager. */
+    public function managedBy(User $user): static
+    {
+        return $this->state(fn () => ['manager_id' => $user->id]);
     }
 }

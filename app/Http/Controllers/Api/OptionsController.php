@@ -11,6 +11,7 @@ use App\Models\Department;
 use App\Models\Permission;
 use App\Models\Project;
 use App\Models\Role;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -81,6 +82,21 @@ class OptionsController extends Controller
                     'bank_code' => $a->bank?->code,
                     'masked_number' => $a->masked_number,
                 ]),
+        ]);
+    }
+
+    /**
+     * Kandidat pemegang proyek untuk form master project (butuh project.manage
+     * — dijaga di route). Berisi user aktif ber-role project_manager.
+     */
+    public function projectManagers(): JsonResponse
+    {
+        return response()->json([
+            'data' => User::query()
+                ->where('is_active', true)
+                ->whereHas('roles', fn ($q) => $q->where('name', 'project_manager'))
+                ->orderBy('name')
+                ->get(['id', 'name', 'email']),
         ]);
     }
 

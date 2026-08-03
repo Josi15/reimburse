@@ -20,11 +20,11 @@ class ProjectController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         $projects = $this->paginateResource(
-            Project::query(),
+            Project::query()->with('manager:id,name'),
             $request,
             [
                 'searchable' => ['code', 'name', 'description'],
-                'filters' => ['is_active' => 'is_active'],
+                'filters' => ['is_active' => 'is_active', 'manager_id' => 'manager_id'],
                 'sortable' => ['code', 'name', 'budget', 'start_date', 'end_date', 'is_active', 'created_at'],
                 'default_sort' => ['created_at', 'desc'],
             ],
@@ -37,19 +37,19 @@ class ProjectController extends Controller
     {
         $project = Project::create($request->validated());
 
-        return (new ProjectResource($project))->response()->setStatusCode(201);
+        return (new ProjectResource($project->load('manager:id,name')))->response()->setStatusCode(201);
     }
 
     public function show(Project $project): ProjectResource
     {
-        return new ProjectResource($project);
+        return new ProjectResource($project->load('manager:id,name'));
     }
 
     public function update(ProjectUpdateRequest $request, Project $project): ProjectResource
     {
         $project->update($request->validated());
 
-        return new ProjectResource($project);
+        return new ProjectResource($project->load('manager:id,name'));
     }
 
     public function destroy(Project $project): Response

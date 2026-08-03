@@ -72,6 +72,12 @@ const ICONS = {
             <path d="M3 10 12 4l9 6M4 10v9m16-9v9M4 19h16M8 10v9m4-9v9m4-9v9" />
         </>,
     ),
+    project: icon(
+        <>
+            <rect x="3" y="7" width="18" height="13" rx="2" />
+            <path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 12h18" />
+        </>,
+    ),
     default: icon(<circle cx="12" cy="12" r="8" />),
 };
 
@@ -79,6 +85,7 @@ const ICONS = {
 function iconFor(href = '') {
     const h = href.toLowerCase();
     if (h.includes('dashboard')) return ICONS.dashboard;
+    if (h.includes('project') || h.includes('proyek')) return ICONS.project;
     if (h.includes('reimburs')) return ICONS.reimburs;
     if (h.includes('approval') || h.includes('approv')) return ICONS.approval;
     if (h.includes('payment') || h.includes('bayar')) return ICONS.payment;

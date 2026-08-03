@@ -1,6 +1,6 @@
 # FundBack — Reimbursement Management System
 
-Aplikasi pengajuan & pencairan dana modern: pengajuan → persetujuan berjenjang (Manager → Finance) → pembayaran — lengkap dengan RBAC 6 role, notifikasi multi-channel, audit trail, laporan + export, dan REST API terdokumentasi.
+Aplikasi pengajuan & pencairan dana modern: pengajuan → persetujuan berjenjang (Manager → Finance) → pembayaran — lengkap dengan RBAC berlapis, notifikasi multi-channel, audit trail, laporan + export, dan REST API terdokumentasi.
 
 **Stack:** Laravel 12 · React (Inertia + Breeze) · Vite · Tailwind CSS · PostgreSQL · Sanctum
 
@@ -8,7 +8,8 @@ Aplikasi pengajuan & pencairan dana modern: pengajuan → persetujuan berjenjang
 
 - **Reimbursement lifecycle** dengan state machine eksplisit: `draft → submitted → manager_approved → finance_approved → paid` (+ reject & revisi/resubmit)
 - **4 jenis pengajuan** dengan form yang menyesuaikan sendiri — Reimbursement Biaya, Pengadaan Barang, Layanan/Server, dan Lembur. Nominal barang/layanan/lembur dihitung server dari detailnya (jumlah × harga satuan, jam × upah). Definisi field tunggal ada di `app/Enums/ClaimType.php`; menambah jenis atau kolom isian cukup di file itu — API `/api/options/claim-types` dan form React ikut otomatis
-- **RBAC penuh** — Super Admin, Admin, Employee, Manager, Finance, Auditor; menu & aksi dinamis per role, label role tampil di sidebar
+- **RBAC penuh** — Super Admin, Direktur, Admin, Finance, Manager, Supervisor, Project Manager, Employee, Staf Magang, Auditor; menu & aksi dinamis per role, label role tampil di sidebar
+- **Anggaran proyek** — tiap proyek dipegang seorang Project Manager yang bisa memantau sisa dana proyeknya (anggaran − yang sudah dibayar − yang masih berjalan) di halaman **Anggaran Proyek**; Direksi/Admin/Finance/Auditor melihat seluruh proyek
 - **Payment management** — master bank, rekening karyawan (satu rekening utama), pembayaran race-safe (`lockForUpdate` + partial unique index anti double-pay), bukti transfer
 - **Notifikasi rantai penuh** — pengaju dapat tanda terima saat mengirim, dikabari tiap keputusan, sampai dana cair; approver Manager → Finance → petugas pembayaran dikabari saat gilirannya tiba (lihat `ReimbursementNotifier`)
 - **Audit log generik** — login/logout/CRUD/approve/reject/payment dengan old/new data, IP, browser; read-only untuk Auditor
@@ -33,7 +34,7 @@ php artisan queue:work             # terminal 3 — OPSIONAL, hanya untuk email
 > jadi lonceng notifikasi langsung terisi begitu aksi dilakukan. Hanya channel
 > `mail` yang mengantre — jalankan `queue:work` bila ingin email ikut terkirim.
 
-**Akun demo** (password: `password`): `super@`, `direktur@`, `admin@`, `finance@`, `manager@`, `supervisor@`, `employee@`, `magang@`, `auditor@` (semuanya `@fundback.test`)
+**Akun demo** (password: `password`): `super@`, `direktur@`, `admin@`, `finance@`, `manager@`, `supervisor@`, `pm@`, `employee@`, `magang@`, `auditor@` (semuanya `@fundback.test`)
 
 ## Test
 

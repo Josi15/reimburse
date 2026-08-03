@@ -19,6 +19,7 @@ class ProjectUpdateRequest extends FormRequest
                 Rule::unique('projects', 'code')->ignore($this->route('project'))],
             'name' => ['sometimes', 'required', 'string', 'max:150'],
             'description' => ['nullable', 'string', 'max:500'],
+            'manager_id' => ['nullable', 'integer', Rule::exists('users', 'id')->whereNull('deleted_at')],
             'budget' => ['nullable', 'integer', 'min:1'],
             'start_date' => ['nullable', 'date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],

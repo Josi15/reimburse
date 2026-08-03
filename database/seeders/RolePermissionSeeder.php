@@ -7,7 +7,7 @@ use App\Models\Role;
 use Illuminate\Database\Seeder;
 
 /**
- * Seed 6 role kanonik + permission dasar + pemetaannya (sesuai matriks Phase 1).
+ * Seed seluruh role + permission dasar + pemetaannya (dasar: matriks Phase 1).
  * Idempotent: memakai firstOrCreate sehingga aman dijalankan berulang.
  */
 class RolePermissionSeeder extends Seeder
@@ -25,6 +25,10 @@ class RolePermissionSeeder extends Seeder
             'category.manage' => 'Kelola Category',
             'bank.manage' => 'Kelola Master Bank',
             'project.manage' => 'Kelola Master Project',
+            // Pantauan anggaran: .view = proyek yang dipegang sendiri
+            // (Project Manager), .viewAny = seluruh proyek perusahaan.
+            'project.budget.view' => 'Lihat Sisa Anggaran Proyek Sendiri',
+            'project.budget.viewAny' => 'Lihat Sisa Anggaran Semua Proyek',
             'company_account.manage' => 'Kelola Rekening Perusahaan',
             'bankaccount.manage' => 'Kelola Rekening Sendiri',
             'reimbursement.viewAny' => 'Lihat Semua Reimbursement',
@@ -82,6 +86,7 @@ class RolePermissionSeeder extends Seeder
                 // Gerbang terakhir untuk pengajuan bernilai besar.
                 'reimbursement.approve.director',
                 'reimbursement.viewAny', 'payment.view',
+                'project.budget.view', 'project.budget.viewAny',
                 'dashboard.viewAll', 'report.view', 'report.export', 'audit.view',
             ], 50_000_000, 80_000],
             'admin' => ['Admin', [
@@ -89,6 +94,7 @@ class RolePermissionSeeder extends Seeder
                 'user.view', 'user.create', 'user.update', 'user.delete',
                 'department.manage', 'category.manage', 'bank.manage', 'project.manage',
                 'company_account.manage',
+                'project.budget.view', 'project.budget.viewAny',
                 'reimbursement.viewAny', 'dashboard.viewAll',
                 'report.view', 'report.export', 'audit.view',
             ], 25_000_000, 70_000],
@@ -97,17 +103,29 @@ class RolePermissionSeeder extends Seeder
                 'reimbursement.viewAny', 'reimbursement.approve.finance',
                 'payment.view', 'payment.process',
                 'company_account.manage',
+                'project.budget.view', 'project.budget.viewAny',
                 'dashboard.viewAll', 'report.view', 'report.export',
             ], 10_000_000, 60_000],
             'manager' => ['Manager', [
                 ...$canSubmitClaims, ...$allClaimTypes,
                 'reimbursement.viewAny', 'reimbursement.approve.manager',
+                // Bila ditunjuk sebagai pemegang proyek, boleh memantau
+                // sisa anggaran proyek tersebut (proyek sendiri saja).
+                'project.budget.view',
                 'dashboard.viewAll', 'report.view', 'report.export',
+            ], 5_000_000, 50_000],
+            // Pemegang proyek: mengelola jalannya proyek dan memantau berapa
+            // sisa dana perusahaan yang masih tersedia untuk proyeknya.
+            'project_manager' => ['Project Manager', [
+                ...$canSubmitClaims, ...$allClaimTypes,
+                'project.budget.view',
+                'report.view', 'report.export',
             ], 5_000_000, 50_000],
             'supervisor' => ['Supervisor', [
                 ...$canSubmitClaims, ...$allClaimTypes,
                 // Atasan lini pertama: menilai di tingkat yang sama dengan Manager.
                 'reimbursement.viewAny', 'reimbursement.approve.manager',
+                'project.budget.view',
                 'dashboard.viewAll', 'report.view', 'report.export',
             ], 3_000_000, 40_000],
             // Biaya & lembur saja — tidak boleh mengajukan pengadaan.
@@ -122,6 +140,7 @@ class RolePermissionSeeder extends Seeder
             ], 500_000, null],
             'auditor' => ['Auditor', [ // read-only penuh, tak mengajukan
                 'reimbursement.viewAny', 'payment.view', 'dashboard.viewAll',
+                'project.budget.view', 'project.budget.viewAny',
                 'report.view', 'report.export', 'audit.view',
             ], 0, null],
         ];

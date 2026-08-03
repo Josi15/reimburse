@@ -22,6 +22,8 @@ class Navigation
                 'permissions' => ['reimbursement.approve.manager', 'reimbursement.approve.finance']],
             ['label' => 'Pembayaran', 'href' => '/payments', 'icon' => 'banknotes',
                 'permissions' => ['payment.view', 'payment.process']],
+            ['label' => 'Anggaran Proyek', 'href' => '/projects', 'icon' => 'briefcase',
+                'permissions' => ['project.budget.view', 'project.budget.viewAny']],
             ['label' => 'Rekening Bank', 'href' => '/bank-accounts', 'icon' => 'credit-card',
                 'permissions' => ['bankaccount.manage']],
             ['label' => 'Master Data', 'href' => '/master', 'icon' => 'database',

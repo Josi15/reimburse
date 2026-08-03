@@ -18,6 +18,7 @@ class ProjectStoreRequest extends FormRequest
             'code' => ['required', 'string', 'max:30', Rule::unique('projects', 'code')],
             'name' => ['required', 'string', 'max:150'],
             'description' => ['nullable', 'string', 'max:500'],
+            'manager_id' => ['nullable', 'integer', Rule::exists('users', 'id')->whereNull('deleted_at')],
             'budget' => ['nullable', 'integer', 'min:1'],
             'start_date' => ['nullable', 'date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],

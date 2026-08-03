@@ -668,6 +668,7 @@ export default function Index() {
     const [departments, setDepartments] = useState([]);
     const [roleOptions, setRoleOptions] = useState([]);
     const [bankOptions, setBankOptions] = useState([]);
+    const [pmOptions, setPmOptions] = useState([]);
 
     const tabs = [
         can('department.manage') && { key: 'departments', label: 'Department' },
@@ -699,6 +700,11 @@ export default function Index() {
         if (can('company_account.manage')) {
             api.get('/api/options/banks')
                 .then((d) => setBankOptions(d.data))
+                .catch(() => {});
+        }
+        if (can('project.manage')) {
+            api.get('/api/options/project-managers')
+                .then((d) => setPmOptions(d.data))
                 .catch(() => {});
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -846,6 +852,11 @@ export default function Index() {
                             { key: 'code', label: 'Kode' },
                             { key: 'name', label: 'Nama' },
                             {
+                                key: 'manager',
+                                label: 'Pemegang',
+                                render: (r) => r.manager?.name ?? '-',
+                            },
+                            {
                                 key: 'formatted_budget',
                                 label: 'Anggaran',
                                 render: (r) => r.formatted_budget ?? '-',
@@ -863,6 +874,15 @@ export default function Index() {
                                 key: 'description',
                                 label: 'Deskripsi',
                                 type: 'textarea',
+                            },
+                            {
+                                key: 'manager_id',
+                                label: 'Pemegang Proyek (Project Manager)',
+                                type: 'select',
+                                options: pmOptions.map((u) => ({
+                                    value: u.id,
+                                    label: u.name,
+                                })),
                             },
                             {
                                 key: 'budget',
@@ -887,6 +907,8 @@ export default function Index() {
                         ]}
                         transform={(f) => ({
                             ...f,
+                            manager_id:
+                                f.manager_id === '' ? null : f.manager_id,
                             budget: f.budget === '' ? null : f.budget,
                             start_date:
                                 f.start_date === '' ? null : f.start_date,

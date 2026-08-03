@@ -823,6 +823,18 @@ parameters:
 			path: app/Http/Resources/ProjectResource.php
 
 		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ProjectResource\:\:\$manager\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/ProjectResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ProjectResource\:\:\$manager_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ProjectResource.php
+
+		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\ProjectResource\:\:\$name\.$#'
 			identifier: property.notFound
 			count: 1
@@ -1295,6 +1307,48 @@ parameters:
 			identifier: identical.alwaysFalse
 			count: 1
 			path: app/Services/PaymentService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ProjectBudgetService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Services/ProjectBudgetService.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Services/ProjectBudgetService.php
+
+		-
+			message: '#^Cannot call method color\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/ProjectBudgetService.php
+
+		-
+			message: '#^Cannot call method label\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/ProjectBudgetService.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Services/ProjectBudgetService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Reimbursement\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/ProjectBudgetService.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$manager\.$#'

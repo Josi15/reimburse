@@ -14,6 +14,11 @@ class ProjectResource extends JsonResource
             'code' => $this->code,
             'name' => $this->name,
             'description' => $this->description,
+            'manager_id' => $this->manager_id,
+            'manager' => $this->whenLoaded('manager', fn () => [
+                'id' => $this->manager->id,
+                'name' => $this->manager->name,
+            ]),
             'budget' => $this->budget,
             'formatted_budget' => $this->budget !== null
                 ? 'Rp '.number_format((int) $this->budget, 0, ',', '.')

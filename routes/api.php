@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\OptionsController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\ProjectBudgetController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\ReimbursementController;
 use App\Http\Controllers\Api\ReportController;
@@ -43,6 +44,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('options/banks', [OptionsController::class, 'banks']);
     Route::get('options/company-accounts', [OptionsController::class, 'companyAccounts'])
         ->middleware('permission:payment.process');
+    Route::get('options/project-managers', [OptionsController::class, 'projectManagers'])
+        ->middleware('permission:project.manage');
     Route::get('options/roles', [OptionsController::class, 'roles'])->middleware('permission:user.view');
     Route::get('options/permissions', [OptionsController::class, 'permissions'])->middleware('permission:role.manage');
 
@@ -88,6 +91,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('categories', CategoryController::class);
         Route::post('categories/{id}/restore', [CategoryController::class, 'restore']);
     });
+
+    // ---- Anggaran proyek (read-only) — otorisasi via ProjectPolicy -------
+    // Project Manager: hanya proyek yang dipegangnya. Pemegang
+    // project.budget.viewAny: semua proyek.
+    Route::get('project-budgets', [ProjectBudgetController::class, 'index']);
+    Route::get('project-budgets/{project}', [ProjectBudgetController::class, 'show']);
 
     // ---- Project (permission: project.manage) ----------------------------
     Route::middleware('permission:project.manage')->group(function () {
