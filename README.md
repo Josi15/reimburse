@@ -34,12 +34,24 @@ php artisan queue:work             # terminal 3 — OPSIONAL, hanya untuk email
 > jadi lonceng notifikasi langsung terisi begitu aksi dilakukan. Hanya channel
 > `mail` yang mengantre — jalankan `queue:work` bila ingin email ikut terkirim.
 
-**Akun demo** (password: `password`): `super@`, `direktur@`, `admin@`, `finance@`, `manager@`, `supervisor@`, `pm@`, `employee@`, `magang@`, `auditor@` (semuanya `@fundback.test`)
+**Akun demo** (password: `password`, semuanya `@fundback.test`)
+
+Seeder membentuk organisasi lengkap: **47 user di 5 departemen** (IT, FIN, HR, MKT, OPS). Tiap departemen berdiri sendiri — punya **Manager, Supervisor, Admin, Project Manager**, beberapa Karyawan & Staf Magang — sehingga alur submit → approve → bayar bisa diuji di departemen mana pun (Admin/Manager/Supervisor hanya melihat departemennya sendiri). Rantai atasan: Direktur → Manager → Supervisor → Karyawan/Magang, dan tiap penerima pembayaran sudah punya rekening utama.
+
+| Departemen | Manager | Supervisor | Admin | Project Manager |
+| --- | --- | --- | --- | --- |
+| IT | `manager@` | `supervisor@` | `admin@` | `pm@` |
+| FIN | `dimas.fin@` | `nadia.fin@` | `bayu.fin@` | `vera.fin@` |
+| HR | `sari.hr@` | `rendi.hr@` | `putri.hr@` | `iqbal.hr@` |
+| MKT | `reza.mkt@` | `alya.mkt@` | `fikri.mkt@` | `nabila.mkt@` |
+| OPS | `agus.ops@` | `lina.ops@` | `teguh.ops@` | `yuni.ops@` |
+
+Lintas departemen: `super@` (Super Admin), `direktur@` (Direksi), `finance@` (Finance), `auditor@` (read-only). Pengaju harian: `employee@`, `magang@`. Tiap departemen dipasangkan dengan **2 proyek** (10 proyek, `PRJ-2026-001` … `-010`) — pemegangnya Project Manager departemen itu, anggotanya seluruh isi departemen.
 
 ## Test
 
 ```bash
-php artisan test        # 196 test / 617 assertion (butuh DB reimbursement_testing)
+php artisan test        # 277 test / 896 assertion (butuh DB reimbursement_testing)
 ./vendor/bin/pint       # code style
 ```
 
