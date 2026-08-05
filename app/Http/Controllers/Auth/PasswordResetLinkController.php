@@ -15,11 +15,17 @@ class PasswordResetLinkController extends Controller
 {
     /**
      * Display the password reset link request view.
+     *
+     * Masa berlaku dikirim dari config, tidak ditulis ulang di halamannya.
+     * Angka yang disalin ke teks akan diam-diam jadi bohong begitu confignya
+     * diubah, dan janji "berlaku sekian menit" yang meleset membuat pengguna
+     * menyalahkan sistemnya saat tautan mati lebih cepat dari yang dijanjikan.
      */
     public function create(): Response
     {
         return Inertia::render('Auth/ForgotPassword', [
             'status' => session('status'),
+            'expireMinutes' => config('auth.passwords.'.config('auth.defaults.passwords').'.expire'),
         ]);
     }
 

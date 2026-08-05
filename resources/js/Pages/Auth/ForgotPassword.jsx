@@ -5,7 +5,7 @@ import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function ForgotPassword({ status }) {
+export default function ForgotPassword({ status, expireMinutes }) {
     const { data, setData, post, processing, errors } = useForm({
         email: '',
     });
@@ -26,8 +26,8 @@ export default function ForgotPassword({ status }) {
 
             <p className="mb-4 mt-1 text-sm text-gray-600 dark:text-gray-400">
                 Masukkan email akun Anda. Kami kirimkan tautan untuk membuat
-                password baru — tautannya berlaku 60 menit dan hanya bisa
-                dipakai sekali.
+                password baru — tautannya berlaku {expireMinutes} menit dan
+                hanya bisa dipakai sekali.
             </p>
 
             {status && (

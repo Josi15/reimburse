@@ -142,6 +142,17 @@ test('the reset link really dies after its 2 minute lifetime', function () {
         ->and(Hash::check('Laen#Pass987', $user->fresh()->password))->toBeFalse();
 });
 
+test('the request page announces the real lifetime, not a hardcoded one', function () {
+    // Halamannya dulu menulis "60 menit" sebagai teks biasa dan tetap begitu
+    // setelah confignya dipendekkan — janji yang meleset bikin pengguna
+    // menyalahkan sistem saat tautannya mati lebih cepat dari yang tertulis.
+    $this->get('/forgot-password')
+        ->assertInertia(fn ($page) => $page
+            ->component('Auth/ForgotPassword')
+            ->where('expireMinutes', config('auth.passwords.users.expire'))
+        );
+});
+
 test('the reset email states the real lifetime, not a hardcoded one', function () {
     Notification::fake();
 
