@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\ReimbursementStatus;
 use App\Models\Concerns\Auditable;
+use App\Notifications\ResetPasswordNotification;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -65,6 +66,14 @@ class User extends Authenticatable
         ];
     }
 
+    // ---- Notifications ---------------------------------------------------
+
+    /** Kirim email reset password versi FundBack (bahasa Indonesia). */
+    public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
+    }
+
     // ---- Relationships ---------------------------------------------------
 
     public function department(): BelongsTo
@@ -99,6 +108,15 @@ class User extends Authenticatable
         return $this->hasMany(Reimbursement::class);
     }
 
+    /**
+     * Proyek tempat user ditugaskan. Seorang karyawan/magang boleh masuk ke
+     * beberapa proyek sekaligus (pivot project_user).
+     */
+    public function projects(): BelongsToMany
+    {
+        return $this->belongsToMany(Project::class)->withTimestamps();
+    }
+
     // ---- Role helpers (RBAC) --------------------------------------------
 
     /** Memo per-instance: daftar nama permission user (Phase 20). */
@@ -125,6 +143,21 @@ class User extends Authenticatable
     public function hasPermission(string $permission): bool
     {
         return $this->permissionNames()->contains($permission);
+    }
+
+    /**
+     * Boleh melihat data SELURUH departemen?
+     *
+     * Direksi, Finance, dan Auditor mengawasi perusahaan secara utuh, jadi
+     * mereka memegang `data.viewAllDepartments`. Admin, Manager, dan Supervisor
+     * bekerja di lingkup unitnya sendiri: pengajuan, antrean persetujuan,
+     * dashboard, laporan, dan daftar user mereka disaring ke departemennya agar
+     * tidak bercampur dengan unit lain.
+     */
+    public function seesAllDepartments(): bool
+    {
+        return $this->hasRole('super_admin')
+            || $this->hasPermission('data.viewAllDepartments');
     }
 
     /**

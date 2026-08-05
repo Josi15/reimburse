@@ -3,6 +3,7 @@
 use App\Models\Department;
 use App\Models\Role;
 use App\Models\User;
+use Database\Factories\DepartmentFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -48,21 +49,34 @@ expect()->extend('toBeOne', function () {
 */
 
 /**
- * Buat user terverifikasi dengan role tertentu (role harus sudah di-seed).
+ * Departemen bersama untuk test.
+ *
+ * Cakupan data disaring per departemen (lihat Reimbursement::visibleTo), jadi
+ * pengaju dan approver HARUS berada di unit yang sama agar mencerminkan kondisi
+ * normal aplikasi. firstOrCreate, bukan static: setiap test dijalankan dalam
+ * transaksi yang di-rollback, sehingga barisnya dibuat ulang per test.
  */
-function userWithRole(string $role): User
+function testDepartment(): Department
 {
-    $user = User::factory()->create();
+    return DepartmentFactory::shared();
+}
+
+/**
+ * Buat user terverifikasi dengan role tertentu (role harus sudah di-seed).
+ * Tanpa $department, user masuk ke departemen bersama testDepartment().
+ */
+function userWithRole(string $role, ?Department $department = null): User
+{
+    $user = User::factory()->create([
+        'department_id' => ($department ?? testDepartment())->id,
+    ]);
     $user->roles()->attach(Role::where('name', $role)->firstOrFail());
 
     return $user->fresh();
 }
 
 /** Employee dengan department (department_id wajib pada reimbursement). */
-function employeeUser(): User
+function employeeUser(?Department $department = null): User
 {
-    $user = userWithRole('employee');
-    $user->update(['department_id' => Department::factory()->create()->id]);
-
-    return $user->fresh();
+    return userWithRole('employee', $department);
 }

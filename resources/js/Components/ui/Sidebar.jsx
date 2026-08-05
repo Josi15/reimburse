@@ -78,6 +78,19 @@ const ICONS = {
             <path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 12h18" />
         </>,
     ),
+    box: icon(
+        <>
+            <path d="m3 7 9-4 9 4v10l-9 4-9-4V7Z" />
+            <path d="m3 7 9 4 9-4M12 11v10" />
+        </>,
+    ),
+    server: icon(
+        <>
+            <rect x="3" y="4" width="18" height="6" rx="1.5" />
+            <rect x="3" y="14" width="18" height="6" rx="1.5" />
+            <path d="M7 7h.01M7 17h.01" />
+        </>,
+    ),
     default: icon(<circle cx="12" cy="12" r="8" />),
 };
 
@@ -86,6 +99,9 @@ function iconFor(href = '') {
     const h = href.toLowerCase();
     if (h.includes('dashboard')) return ICONS.dashboard;
     if (h.includes('project') || h.includes('proyek')) return ICONS.project;
+    // Cek sebelum 'reimburs': keduanya berada di bawah /reimbursements/*.
+    if (h.includes('goods') || h.includes('barang')) return ICONS.box;
+    if (h.includes('service') || h.includes('layanan')) return ICONS.server;
     if (h.includes('reimburs')) return ICONS.reimburs;
     if (h.includes('approval') || h.includes('approv')) return ICONS.approval;
     if (h.includes('payment') || h.includes('bayar')) return ICONS.payment;

@@ -8,6 +8,7 @@ import Badge from '@/Components/ui/Badge';
 import Card from '@/Components/ui/Card';
 import ConfirmDialog from '@/Components/ui/ConfirmDialog';
 import EmptyState from '@/Components/ui/EmptyState';
+import MultiSelectList from '@/Components/ui/MultiSelectList';
 import ErrorState from '@/Components/ui/ErrorState';
 import Pagination from '@/Components/ui/Pagination';
 import SelectInput from '@/Components/ui/SelectInput';
@@ -67,9 +68,11 @@ function CrudSection({ endpoint, columns, fields, emptyTitle, transform }) {
 
     function blank() {
         const f = {};
-        fields.forEach(
-            (fd) => (f[fd.key] = fd.type === 'checkbox' ? true : ''),
-        );
+        fields.forEach((fd) => {
+            if (fd.type === 'checkbox') f[fd.key] = true;
+            else if (fd.type === 'multiselect') f[fd.key] = [];
+            else f[fd.key] = '';
+        });
         return f;
     }
 
@@ -85,9 +88,15 @@ function CrudSection({ endpoint, columns, fields, emptyTitle, transform }) {
         const f = {};
         fields.forEach((fd) => {
             if (fd.createOnly) return;
+            const fallback =
+                fd.type === 'checkbox'
+                    ? false
+                    : fd.type === 'multiselect'
+                      ? []
+                      : '';
             f[fd.key] = fd.fromRow
                 ? fd.fromRow(row)
-                : (row[fd.key] ?? (fd.type === 'checkbox' ? false : ''));
+                : (row[fd.key] ?? fallback);
         });
         setForm(f);
         setErrors({});
@@ -252,6 +261,33 @@ function CrudSection({ endpoint, columns, fields, emptyTitle, transform }) {
                                                     }))
                                                 }
                                             />
+                                        </>
+                                    ) : fd.type === 'multiselect' ? (
+                                        <>
+                                            <InputLabel
+                                                htmlFor={`field-${fd.key}`}
+                                                value={fd.label}
+                                            />
+                                            <MultiSelectList
+                                                id={`field-${fd.key}`}
+                                                options={fd.options ?? []}
+                                                value={form[fd.key] ?? []}
+                                                onChange={(v) =>
+                                                    setForm((f) => ({
+                                                        ...f,
+                                                        [fd.key]: v,
+                                                    }))
+                                                }
+                                                emptyText={fd.emptyText}
+                                                searchPlaceholder={
+                                                    fd.searchPlaceholder
+                                                }
+                                            />
+                                            {fd.help && (
+                                                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                                    {fd.help}
+                                                </p>
+                                            )}
                                         </>
                                     ) : fd.type === 'select' ? (
                                         <>
@@ -669,6 +705,7 @@ export default function Index() {
     const [roleOptions, setRoleOptions] = useState([]);
     const [bankOptions, setBankOptions] = useState([]);
     const [pmOptions, setPmOptions] = useState([]);
+    const [memberOptions, setMemberOptions] = useState([]);
 
     const tabs = [
         can('department.manage') && { key: 'departments', label: 'Department' },
@@ -705,6 +742,9 @@ export default function Index() {
         if (can('project.manage')) {
             api.get('/api/options/project-managers')
                 .then((d) => setPmOptions(d.data))
+                .catch(() => {});
+            api.get('/api/options/project-members')
+                .then((d) => setMemberOptions(d.data))
                 .catch(() => {});
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -857,6 +897,14 @@ export default function Index() {
                                 render: (r) => r.manager?.name ?? '-',
                             },
                             {
+                                key: 'members_count',
+                                label: 'Anggota',
+                                render: (r) =>
+                                    r.members_count
+                                        ? `${r.members_count} orang`
+                                        : '-',
+                            },
+                            {
                                 key: 'formatted_budget',
                                 label: 'Anggaran',
                                 render: (r) => r.formatted_budget ?? '-',
@@ -885,6 +933,20 @@ export default function Index() {
                                 })),
                             },
                             {
+                                key: 'member_ids',
+                                label: 'Anggota Proyek (karyawan / magang)',
+                                type: 'multiselect',
+                                help: 'Hanya anggota yang tercentang bisa membebankan pengajuan ke proyek ini.',
+                                searchPlaceholder: 'Cari nama / departemen…',
+                                emptyText: 'Belum ada user aktif.',
+                                options: memberOptions.map((u) => ({
+                                    value: u.id,
+                                    label: u.name,
+                                    hint: u.department ?? u.email,
+                                })),
+                                fromRow: (row) => row.member_ids ?? [],
+                            },
+                            {
                                 key: 'budget',
                                 label: 'Anggaran (Rp)',
                                 type: 'number',
@@ -909,6 +971,7 @@ export default function Index() {
                             ...f,
                             manager_id:
                                 f.manager_id === '' ? null : f.manager_id,
+                            member_ids: (f.member_ids ?? []).map(Number),
                             budget: f.budget === '' ? null : f.budget,
                             start_date:
                                 f.start_date === '' ? null : f.start_date,

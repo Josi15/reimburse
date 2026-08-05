@@ -50,11 +50,15 @@ test('index supports is_active filter and sorting', function () {
     Department::factory()->create(['name' => 'Bravo', 'code' => 'B1', 'is_active' => false]);
     Sanctum::actingAs(userWithRole('admin'));
 
-    $active = $this->getJson('/api/departments?is_active=true')->assertOk()->json('data');
-    expect($active)->toHaveCount(1)->and($active[0]['code'])->toBe('A1');
+    // Departemen milik admin (dibuat factory user) ikut terdaftar, jadi yang
+    // diperiksa adalah keanggotaan kodenya, bukan jumlah baris.
+    $active = collect($this->getJson('/api/departments?is_active=true')->assertOk()->json('data'))
+        ->pluck('code');
+    expect($active)->toContain('A1')->not->toContain('B1');
 
-    $sorted = $this->getJson('/api/departments?sort=name&direction=desc')->assertOk()->json('data');
-    expect($sorted[0]['name'])->toBe('Bravo');
+    $sorted = collect($this->getJson('/api/departments?sort=name&direction=desc')->assertOk()->json('data'))
+        ->pluck('name');
+    expect($sorted->search('Bravo'))->toBeLessThan($sorted->search('Alpha'));
 });
 
 // ---- Store + validation ---------------------------------------------------
@@ -101,8 +105,11 @@ test('destroy soft-deletes and restore brings it back', function () {
     $this->assertSoftDeleted('departments', ['id' => $dept->id]);
 
     // Tidak muncul di list default, muncul di only_trashed.
-    expect($this->getJson('/api/departments')->json('data'))->toHaveCount(0);
-    expect($this->getJson('/api/departments?only_trashed=true')->json('data'))->toHaveCount(1);
+    $codes = collect($this->getJson('/api/departments')->json('data'))->pluck('code');
+    expect($codes)->not->toContain($dept->code);
+
+    $trashed = collect($this->getJson('/api/departments?only_trashed=true')->json('data'))->pluck('code');
+    expect($trashed)->toContain($dept->code);
 
     $this->postJson("/api/departments/{$dept->id}/restore")->assertOk();
     $this->assertDatabaseHas('departments', ['id' => $dept->id, 'deleted_at' => null]);

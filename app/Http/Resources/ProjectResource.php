@@ -19,6 +19,15 @@ class ProjectResource extends JsonResource
                 'id' => $this->manager->id,
                 'name' => $this->manager->name,
             ]),
+            // Anggota proyek (karyawan/magang yang ditugaskan).
+            'members' => $this->whenLoaded('members', fn () => $this->members->map(fn ($m) => [
+                'id' => $m->id,
+                'name' => $m->name,
+                'email' => $m->email ?? null,
+                'department' => $m->relationLoaded('department') ? $m->department?->name : null,
+            ])->all()),
+            'member_ids' => $this->whenLoaded('members', fn () => $this->members->pluck('id')->all()),
+            'members_count' => $this->whenCounted('members'),
             'budget' => $this->budget,
             'formatted_budget' => $this->budget !== null
                 ? 'Rp '.number_format((int) $this->budget, 0, ',', '.')

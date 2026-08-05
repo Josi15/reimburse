@@ -31,7 +31,8 @@ class ReimbursementPolicy
     public function view(User $user, Reimbursement $reimbursement): bool
     {
         return $this->owns($user, $reimbursement)
-            || $user->hasPermission('reimbursement.viewAny');
+            || ($user->hasPermission('reimbursement.viewAny')
+                && $this->inScope($user, $reimbursement));
     }
 
     public function create(User $user): bool
@@ -83,8 +84,10 @@ class ReimbursementPolicy
      *
      * 1. Punya permission tingkat tersebut.
      * 2. Bukan pengajunya sendiri.
-     * 3. Tingkat itu memang yang sedang ditunggu (memperhitungkan ambang Direksi).
-     * 4. Belum pernah memutuskan klaim ini di tingkat mana pun — mencegah satu
+     * 3. Klaim itu berada dalam cakupan departemennya (Manager/Supervisor
+     *    hanya menilai unitnya sendiri; Finance & Direksi lintas departemen).
+     * 4. Tingkat itu memang yang sedang ditunggu (memperhitungkan ambang Direksi).
+     * 5. Belum pernah memutuskan klaim ini di tingkat mana pun — mencegah satu
      *    orang meloloskan sebuah klaim melewati beberapa gerbang sekaligus
      *    hanya karena kebetulan memegang lebih dari satu permission approval.
      */
@@ -92,8 +95,24 @@ class ReimbursementPolicy
     {
         return $user->hasPermission($level->permission())
             && ! $this->owns($user, $reimbursement)
+            && $this->inScope($user, $reimbursement)
             && $reimbursement->pendingApprovalLevel() === $level
             && ! $this->hasAlreadyDecided($user, $reimbursement);
+    }
+
+    /**
+     * Klaim ini berada di cakupan departemen user? Padanan objek dari
+     * Reimbursement::scopeVisibleTo() — keduanya harus sepakat, kalau tidak
+     * daftar dan halaman detail bisa berbeda isi.
+     */
+    private function inScope(User $user, Reimbursement $reimbursement): bool
+    {
+        if ($user->seesAllDepartments()) {
+            return true;
+        }
+
+        return $user->department_id !== null
+            && $reimbursement->department_id === $user->department_id;
     }
 
     /**

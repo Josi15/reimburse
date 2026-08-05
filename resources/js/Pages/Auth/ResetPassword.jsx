@@ -1,5 +1,6 @@
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
+import PasswordInput from '@/Components/PasswordInput';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
@@ -23,7 +24,16 @@ export default function ResetPassword({ token, email }) {
 
     return (
         <GuestLayout>
-            <Head title="Reset Password" />
+            <Head title="Atur Password Baru" />
+
+            <h1 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                Atur password baru
+            </h1>
+
+            <p className="mb-4 mt-1 text-sm text-gray-600 dark:text-gray-400">
+                Gunakan minimal 8 karakter dengan kombinasi huruf besar, huruf
+                kecil, angka, dan simbol.
+            </p>
 
             <form onSubmit={submit}>
                 <div>
@@ -43,11 +53,10 @@ export default function ResetPassword({ token, email }) {
                 </div>
 
                 <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
+                    <InputLabel htmlFor="password" value="Password Baru" />
 
-                    <TextInput
+                    <PasswordInput
                         id="password"
-                        type="password"
                         name="password"
                         value={data.password}
                         className="mt-1 block w-full"
@@ -62,11 +71,10 @@ export default function ResetPassword({ token, email }) {
                 <div className="mt-4">
                     <InputLabel
                         htmlFor="password_confirmation"
-                        value="Confirm Password"
+                        value="Ulangi Password Baru"
                     />
 
-                    <TextInput
-                        type="password"
+                    <PasswordInput
                         id="password_confirmation"
                         name="password_confirmation"
                         value={data.password_confirmation}
@@ -84,8 +92,8 @@ export default function ResetPassword({ token, email }) {
                 </div>
 
                 <div className="mt-4 flex items-center justify-end">
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Reset Password
+                    <PrimaryButton disabled={processing}>
+                        {processing ? 'Menyimpan…' : 'Simpan Password Baru'}
                     </PrimaryButton>
                 </div>
             </form>

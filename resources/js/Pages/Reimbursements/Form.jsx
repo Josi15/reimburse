@@ -21,7 +21,7 @@ import { useEffect, useState } from 'react';
 // Selaras dengan config reimbursement.max_files_per_request (backend).
 const MAX_FILES = 10;
 
-export default function Form({ id = null }) {
+export default function Form({ id = null, type = null }) {
     const isEdit = id !== null;
     const { user } = useAuth();
     const [loading, setLoading] = useState(isEdit);
@@ -31,19 +31,18 @@ export default function Form({ id = null }) {
     const [accounts, setAccounts] = useState([]);
     const [projects, setProjects] = useState([]);
     const [claimTypes, setClaimTypes] = useState([]);
-    const [departments, setDepartments] = useState([]);
     const [quota, setQuota] = useState(null);
     const [existingFiles, setExistingFiles] = useState([]);
     const [deleteIds, setDeleteIds] = useState([]);
     const [form, setForm] = useState({
-        claim_type: 'expense',
+        // ?type= dari menu Pengadaan Barang / Layanan & Server.
+        claim_type: type ?? 'expense',
         title: '',
         category_id: '',
         amount: '',
         expense_date: '',
         bank_account_id: '',
         project_id: '',
-        department_id: '',
         reason: '',
         description: '',
         details: {},
@@ -117,9 +116,6 @@ export default function Form({ id = null }) {
         api.get('/api/options/claim-types')
             .then((d) => setClaimTypes(d.data))
             .catch(() => {});
-        api.get('/api/options/departments')
-            .then((d) => setDepartments(d.data))
-            .catch(() => {});
 
         if (isEdit) {
             api.get(`/api/reimbursements/${id}`)
@@ -135,7 +131,6 @@ export default function Form({ id = null }) {
                         expense_date: r.expense_date ?? '',
                         bank_account_id: r.bank_account_id ?? '',
                         project_id: r.project_id ?? '',
-                        department_id: r.department_id ?? '',
                         reason: r.reason ?? '',
                         description: r.description ?? '',
                     }));
@@ -145,15 +140,6 @@ export default function Form({ id = null }) {
                 .finally(() => setLoading(false));
         }
     }, [id, isEdit]);
-
-    // Saat membuat baru, departemen pengaju dipakai sebagai default (tetap
-    // bisa diganti bila biayanya ditanggung unit lain).
-    useEffect(() => {
-        if (isEdit || !user?.department_id) return;
-        setForm((f) =>
-            f.department_id ? f : { ...f, department_id: user.department_id },
-        );
-    }, [isEdit, user?.department_id]);
 
     const selectedCategory = categories.find(
         (c) => String(c.id) === String(form.category_id),
@@ -190,6 +176,16 @@ export default function Form({ id = null }) {
     // Jenis tertentu nominalnya hasil perkalian dua field (mis. jumlah × harga
     // satuan, jam × upah). Backend menghitung ulang; ini hanya pratinjau.
     const formula = selectedType?.amount_formula ?? null;
+    // Rincian "a × b" hanya ditampilkan bila kedua faktornya memang terlihat.
+    // Untuk lembur, upah per jam disembunyikan — jadi cukup totalnya saja.
+    const showFormulaBreakdown =
+        !!formula &&
+        formula.every(
+            (key) =>
+                !(selectedType?.fields ?? []).some(
+                    (f) => f.key === key && f.hidden,
+                ),
+        );
     const computedAmount = formula
         ? Math.round(
               (Number(form.details[formula[0]]) || 0) *
@@ -211,7 +207,6 @@ export default function Form({ id = null }) {
             'expense_date',
             'bank_account_id',
             'project_id',
-            'department_id',
             'reason',
             'description',
         ].forEach((k) => {
@@ -366,7 +361,7 @@ export default function Form({ id = null }) {
                                         disabled={!!formula}
                                         required={!formula}
                                     />
-                                    {formula && (
+                                    {formula && showFormulaBreakdown && (
                                         <p className="mt-1 text-xs text-brand-600 dark:text-brand-400">
                                             {rupiah(computedAmount || 0)} ={' '}
                                             {form.details[formula[0]] || 0} ×{' '}
@@ -375,6 +370,12 @@ export default function Form({ id = null }) {
                                                     form.details[formula[1]],
                                                 ) || 0,
                                             )}
+                                        </p>
+                                    )}
+                                    {formula && !showFormulaBreakdown && (
+                                        <p className="mt-1 text-xs text-brand-600 dark:text-brand-400">
+                                            Dihitung otomatis:{' '}
+                                            {rupiah(computedAmount || 0)}
                                         </p>
                                     )}
                                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
@@ -447,33 +448,22 @@ export default function Form({ id = null }) {
                                     />
                                 </div>
 
+                                {/* Departemen melekat pada profil pengaju —
+                                    ditampilkan, tidak dipilih. */}
                                 <div>
-                                    <InputLabel
-                                        htmlFor="department_id"
-                                        value="Departemen Pengaju *"
-                                    />
-                                    <SelectInput
-                                        id="department_id"
-                                        className="mt-1 block w-full"
-                                        value={form.department_id}
-                                        onChange={set('department_id')}
-                                        required
-                                    >
-                                        <option value="">
-                                            — pilih departemen —
-                                        </option>
-                                        {departments.map((d) => (
-                                            <option key={d.id} value={d.id}>
-                                                {d.code
-                                                    ? `${d.code} — ${d.name}`
-                                                    : d.name}
-                                            </option>
-                                        ))}
-                                    </SelectInput>
+                                    <InputLabel value="Departemen Pengaju" />
+                                    <div className="mt-1 rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-900/50 dark:text-gray-200">
+                                        {user?.department_name ?? (
+                                            <span className="text-red-600 dark:text-red-400">
+                                                Belum terdaftar di departemen
+                                                mana pun
+                                            </span>
+                                        )}
+                                    </div>
                                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                        Departemen yang menanggung biaya ini —
-                                        dasar rekap Finance. Ganti bila biayanya
-                                        untuk unit lain.
+                                        {user?.department_name
+                                            ? 'Biaya otomatis dibebankan ke departemen Anda.'
+                                            : 'Hubungi Admin untuk menetapkan departemen Anda sebelum mengajukan.'}
                                     </p>
                                     <InputError
                                         message={errors.department_id?.[0]}
@@ -503,6 +493,11 @@ export default function Form({ id = null }) {
                                             </option>
                                         ))}
                                     </SelectInput>
+                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        {projects.length === 0
+                                            ? 'Anda belum ditugaskan ke proyek mana pun.'
+                                            : 'Hanya proyek tempat Anda ditugaskan yang tampil di sini.'}
+                                    </p>
                                     <InputError
                                         message={errors.project_id?.[0]}
                                         className="mt-1"

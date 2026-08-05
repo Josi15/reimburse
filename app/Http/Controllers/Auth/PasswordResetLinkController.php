@@ -23,7 +23,13 @@ class PasswordResetLinkController extends Controller
     }
 
     /**
-     * Handle an incoming password reset link request.
+     * Kirim tautan reset password.
+     *
+     * Email yang tidak terdaftar DIPERLAKUKAN SAMA dengan yang terdaftar:
+     * pesannya netral dan tidak berupa error. Kalau dibedakan, halaman ini bisa
+     * dipakai siapa saja untuk memeriksa email mana yang punya akun di sini.
+     * Sisa kegagalan (mis. terlalu sering meminta) tetap ditampilkan apa adanya
+     * agar pengguna tahu harus menunggu.
      *
      * @throws ValidationException
      */
@@ -33,15 +39,12 @@ class PasswordResetLinkController extends Controller
             'email' => 'required|email',
         ]);
 
-        // We will send the password reset link to this user. Once we have attempted
-        // to send the link, we will examine the response then see the message we
-        // need to show to the user. Finally, we'll send out a proper response.
         $status = Password::sendResetLink(
             $request->only('email')
         );
 
-        if ($status == Password::RESET_LINK_SENT) {
-            return back()->with('status', __($status));
+        if ($status === Password::RESET_LINK_SENT || $status === Password::INVALID_USER) {
+            return back()->with('status', __(Password::RESET_LINK_SENT));
         }
 
         throw ValidationException::withMessages([

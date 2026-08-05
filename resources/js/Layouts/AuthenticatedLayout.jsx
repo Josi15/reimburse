@@ -20,10 +20,17 @@ export default function AuthenticatedLayout({ header, children }) {
     const navigation = page.props.navigation ?? [];
     const currentUrl = page.url;
 
-    const isActive = (href) =>
-        href === '/dashboard'
-            ? currentUrl.startsWith('/dashboard')
-            : currentUrl.startsWith(href);
+    // Menu yang menyala = item paling SPESIFIK yang cocok dengan URL sekarang.
+    // Tanpa ini, "/reimbursements/goods" ikut menyalakan "Reimbursement" karena
+    // sama-sama berawalan sama.
+    const activeHref = navigation
+        .map((item) => item.href)
+        .filter(
+            (href) => currentUrl === href || currentUrl.startsWith(href + '/'),
+        )
+        .sort((a, b) => b.length - a.length)[0];
+
+    const isActive = (href) => href === activeHref;
 
     const [drawerOpen, setDrawerOpen] = useState(false);
 

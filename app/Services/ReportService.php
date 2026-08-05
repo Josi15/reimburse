@@ -7,6 +7,7 @@ use App\Enums\ReimbursementStatus;
 use App\Models\CompanyBankAccount;
 use App\Models\Payment;
 use App\Models\Reimbursement;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 
@@ -18,10 +19,29 @@ use Illuminate\Support\Carbon;
  */
 class ReportService
 {
+    /**
+     * Penonton laporan. Semua rekap berbasis reimbursement disaring ke
+     * cakupannya (Admin/Manager/Supervisor: departemen sendiri; Finance/
+     * Direksi/Auditor: seluruh perusahaan) — lihat Reimbursement::visibleTo.
+     */
+    private ?User $viewer = null;
+
+    /** Tetapkan penonton laporan; dipanggil sekali di controller. */
+    public function forUser(User $user): static
+    {
+        $this->viewer = $user;
+
+        return $this;
+    }
+
     /** Terapkan filter ke query dasar (kolom di-qualify agar aman untuk join). */
     private function apply(array $f): Builder
     {
         $query = Reimbursement::query();
+
+        if ($this->viewer) {
+            $query->visibleTo($this->viewer);
+        }
 
         if (! empty($f['date_from'])) {
             $query->whereDate('reimbursements.created_at', '>=', $f['date_from']);

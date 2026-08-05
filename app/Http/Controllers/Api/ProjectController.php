@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 
 class ProjectController extends Controller
 {
@@ -20,7 +21,7 @@ class ProjectController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         $projects = $this->paginateResource(
-            Project::query()->with('manager:id,name'),
+            Project::query()->with(['manager:id,name', 'members:id,name'])->withCount('members'),
             $request,
             [
                 'searchable' => ['code', 'name', 'description'],
@@ -35,21 +36,40 @@ class ProjectController extends Controller
 
     public function store(ProjectStoreRequest $request): JsonResponse
     {
-        $project = Project::create($request->validated());
+        $data = $request->validated();
+        $memberIds = $data['member_ids'] ?? [];
+        unset($data['member_ids']);
 
-        return (new ProjectResource($project->load('manager:id,name')))->response()->setStatusCode(201);
+        $project = DB::transaction(function () use ($data, $memberIds) {
+            $project = Project::create($data);
+            $project->members()->sync($memberIds);
+
+            return $project;
+        });
+
+        return (new ProjectResource($this->loaded($project)))->response()->setStatusCode(201);
     }
 
     public function show(Project $project): ProjectResource
     {
-        return new ProjectResource($project->load('manager:id,name'));
+        return new ProjectResource($this->loaded($project));
     }
 
     public function update(ProjectUpdateRequest $request, Project $project): ProjectResource
     {
-        $project->update($request->validated());
+        $data = $request->validated();
 
-        return new ProjectResource($project->load('manager:id,name'));
+        DB::transaction(function () use ($request, $project, $data) {
+            // member_ids absen = jangan sentuh penugasan yang sudah ada.
+            if ($request->has('member_ids')) {
+                $project->members()->sync($data['member_ids'] ?? []);
+            }
+
+            unset($data['member_ids']);
+            $project->update($data);
+        });
+
+        return new ProjectResource($this->loaded($project));
     }
 
     public function destroy(Project $project): Response
@@ -65,5 +85,15 @@ class ProjectController extends Controller
         $project->restore();
 
         return new ProjectResource($project);
+    }
+
+    /** Relasi yang selalu ikut disajikan pada respons satuan. */
+    private function loaded(Project $project): Project
+    {
+        return $project->load([
+            'manager:id,name',
+            'members:id,name,email,department_id',
+            'members.department:id,name',
+        ])->loadCount('members');
     }
 }

@@ -154,10 +154,12 @@ enum ClaimType: string
                 ['key' => 'end_time', 'label' => 'Jam Selesai', 'type' => 'time', 'required' => true],
                 ['key' => 'hours', 'label' => 'Total Jam', 'type' => 'number', 'required' => true, 'min' => 0.5, 'step' => 0.5, 'suffix' => 'jam'],
                 // Tarif mengikuti jabatan, bukan isian bebas. Diisi server dari
-                // roles.overtime_rate (lihat serverSourcedFields()).
+                // roles.overtime_rate (lihat serverSourcedFields()) dan
+                // disembunyikan dari tampilan: besaran upah per jabatan bukan
+                // informasi yang perlu beredar di form pengajuan. Nominal
+                // total tetap terlihat.
                 ['key' => 'hourly_rate', 'label' => 'Upah per Jam', 'type' => 'number', 'required' => true,
-                    'min' => 1, 'suffix' => 'Rp', 'source' => 'overtime_rate',
-                    'help' => 'Ditentukan otomatis sesuai jabatan Anda.'],
+                    'min' => 1, 'suffix' => 'Rp', 'source' => 'overtime_rate', 'hidden' => true],
                 ['key' => 'work_description', 'label' => 'Pekerjaan yang Dikerjakan', 'type' => 'textarea', 'required' => true],
             ],
         };
@@ -268,6 +270,12 @@ enum ClaimType: string
         $rows = [];
 
         foreach ($this->fields() as $field) {
+            // Field tersembunyi (mis. upah lembur per jam) tidak ditampilkan di
+            // mana pun — form maupun halaman detail pengajuan.
+            if ($field['hidden'] ?? false) {
+                continue;
+            }
+
             $value = $details[$field['key']] ?? null;
 
             if ($value === null || $value === '') {

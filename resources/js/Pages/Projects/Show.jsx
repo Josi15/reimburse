@@ -133,6 +133,35 @@ export default function Show({ id }) {
 
                         <Card>
                             <h3 className="px-5 pt-5 font-semibold text-gray-700 dark:text-gray-200">
+                                Anggota Proyek
+                            </h3>
+                            <p className="px-5 pt-1 text-sm text-gray-500 dark:text-gray-400">
+                                Hanya anggota berikut yang bisa membebankan
+                                pengajuan ke proyek ini.
+                            </p>
+                            {(p.members ?? []).length === 0 ? (
+                                <EmptyState title="Belum ada anggota ditugaskan" />
+                            ) : (
+                                <ul className="flex flex-wrap gap-2 p-5">
+                                    {p.members.map((m) => (
+                                        <li
+                                            key={m.id}
+                                            className="rounded-full border border-gray-200 px-3 py-1 text-sm text-gray-700 dark:border-gray-700 dark:text-gray-200"
+                                        >
+                                            {m.name}
+                                            {m.department && (
+                                                <span className="ml-1 text-xs text-gray-400">
+                                                    · {m.department}
+                                                </span>
+                                            )}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </Card>
+
+                        <Card>
+                            <h3 className="px-5 pt-5 font-semibold text-gray-700 dark:text-gray-200">
                                 Rincian per Status
                             </h3>
                             {p.by_status.length === 0 ? (

@@ -30,7 +30,7 @@ class ReimbursementService
 
             $reimbursement = Reimbursement::create([
                 'user_id' => $user->id,
-                'department_id' => $this->resolveDepartment($user, $data['department_id'] ?? null),
+                'department_id' => $this->resolveDepartment($user),
                 'claim_type' => $claimType,
                 'details' => $this->cleanDetails($claimType, $data['details'] ?? null),
                 'category_id' => $data['category_id'],
@@ -55,15 +55,12 @@ class ReimbursementService
     public function updateDraft(Reimbursement $reimbursement, User $user, array $data, iterable $files = [], array $deleteAttachmentIds = []): Reimbursement
     {
         return DB::transaction(function () use ($reimbursement, $user, $data, $files, $deleteAttachmentIds) {
+            // department_id sengaja tidak ada di daftar ini: departemen melekat
+            // pada pengaju, bukan pilihan yang bisa diubah saat mengedit.
             $payload = collect($data)->only([
-                'category_id', 'project_id', 'department_id', 'bank_account_id', 'title', 'description',
+                'category_id', 'project_id', 'bank_account_id', 'title', 'description',
                 'reason', 'amount', 'expense_date',
             ])->toArray();
-
-            // department_id tidak boleh dikosongkan (kolomnya NOT NULL).
-            if (array_key_exists('department_id', $payload) && ! $payload['department_id']) {
-                $payload['department_id'] = $this->resolveDepartment($user, null);
-            }
 
             // Ganti jenis pengajuan → detail lama dibuang, diganti detail jenis baru.
             $claimType = ClaimType::tryFrom($data['claim_type'] ?? '') ?? $reimbursement->claim_type;
@@ -118,23 +115,23 @@ class ReimbursementService
     }
 
     /**
-     * Departemen yang menanggung biaya pengajuan.
+     * Departemen yang menanggung biaya pengajuan — SELALU departemen pengaju.
      *
-     * Pengaju boleh menunjuk departemen lain (mis. staf IT membelikan barang
-     * untuk Marketing) supaya rekap Finance jatuh ke unit yang benar. Bila
-     * tidak ditunjuk, dipakai departemen pengaju sendiri.
+     * Sebelumnya pengaju boleh menunjuk unit lain, tapi itu membuat setiap
+     * orang harus memilih departemen di form dan membuka celah biaya nyasar ke
+     * unit yang salah. Sekarang melekat pada profil: satu orang, satu
+     * departemen, sehingga rekap Finance dan penyaringan per departemen
+     * (lihat Reimbursement::visibleTo) selalu konsisten.
      */
-    private function resolveDepartment(User $user, ?int $departmentId): int
+    private function resolveDepartment(User $user): int
     {
-        $resolved = $departmentId ?? $user->department_id;
-
-        if (! $resolved) {
+        if (! $user->department_id) {
             throw ValidationException::withMessages([
-                'department_id' => 'Pilih departemen yang mengajukan — akun Anda belum terdaftar di departemen mana pun.',
+                'department_id' => 'Akun Anda belum terdaftar di departemen mana pun — hubungi Admin untuk menetapkannya sebelum mengajukan.',
             ]);
         }
 
-        return $resolved;
+        return $user->department_id;
     }
 
     /**

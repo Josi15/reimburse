@@ -31,6 +31,9 @@ class UserFactory extends Factory
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
             'phone' => fake()->numerify('08##########'),
+            // Setiap user perlu departemen: klaim mewarisi departemen
+            // pengajunya, dan hak lihat/approve disaring per departemen.
+            'department_id' => fn () => DepartmentFactory::shared()->id,
             'is_active' => true,
             'failed_login_attempts' => 0,
         ];

@@ -52,9 +52,13 @@ class HandleInertiaRequests extends Middleware
                         ?? $user->roles->pluck('name')->first(),
                     'permissions' => $user->roles->flatMap->permissions->pluck('name')->unique()->values(),
                     'reimbursement_limit' => $user->reimbursementLimit(),
-                    // Dipakai form pengajuan sebagai departemen default.
+                    // Departemen melekat pada pengaju: form pengajuan hanya
+                    // menampilkannya, tidak lagi meminta memilih.
                     'department_id' => $user->department_id,
                     'department_name' => $user->department?->name,
+                    // Menentukan apakah UI perlu menawarkan filter lintas
+                    // departemen (Admin/Supervisor: tidak).
+                    'sees_all_departments' => $user->seesAllDepartments(),
                 ] : null,
             ],
             // Menu sidebar dinamis sesuai hak akses user.

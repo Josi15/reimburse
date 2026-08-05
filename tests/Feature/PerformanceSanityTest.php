@@ -18,7 +18,7 @@ beforeEach(function () {
 
     // Volume: 1 dept, 3 kategori, 10 user, 300 reimbursement (FK dibagi rata
     // agar factory tidak membuat cascade ribuan baris).
-    $dept = Department::factory()->create();
+    $dept = $this->dept = Department::factory()->create();
     $categories = Category::factory()->count(3)->create();
     $users = User::factory()->count(10)->create(['department_id' => $dept->id]);
 
@@ -37,7 +37,7 @@ beforeEach(function () {
 });
 
 test('dashboard aggregates 300 claims with a bounded query count', function () {
-    Sanctum::actingAs(userWithRole('admin'));
+    Sanctum::actingAs(userWithRole('admin', $this->dept));
 
     DB::flushQueryLog();
     DB::enableQueryLog();
@@ -55,7 +55,7 @@ test('dashboard aggregates 300 claims with a bounded query count', function () {
 });
 
 test('reimbursement index (50 rows) is free of N+1 queries', function () {
-    Sanctum::actingAs(userWithRole('finance'));
+    Sanctum::actingAs(userWithRole('finance', $this->dept));
 
     DB::flushQueryLog();
     DB::enableQueryLog();
@@ -71,7 +71,7 @@ test('reimbursement index (50 rows) is free of N+1 queries', function () {
 });
 
 test('report summary over 300 claims stays a single aggregate query set', function () {
-    Sanctum::actingAs(userWithRole('manager'));
+    Sanctum::actingAs(userWithRole('manager', $this->dept));
 
     $res = $this->getJson('/api/reports/reimbursements?per_page=20')->assertOk();
 

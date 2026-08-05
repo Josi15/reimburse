@@ -52,7 +52,7 @@ class ProjectBudgetService
      */
     public function summaryFor(User $user, array $filters = []): array
     {
-        $query = Project::query()->visibleTo($user)->with('manager:id,name');
+        $query = Project::query()->visibleTo($user)->with('manager:id,name')->withCount('members');
 
         if (! empty($filters['q'])) {
             $q = $filters['q'];
@@ -91,7 +91,7 @@ class ProjectBudgetService
      */
     public function detail(Project $project, int $recentLimit = 10): array
     {
-        $project->loadMissing('manager:id,name');
+        $project->loadMissing('manager:id,name', 'members:id,name,email,department_id', 'members.department:id,name');
         $stats = $this->statsByProject([$project->id])[$project->id] ?? [];
 
         $recent = Reimbursement::query()
@@ -123,6 +123,14 @@ class ProjectBudgetService
             'end_date' => $project->end_date?->toDateString(),
             'by_status' => $this->byStatus($stats),
             'recent_reimbursements' => $recent,
+            // Anggota yang ditugaskan — merekalah yang boleh membebankan
+            // pengajuan ke proyek ini (lihat App\Rules\AssignedProject).
+            'members' => $project->members->map(fn ($m) => [
+                'id' => $m->id,
+                'name' => $m->name,
+                'email' => $m->email,
+                'department' => $m->department?->name,
+            ])->values()->all(),
         ];
     }
 
@@ -197,6 +205,8 @@ class ProjectBudgetService
                 : null,
             'is_over_budget' => $remaining !== null && $remaining < 0,
             'reimbursement_count' => (int) array_sum(array_column($stats, 'count')),
+            'member_count' => $project->members_count
+                ?? ($project->relationLoaded('members') ? $project->members->count() : null),
         ];
     }
 

@@ -113,6 +113,9 @@ export default function Index() {
                                                     {p.code}
                                                     {p.manager &&
                                                         ` · PM: ${p.manager.name}`}
+                                                    {p.member_count
+                                                        ? ` · ${p.member_count} anggota`
+                                                        : ''}
                                                 </p>
                                             </div>
                                             <div className="flex items-center gap-2">

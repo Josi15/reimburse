@@ -20,6 +20,10 @@ class ProjectUpdateRequest extends FormRequest
             'name' => ['sometimes', 'required', 'string', 'max:150'],
             'description' => ['nullable', 'string', 'max:500'],
             'manager_id' => ['nullable', 'integer', Rule::exists('users', 'id')->whereNull('deleted_at')],
+            // Dikirim = daftar anggota diganti seluruhnya; tidak dikirim =
+            // penugasan yang ada dibiarkan apa adanya.
+            'member_ids' => ['sometimes', 'array'],
+            'member_ids.*' => ['integer', Rule::exists('users', 'id')->whereNull('deleted_at')],
             'budget' => ['nullable', 'integer', 'min:1'],
             'start_date' => ['nullable', 'date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],

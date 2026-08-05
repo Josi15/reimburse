@@ -30,4 +30,21 @@ class DepartmentFactory extends Factory
     {
         return $this->state(fn (array $attributes) => ['is_active' => false]);
     }
+
+    /**
+     * Departemen bawaan bersama.
+     *
+     * Cakupan data disaring per departemen (Reimbursement::visibleTo), sehingga
+     * user yang dibuat factory harus berada di unit yang sama agar mencerminkan
+     * kondisi normal: pengaju dan atasannya satu departemen. firstOrCreate,
+     * bukan properti statis — tiap test berjalan dalam transaksi yang
+     * di-rollback, jadi barisnya memang perlu dibuat ulang.
+     */
+    public static function shared(): Department
+    {
+        return Department::firstOrCreate(
+            ['code' => 'GEN'],
+            ['name' => 'Departemen Umum', 'description' => 'Departemen bawaan', 'is_active' => true],
+        );
+    }
 }

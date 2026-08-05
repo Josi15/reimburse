@@ -23,7 +23,15 @@ class ReimbursementFactory extends Factory
             'claim_type' => ClaimType::Expense,
             'details' => null,
             'user_id' => User::factory(),
-            'department_id' => Department::factory(),
+            // Departemen klaim SELALU mengikuti departemen pengajunya (lihat
+            // ReimbursementService::resolveDepartment). Fallback dipakai bila
+            // pengajunya belum punya departemen.
+            'department_id' => function (array $attributes) {
+                $userId = $attributes['user_id'] ?? null;
+
+                return (is_int($userId) ? User::find($userId)?->department_id : null)
+                    ?? Department::factory();
+            },
             'category_id' => Category::factory(),
             'bank_account_id' => null,
             'title' => fake()->sentence(4),

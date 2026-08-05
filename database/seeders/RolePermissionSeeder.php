@@ -30,6 +30,9 @@ class RolePermissionSeeder extends Seeder
             'project.budget.view' => 'Lihat Sisa Anggaran Proyek Sendiri',
             'project.budget.viewAny' => 'Lihat Sisa Anggaran Semua Proyek',
             'company_account.manage' => 'Kelola Rekening Perusahaan',
+            // Cakupan data: tanpa izin ini, pemegang hak "lihat semua" dibatasi
+            // pada departemennya sendiri (Admin, Manager, Supervisor).
+            'data.viewAllDepartments' => 'Lihat Data Semua Departemen',
             'bankaccount.manage' => 'Kelola Rekening Sendiri',
             'reimbursement.viewAny' => 'Lihat Semua Reimbursement',
             'reimbursement.view' => 'Lihat Reimbursement Sendiri',
@@ -85,10 +88,12 @@ class RolePermissionSeeder extends Seeder
                 ...$canSubmitClaims, ...$allClaimTypes,
                 // Gerbang terakhir untuk pengajuan bernilai besar.
                 'reimbursement.approve.director',
-                'reimbursement.viewAny', 'payment.view',
+                'reimbursement.viewAny', 'data.viewAllDepartments', 'payment.view',
                 'project.budget.view', 'project.budget.viewAny',
                 'dashboard.viewAll', 'report.view', 'report.export', 'audit.view',
             ], 50_000_000, 80_000],
+            // Admin bertugas per departemen: kelola master data + user unitnya,
+            // dan hanya melihat pengajuan departemennya sendiri.
             'admin' => ['Admin', [
                 ...$canSubmitClaims, ...$allClaimTypes,
                 'user.view', 'user.create', 'user.update', 'user.delete',
@@ -100,12 +105,15 @@ class RolePermissionSeeder extends Seeder
             ], 25_000_000, 70_000],
             'finance' => ['Finance', [
                 ...$canSubmitClaims, ...$allClaimTypes,
-                'reimbursement.viewAny', 'reimbursement.approve.finance',
+                'reimbursement.viewAny', 'data.viewAllDepartments',
+                'reimbursement.approve.finance',
                 'payment.view', 'payment.process',
                 'company_account.manage',
                 'project.budget.view', 'project.budget.viewAny',
                 'dashboard.viewAll', 'report.view', 'report.export',
             ], 10_000_000, 60_000],
+            // Manager & Supervisor menilai pengajuan DEPARTEMENNYA sendiri —
+            // tanpa data.viewAllDepartments, cakupannya otomatis tersaring.
             'manager' => ['Manager', [
                 ...$canSubmitClaims, ...$allClaimTypes,
                 'reimbursement.viewAny', 'reimbursement.approve.manager',
@@ -139,7 +147,8 @@ class RolePermissionSeeder extends Seeder
                 ...$canSubmitClaims,
             ], 500_000, null],
             'auditor' => ['Auditor', [ // read-only penuh, tak mengajukan
-                'reimbursement.viewAny', 'payment.view', 'dashboard.viewAll',
+                'reimbursement.viewAny', 'data.viewAllDepartments',
+                'payment.view', 'dashboard.viewAll',
                 'project.budget.view', 'project.budget.viewAny',
                 'report.view', 'report.export', 'audit.view',
             ], 0, null],

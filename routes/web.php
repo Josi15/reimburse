@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -32,8 +33,20 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
     // Reimbursement
     Route::get('/reimbursements', fn () => Inertia::render('Reimbursements/Index'))
         ->name('reimbursements.index');
-    Route::get('/reimbursements/create', fn () => Inertia::render('Reimbursements/Form'))
-        ->name('reimbursements.create');
+    // ?type=goods|service|overtime memilih jenis pengajuan di awal, dipakai
+    // tombol "Ajukan" pada menu Pengadaan Barang / Layanan & Server.
+    Route::get('/reimbursements/create', fn (Request $request) => Inertia::render('Reimbursements/Form', [
+        'type' => $request->query('type'),
+    ]))->name('reimbursements.create');
+
+    // Pintu masuk khusus per jenis pengadaan (menu sidebar tersendiri).
+    Route::get('/reimbursements/goods', fn () => Inertia::render('Reimbursements/Index', [
+        'claimType' => 'goods',
+    ]))->middleware('permission:reimbursement.procurement')->name('reimbursements.goods');
+
+    Route::get('/reimbursements/services', fn () => Inertia::render('Reimbursements/Index', [
+        'claimType' => 'service',
+    ]))->middleware('permission:reimbursement.procurement')->name('reimbursements.services');
     Route::get('/reimbursements/{id}', fn (int $id) => Inertia::render('Reimbursements/Show', ['id' => $id]))
         ->whereNumber('id')->name('reimbursements.show');
     Route::get('/reimbursements/{id}/edit', fn (int $id) => Inertia::render('Reimbursements/Form', ['id' => $id]))

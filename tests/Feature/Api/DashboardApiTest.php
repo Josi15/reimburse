@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\ReimbursementStatus;
+use App\Models\Department;
 use App\Models\Reimbursement;
 use Database\Seeders\RolePermissionSeeder;
 use Laravel\Sanctum\Sanctum;
@@ -36,13 +37,17 @@ test('approved card counts both manager- and finance-approved (symmetric with re
         ->and($data['cards']['rejected'])->toBe(1);
 });
 
-test('manager dashboard reports the manager approval queue', function () {
+test('manager dashboard is scoped to their department and reports the approval queue', function () {
     Reimbursement::factory()->submitted()->count(2)->create();
+    // Departemen lain: tidak boleh ikut terhitung di antrean Manager.
+    Reimbursement::factory()->submitted()->create([
+        'user_id' => employeeUser(Department::factory()->create())->id,
+    ]);
     Sanctum::actingAs(userWithRole('manager'));
 
     $data = $this->getJson('/api/dashboard')->assertOk()->json('data');
 
-    expect($data['scope'])->toBe('global')
+    expect($data['scope'])->toBe('department')
         ->and($data['pending']['manager_approval'])->toBe(2);
 });
 
@@ -57,9 +62,22 @@ test('finance dashboard reports approval and payment queues', function () {
         ->and($data['pending']['awaiting_payment'])->toBe(3);
 });
 
-test('admin sees global stats with top categories, departments and 12 month chart', function () {
+test('admin dashboard is limited to their own department', function () {
     Reimbursement::factory()->paid()->count(2)->create();
     Sanctum::actingAs(userWithRole('admin'));
+
+    $data = $this->getJson('/api/dashboard')->assertOk()->json('data');
+
+    expect($data['scope'])->toBe('department')
+        ->and($data['monthly_expense'])->toHaveCount(12)
+        ->and($data['top_categories'])->not->toBeEmpty()
+        // Rekap antar-departemen hanya untuk yang melihat lintas departemen.
+        ->and($data['top_departments'])->toBe([]);
+});
+
+test('finance sees global stats with top categories, departments and 12 month chart', function () {
+    Reimbursement::factory()->paid()->count(2)->create();
+    Sanctum::actingAs(userWithRole('finance'));
 
     $data = $this->getJson('/api/dashboard')->assertOk()->json('data');
 
@@ -72,7 +90,7 @@ test('admin sees global stats with top categories, departments and 12 month char
 test('monthly expense reflects paid amounts in the current month', function () {
     Reimbursement::factory()->paid()->create(['amount' => 400_000]);
     Reimbursement::factory()->paid()->create(['amount' => 600_000]);
-    Sanctum::actingAs(userWithRole('admin'));
+    Sanctum::actingAs(userWithRole('finance'));
 
     $monthly = collect($this->getJson('/api/dashboard')->json('data.monthly_expense'));
     $thisMonth = $monthly->firstWhere('month', (int) now()->month);

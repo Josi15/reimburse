@@ -22,14 +22,19 @@ import { REIMBURSEMENT_STATUSES } from '@/lib/statuses';
 import { Head, Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
-export default function Index() {
-    const { can } = useAuth();
+/**
+ * Daftar pengajuan. Bila `claimType` diisi (menu Pengadaan Barang / Layanan &
+ * Server di sidebar), halaman terkunci pada jenis itu: filter jenis disembunyikan
+ * dan tombol buat langsung membuka form dengan jenis tersebut.
+ */
+export default function Index({ claimType: lockedType = null }) {
+    const { can, user } = useAuth();
     const [rows, setRows] = useState(null);
     const [meta, setMeta] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [status, setStatus] = useState('');
-    const [claimType, setClaimType] = useState('');
+    const [claimType, setClaimType] = useState(lockedType ?? '');
     const [claimTypes, setClaimTypes] = useState([]);
     const [departmentId, setDepartmentId] = useState('');
     const [departments, setDepartments] = useState([]);
@@ -38,14 +43,20 @@ export default function Index() {
     const [nonce, setNonce] = useState(0);
     const dq = useDebouncedValue(q);
 
+    // Filter departemen hanya berguna bagi yang memang melihat lintas
+    // departemen; Admin/Supervisor sudah terkunci di unitnya sendiri.
+    const showDepartmentFilter = !!user?.sees_all_departments;
+
     useEffect(() => {
         api.get('/api/options/claim-types')
             .then((d) => setClaimTypes(d.data))
             .catch(() => {});
-        api.get('/api/options/departments')
-            .then((d) => setDepartments(d.data))
-            .catch(() => {});
-    }, []);
+        if (showDepartmentFilter) {
+            api.get('/api/options/departments')
+                .then((d) => setDepartments(d.data))
+                .catch(() => {});
+        }
+    }, [showDepartmentFilter]);
 
     useEffect(() => {
         let active = true;
@@ -77,22 +88,32 @@ export default function Index() {
 
     const reload = () => setNonce((n) => n + 1);
 
+    const lockedTypeMeta = lockedType
+        ? claimTypes.find((t) => t.value === lockedType)
+        : null;
+    const pageTitle =
+        lockedTypeMeta?.label ?? (lockedType ? '…' : 'Reimbursement');
+    const createHref = lockedType
+        ? `/reimbursements/create?type=${lockedType}`
+        : '/reimbursements/create';
+    const createLabel = lockedType ? 'Ajukan' : 'Buat Pengajuan';
+
     return (
         <AuthenticatedLayout
             header={
                 <div className="flex items-center justify-between">
                     <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                        Reimbursement
+                        {pageTitle}
                     </h2>
                     {can('reimbursement.create') && (
-                        <Link href="/reimbursements/create">
-                            <PrimaryButton>+ Buat Pengajuan</PrimaryButton>
+                        <Link href={createHref}>
+                            <PrimaryButton>+ {createLabel}</PrimaryButton>
                         </Link>
                     )}
                 </div>
             }
         >
-            <Head title="Reimbursement" />
+            <Head title={pageTitle} />
 
             <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <Card>
@@ -121,38 +142,42 @@ export default function Index() {
                                 </option>
                             ))}
                         </SelectInput>
-                        <SelectInput
-                            className="text-sm"
-                            aria-label="Filter jenis pengajuan"
-                            value={claimType}
-                            onChange={(e) => {
-                                setClaimType(e.target.value);
-                                setPage(1);
-                            }}
-                        >
-                            <option value="">Semua Jenis</option>
-                            {claimTypes.map((t) => (
-                                <option key={t.value} value={t.value}>
-                                    {t.icon} {t.label}
-                                </option>
-                            ))}
-                        </SelectInput>
-                        <SelectInput
-                            className="text-sm"
-                            aria-label="Filter departemen"
-                            value={departmentId}
-                            onChange={(e) => {
-                                setDepartmentId(e.target.value);
-                                setPage(1);
-                            }}
-                        >
-                            <option value="">Semua Departemen</option>
-                            {departments.map((d) => (
-                                <option key={d.id} value={d.id}>
-                                    {d.name}
-                                </option>
-                            ))}
-                        </SelectInput>
+                        {!lockedType && (
+                            <SelectInput
+                                className="text-sm"
+                                aria-label="Filter jenis pengajuan"
+                                value={claimType}
+                                onChange={(e) => {
+                                    setClaimType(e.target.value);
+                                    setPage(1);
+                                }}
+                            >
+                                <option value="">Semua Jenis</option>
+                                {claimTypes.map((t) => (
+                                    <option key={t.value} value={t.value}>
+                                        {t.icon} {t.label}
+                                    </option>
+                                ))}
+                            </SelectInput>
+                        )}
+                        {showDepartmentFilter && (
+                            <SelectInput
+                                className="text-sm"
+                                aria-label="Filter departemen"
+                                value={departmentId}
+                                onChange={(e) => {
+                                    setDepartmentId(e.target.value);
+                                    setPage(1);
+                                }}
+                            >
+                                <option value="">Semua Departemen</option>
+                                {departments.map((d) => (
+                                    <option key={d.id} value={d.id}>
+                                        {d.name}
+                                    </option>
+                                ))}
+                            </SelectInput>
+                        )}
                     </div>
 
                     {loading ? (
@@ -162,7 +187,10 @@ export default function Index() {
                     ) : rows?.length === 0 ? (
                         <EmptyState
                             title="Belum ada pengajuan"
-                            description="Buat pengajuan reimbursement pertama Anda."
+                            description={
+                                lockedTypeMeta?.description ??
+                                'Buat pengajuan reimbursement pertama Anda.'
+                            }
                         />
                     ) : (
                         <>

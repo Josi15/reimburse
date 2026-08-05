@@ -11,7 +11,8 @@ use Illuminate\Http\Request;
 
 /**
  * Global search lintas entitas. Hasil reimbursement mengikuti cakupan role
- * (Employee = miliknya sendiri); hasil user hanya untuk pemegang user.view.
+ * (pribadi / departemen / lintas departemen, lihat Reimbursement::visibleTo);
+ * hasil user hanya untuk pemegang user.view dan ikut disaring per departemen.
  */
 class SearchController extends Controller
 {
@@ -24,10 +25,9 @@ class SearchController extends Controller
         }
 
         $user = $request->user();
-        $seesAll = $user->hasPermission('reimbursement.viewAny') || $user->hasRole('super_admin');
 
         $reimbursements = Reimbursement::query()
-            ->when(! $seesAll, fn (Builder $x) => $x->where('user_id', $user->id))
+            ->visibleTo($user)
             ->where(function (Builder $s) use ($q) {
                 $s->where('reimbursement_number', 'ilike', "%{$q}%")
                     ->orWhere('title', 'ilike', "%{$q}%");
@@ -45,6 +45,8 @@ class SearchController extends Controller
         $users = collect();
         if ($user->hasPermission('user.view') || $user->hasRole('super_admin')) {
             $users = User::query()
+                ->unless($user->seesAllDepartments(), fn (Builder $x) => $x
+                    ->where('department_id', $user->department_id))
                 ->where(function (Builder $s) use ($q) {
                     $s->where('name', 'ilike', "%{$q}%")->orWhere('email', 'ilike', "%{$q}%");
                 })

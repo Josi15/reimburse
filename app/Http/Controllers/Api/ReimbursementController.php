@@ -41,13 +41,11 @@ class ReimbursementController extends Controller
     {
         $this->authorize('viewAny', Reimbursement::class);
 
-        $query = Reimbursement::query()->with(['category', 'user', 'project', 'department']);
-
-        // Employee tanpa izin viewAny hanya melihat miliknya sendiri.
-        if (! $request->user()->hasPermission('reimbursement.viewAny')
-            && ! $request->user()->hasRole('super_admin')) {
-            $query->forUser($request->user()->id);
-        }
+        // Cakupan (pribadi / departemen / lintas departemen) ditentukan
+        // visibleTo — aturan yang sama dipakai dashboard & laporan.
+        $query = Reimbursement::query()
+            ->visibleTo($request->user())
+            ->with(['category', 'user', 'project', 'department']);
 
         $items = $this->paginateResource($query, $request, [
             'searchable' => ['reimbursement_number', 'title'],

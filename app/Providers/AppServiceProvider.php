@@ -4,12 +4,14 @@ namespace App\Providers;
 
 use App\Enums\AuditEvent;
 use App\Models\Reimbursement;
+use App\Models\User;
 use App\Services\AuditLogger;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
 use Dedoc\Scramble\Support\Generator\SecurityScheme;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
@@ -34,6 +36,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configurePasswordPolicy();
         $this->configureRateLimiting();
         $this->configureAuditLogging();
+        $this->configurePasswordReset();
         $this->configureApiDocs();
     }
 
@@ -61,6 +64,36 @@ class AppServiceProvider extends ServiceProvider
 
         Event::listen(Logout::class, function (Logout $event) {
             app(AuditLogger::class)->log(AuditEvent::Logout, userId: $event->user?->getAuthIdentifier());
+        });
+    }
+
+    /**
+     * Setelah password berhasil di-reset, buka kunci akunnya.
+     *
+     * Lockout (5 kali gagal login) justru paling sering menimpa orang yang lupa
+     * password. Tanpa ini, ia sudah menyetel password baru tapi tetap ditolak
+     * sampai masa kunci habis — reset jadi terasa tidak berfungsi.
+     */
+    private function configurePasswordReset(): void
+    {
+        Event::listen(PasswordReset::class, function (PasswordReset $event) {
+            $user = $event->user;
+
+            if (! $user instanceof User) {
+                return;
+            }
+
+            User::withoutAuditing(fn () => $user->forceFill([
+                'failed_login_attempts' => 0,
+                'locked_until' => null,
+            ])->save());
+
+            app(AuditLogger::class)->log(
+                AuditEvent::Update,
+                $user,
+                description: 'Password direset lewat tautan email',
+                userId: $user->id,
+            );
         });
     }
 
@@ -156,6 +189,13 @@ class AppServiceProvider extends ServiceProvider
             $key = mb_strtolower((string) $request->input('email')).'|'.$request->ip();
 
             return Limit::perMinute(5)->by($key);
+        });
+
+        // Lupa password: 6 permintaan/menit per IP. Broker Laravel sudah
+        // membatasi per akun (1 tautan/60 detik); ini menutup celah satu IP
+        // yang mencoba banyak alamat email sekaligus.
+        RateLimiter::for('password-reset', function (Request $request) {
+            return Limit::perMinute(6)->by($request->ip());
         });
 
         // Payment: operasi sensitif → 10 aksi/menit per user.

@@ -25,8 +25,15 @@ class ProjectSeeder extends Seeder
             ['code' => 'PRJ-2026-004', 'name' => 'Ekspansi Cabang Surabaya', 'budget' => 500_000_000],
         ];
 
+        // Anggota contoh: pengaju harian (karyawan & magang) supaya dropdown
+        // "Project" di form pengajuan mereka langsung ada isinya.
+        $memberIds = User::query()
+            ->withRole('employee', 'intern')
+            ->pluck('id')
+            ->all();
+
         foreach ($projects as $p) {
-            Project::firstOrCreate(
+            $project = Project::firstOrCreate(
                 ['code' => $p['code']],
                 [
                     'name' => $p['name'],
@@ -37,6 +44,10 @@ class ProjectSeeder extends Seeder
                     'is_active' => true,
                 ],
             );
+
+            // syncWithoutDetaching agar re-seed tidak membuang penugasan
+            // yang sudah diatur lewat UI.
+            $project->members()->syncWithoutDetaching($memberIds);
         }
     }
 }

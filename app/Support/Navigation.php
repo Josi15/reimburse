@@ -18,6 +18,13 @@ class Navigation
             ['label' => 'Dashboard', 'href' => '/dashboard', 'icon' => 'home'],
             ['label' => 'Reimbursement', 'href' => '/reimbursements', 'icon' => 'receipt',
                 'permissions' => ['reimbursement.view', 'reimbursement.viewAny']],
+            // Pengadaan dipisah dari menu Reimbursement supaya tiap departemen
+            // punya pintu masuk sendiri: satu klik langsung ke daftar & form
+            // jenisnya, tanpa perlu memilih jenis lebih dulu.
+            ['label' => 'Pengadaan Barang', 'href' => '/reimbursements/goods', 'icon' => 'box',
+                'permissions' => ['reimbursement.procurement']],
+            ['label' => 'Layanan & Server', 'href' => '/reimbursements/services', 'icon' => 'server',
+                'permissions' => ['reimbursement.procurement']],
             ['label' => 'Persetujuan', 'href' => '/approvals', 'icon' => 'check-circle',
                 'permissions' => ['reimbursement.approve.manager', 'reimbursement.approve.finance']],
             ['label' => 'Pembayaran', 'href' => '/payments', 'icon' => 'banknotes',

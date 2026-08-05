@@ -2299,7 +2299,22 @@
                                                     "type": "string",
                                                     "enum": [
                                                         "global",
+                                                        "department",
                                                         "personal"
+                                                    ]
+                                                },
+                                                "scope_label": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "string"
+                                                        },
+                                                        {
+                                                            "type": "string",
+                                                            "enum": [
+                                                                "Seluruh perusahaan",
+                                                                "Pengajuan Anda"
+                                                            ]
+                                                        }
                                                     ]
                                                 },
                                                 "cards": {
@@ -2391,6 +2406,7 @@
                                                 },
                                                 "top_departments": {
                                                     "type": "array",
+                                                    "description": "Rekap antar-departemen hanya relevan bagi yang memang melihat\nlintas departemen; Admin/Supervisor cukup unitnya sendiri.",
                                                     "items": {
                                                         "type": "string"
                                                     }
@@ -2398,6 +2414,7 @@
                                             },
                                             "required": [
                                                 "scope",
+                                                "scope_label",
                                                 "cards",
                                                 "pending",
                                                 "recent",
@@ -2985,6 +3002,7 @@
         "/options/projects": {
             "get": {
                 "operationId": "options.projects",
+                "summary": "Proyek yang boleh dipilih saat mengajukan. Karyawan/magang hanya melihat\nproyek tempat ia DITUGASKAN (pivot project_user) atau yang dipegangnya \u2014\nsejalan dengan aturan App\\Rules\\AssignedProject. Pemegang project.manage\nmelihat semuanya (daftar penuh ini yang di-cache)",
                 "tags": [
                     "Options"
                 ],
@@ -3124,6 +3142,61 @@
                                             "type": "array",
                                             "items": {
                                                 "$ref": "#/components/schemas/User"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/options/project-members": {
+            "get": {
+                "operationId": "options.projectMembers",
+                "summary": "Kandidat anggota proyek: seluruh user aktif (butuh project.manage \u2014\ndijaga di route). Dipakai form Master Data > Project",
+                "tags": [
+                    "Options"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "email": {
+                                                        "type": "string"
+                                                    },
+                                                    "department": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "id",
+                                                    "name",
+                                                    "email",
+                                                    "department"
+                                                ]
                                             }
                                         }
                                     },
@@ -7452,6 +7525,20 @@
                             "name"
                         ]
                     },
+                    "members": {
+                        "type": "array",
+                        "description": "Anggota proyek (karyawan/magang yang ditugaskan).",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "member_ids": {
+                        "type": "object",
+                        "additionalProperties": {}
+                    },
+                    "members_count": {
+                        "type": "integer"
+                    },
                     "budget": {
                         "type": [
                             "integer",
@@ -7542,6 +7629,16 @@
                             "null"
                         ]
                     },
+                    "member_ids": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "description": "Anggota proyek (karyawan/magang yang mengerjakannya).",
+                        "items": {
+                            "type": "integer"
+                        }
+                    },
                     "budget": {
                         "type": [
                             "integer",
@@ -7596,6 +7693,13 @@
                             "integer",
                             "null"
                         ]
+                    },
+                    "member_ids": {
+                        "type": "array",
+                        "description": "Dikirim = daftar anggota diganti seluruhnya; tidak dikirim =\npenugasan yang ada dibiarkan apa adanya.",
+                        "items": {
+                            "type": "integer"
+                        }
                     },
                     "budget": {
                         "type": [
@@ -8118,18 +8222,12 @@
                     "category_id": {
                         "type": "integer"
                     },
-                    "department_id": {
-                        "type": [
-                            "integer",
-                            "null"
-                        ],
-                        "description": "Departemen yang menanggung biaya. Kosong = ikut departemen pengaju."
-                    },
                     "project_id": {
                         "type": [
                             "integer",
                             "null"
-                        ]
+                        ],
+                        "description": "Departemen TIDAK dikirim klien: selalu diambil dari profil pengaju\n(lihat ReimbursementService::resolveDepartment)."
                     },
                     "title": {
                         "type": "string",
@@ -8207,17 +8305,12 @@
                     "category_id": {
                         "type": "integer"
                     },
-                    "department_id": {
-                        "type": [
-                            "integer",
-                            "null"
-                        ]
-                    },
                     "project_id": {
                         "type": [
                             "integer",
                             "null"
-                        ]
+                        ],
+                        "description": "Departemen mengikuti profil pengaju, tidak dikirim dari klien."
                     },
                     "title": {
                         "type": "string",

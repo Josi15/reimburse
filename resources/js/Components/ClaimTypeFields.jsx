@@ -10,7 +10,9 @@ import TextareaInput from '@/Components/ui/TextareaInput';
  * atau field baru cukup di PHP — komponen ini tidak perlu diubah.
  */
 export default function ClaimTypeFields({ type, values, onChange, errors }) {
-    const fields = type?.fields ?? [];
+    // Field bertanda `hidden` diisi server dari profil user (mis. upah lembur
+    // menurut jabatan) dan sengaja tidak ditampilkan di form.
+    const fields = (type?.fields ?? []).filter((f) => !f.hidden);
 
     if (fields.length === 0) return null;
 

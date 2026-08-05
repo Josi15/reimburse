@@ -201,6 +201,39 @@ class Reimbursement extends Model
     }
 
     /**
+     * Cakupan data yang boleh dilihat $user — sumber tunggal aturan "siapa
+     * melihat apa", dipakai daftar pengajuan, antrean persetujuan, dashboard,
+     * dan laporan agar semuanya konsisten.
+     *
+     * Tiga tingkat:
+     * 1. Lintas departemen (Super Admin, Direksi, Finance, Auditor) — semua.
+     * 2. Satu departemen (Admin, Manager, Supervisor) — pengajuan unitnya
+     *    sendiri, ditambah miliknya sendiri bila ia belum punya departemen.
+     * 3. Pribadi (Employee, Magang, Project Manager) — hanya miliknya.
+     */
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        if ($user->seesAllDepartments()) {
+            return $query;
+        }
+
+        if (! $user->hasPermission('reimbursement.viewAny')) {
+            return $query->where('reimbursements.user_id', $user->id);
+        }
+
+        // Atasan tanpa departemen tidak bisa "mengklaim" seluruh perusahaan;
+        // ia hanya melihat pengajuannya sendiri sampai departemennya diisi.
+        if (! $user->department_id) {
+            return $query->where('reimbursements.user_id', $user->id);
+        }
+
+        return $query->where(function (Builder $q) use ($user) {
+            $q->where('reimbursements.department_id', $user->department_id)
+                ->orWhere('reimbursements.user_id', $user->id);
+        });
+    }
+
+    /**
      * Siap dibayar: sudah lolos Direksi, atau lolos Finance dengan nominal di
      * bawah ambang sehingga tak perlu Direksi. Padanan SQL dari
      * isReadyForPayment().

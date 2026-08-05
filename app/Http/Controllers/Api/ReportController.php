@@ -19,24 +19,35 @@ class ReportController extends Controller
 {
     public function __construct(private readonly ReportService $service) {}
 
+    /**
+     * Laporan selalu disaring ke cakupan penontonnya. Dipanggil di awal setiap
+     * aksi supaya tidak ada jalur yang lolos tanpa penyaringan departemen.
+     */
+    private function scoped(Request $request): ReportService
+    {
+        return $this->service->forUser($request->user());
+    }
+
     /** Laporan reimbursement terfilter + ringkasan statistik. */
     public function reimbursements(Request $request): AnonymousResourceCollection
     {
         $filters = $this->validatedFilters($request);
 
-        $list = $this->service->list($filters)
+        $service = $this->scoped($request);
+
+        $list = $service->list($filters)
             ->paginate(min((int) $request->query('per_page', 15), 100))
             ->withQueryString();
 
         return ReimbursementResource::collection($list)
-            ->additional(['summary' => $this->service->summary($filters)]);
+            ->additional(['summary' => $service->summary($filters)]);
     }
 
     /** Rekap pengeluaran per proyek (menghormati filter laporan). */
     public function projects(Request $request): JsonResponse
     {
         return response()->json([
-            'data' => $this->service->projectRecap($this->validatedFilters($request)),
+            'data' => $this->scoped($request)->projectRecap($this->validatedFilters($request)),
         ]);
     }
 
@@ -44,7 +55,7 @@ class ReportController extends Controller
     public function departments(Request $request): JsonResponse
     {
         return response()->json([
-            'data' => $this->service->departmentRecap($this->validatedFilters($request)),
+            'data' => $this->scoped($request)->departmentRecap($this->validatedFilters($request)),
         ]);
     }
 
@@ -74,20 +85,21 @@ class ReportController extends Controller
     {
         $filters = $this->validatedFilters($request);
         $format = $request->query('format', 'csv');
+        $service = $this->scoped($request);
 
         return match ($format) {
             'xlsx' => Excel::download(
-                new ReimbursementsExport($filters, $this->service),
+                new ReimbursementsExport($filters, $service),
                 'laporan-reimbursement.xlsx',
             ),
             'csv' => Excel::download(
-                new ReimbursementsExport($filters, $this->service),
+                new ReimbursementsExport($filters, $service),
                 'laporan-reimbursement.csv',
                 ExcelFormat::CSV,
             ),
             'pdf' => Pdf::loadView('reports.reimbursements', [
-                'rows' => $this->service->list($filters)->get(),
-                'summary' => $this->service->summary($filters),
+                'rows' => $service->list($filters)->get(),
+                'summary' => $service->summary($filters),
                 'generatedAt' => now()->format('Y-m-d H:i'),
             ])->download('laporan-reimbursement.pdf'),
             default => abort(422, 'Format tidak didukung. Gunakan csv, xlsx, atau pdf.'),

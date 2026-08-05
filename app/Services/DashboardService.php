@@ -19,27 +19,37 @@ class DashboardService
         $seesAll = $user->hasPermission('reimbursement.viewAny') || $user->hasRole('super_admin');
 
         return [
-            'scope' => $seesAll ? 'global' : 'personal',
-            'cards' => $this->cards($user, $seesAll),
+            'scope' => $seesAll
+                ? ($user->seesAllDepartments() ? 'global' : 'department')
+                : 'personal',
+            'scope_label' => $seesAll
+                ? ($user->seesAllDepartments()
+                    ? 'Seluruh perusahaan'
+                    : 'Departemen '.($user->department->name ?? '—'))
+                : 'Pengajuan Anda',
+            'cards' => $this->cards($user),
             'pending' => $this->pending($user),
-            'recent' => $this->recent($user, $seesAll),
-            'monthly_expense' => $this->monthlyExpense($user, $seesAll),
-            'top_categories' => $this->topCategories($user, $seesAll),
-            'top_departments' => $seesAll ? $this->topDepartments() : [],
+            'recent' => $this->recent($user),
+            'monthly_expense' => $this->monthlyExpense($user),
+            'top_categories' => $this->topCategories($user),
+            // Rekap antar-departemen hanya relevan bagi yang memang melihat
+            // lintas departemen; Admin/Supervisor cukup unitnya sendiri.
+            'top_departments' => $user->seesAllDepartments() ? $this->topDepartments() : [],
         ];
     }
 
-    /** Query dasar sesuai cakupan role. */
-    private function base(User $user, bool $seesAll): Builder
+    /**
+     * Query dasar sesuai cakupan role (pribadi / departemen / lintas
+     * departemen). Aturannya satu tempat: Reimbursement::scopeVisibleTo.
+     */
+    private function base(User $user): Builder
     {
-        $query = Reimbursement::query();
-
-        return $seesAll ? $query : $query->where('user_id', $user->id);
+        return Reimbursement::query()->visibleTo($user);
     }
 
-    private function cards(User $user, bool $seesAll): array
+    private function cards(User $user): array
     {
-        $counts = (clone $this->base($user, $seesAll))
+        $counts = (clone $this->base($user))
             ->selectRaw('status, COUNT(*) as c, COALESCE(SUM(amount),0) as total')
             ->groupBy('status')
             ->get()
@@ -66,16 +76,22 @@ class DashboardService
     {
         $result = [];
 
+        // Antrean pun mengikuti cakupan: Manager/Supervisor hanya menghitung
+        // pengajuan departemennya, bukan seluruh perusahaan.
+        $inScope = fn (ReimbursementStatus $status) => $this->base($user)
+            ->where('reimbursements.status', $status->value)
+            ->count();
+
         if ($user->hasPermission('reimbursement.approve.manager') || $user->hasRole('super_admin')) {
-            $result['manager_approval'] = Reimbursement::where('status', ReimbursementStatus::Submitted->value)->count();
+            $result['manager_approval'] = $inScope(ReimbursementStatus::Submitted);
         }
 
         if ($user->hasPermission('reimbursement.approve.finance') || $user->hasRole('super_admin')) {
-            $result['finance_approval'] = Reimbursement::where('status', ReimbursementStatus::ManagerApproved->value)->count();
+            $result['finance_approval'] = $inScope(ReimbursementStatus::ManagerApproved);
         }
 
         if ($user->hasPermission('payment.process') || $user->hasRole('super_admin')) {
-            $result['awaiting_payment'] = Reimbursement::where('status', ReimbursementStatus::FinanceApproved->value)->count();
+            $result['awaiting_payment'] = $inScope(ReimbursementStatus::FinanceApproved);
         }
 
         // Employee: pengajuan sendiri yang butuh tindak lanjut (revisi).
@@ -85,9 +101,9 @@ class DashboardService
         return $result;
     }
 
-    private function recent(User $user, bool $seesAll): array
+    private function recent(User $user): array
     {
-        return (clone $this->base($user, $seesAll))
+        return (clone $this->base($user))
             ->with(['user:id,name', 'category:id,name'])
             ->latest()
             ->limit(5)
@@ -111,11 +127,11 @@ class DashboardService
     }
 
     /** Total pembayaran per bulan (tahun berjalan). Selalu 12 bucket. */
-    private function monthlyExpense(User $user, bool $seesAll): array
+    private function monthlyExpense(User $user): array
     {
         $year = (int) now()->year;
 
-        $rows = (clone $this->base($user, $seesAll))
+        $rows = (clone $this->base($user))
             ->where('status', ReimbursementStatus::Paid->value)
             ->whereYear('completed_at', $year)
             ->selectRaw('EXTRACT(MONTH FROM completed_at)::int as m, COALESCE(SUM(amount),0) as total')
@@ -128,9 +144,9 @@ class DashboardService
         ])->all();
     }
 
-    private function topCategories(User $user, bool $seesAll): array
+    private function topCategories(User $user): array
     {
-        return (clone $this->base($user, $seesAll))
+        return (clone $this->base($user))
             ->join('categories', 'categories.id', '=', 'reimbursements.category_id')
             ->selectRaw('categories.name as name, COUNT(*) as count, COALESCE(SUM(reimbursements.amount),0) as total')
             ->groupBy('categories.name')

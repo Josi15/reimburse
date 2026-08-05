@@ -25,44 +25,40 @@ function claimPayload(array $override = []): array
     ], $override);
 }
 
-test('a claim defaults to the submitter own department', function () {
+test('a claim is charged to the submitter own department', function () {
     $response = $this->postJson('/api/reimbursements', claimPayload())->assertCreated();
 
     expect($response->json('data.department_id'))->toBe($this->ownDept);
 });
 
-test('the submitter can charge the claim to another department', function () {
+test('a department sent by the client is ignored', function () {
+    // Departemen melekat pada profil pengaju. Kalaupun klien mengirim
+    // department_id (mis. request yang dirakit manual), server mengabaikannya.
     $response = $this->postJson('/api/reimbursements', claimPayload([
         'department_id' => $this->otherDept->id,
     ]))->assertCreated();
 
-    expect($response->json('data.department_id'))->toBe($this->otherDept->id);
+    expect($response->json('data.department_id'))->toBe($this->ownDept);
 
     $claim = Reimbursement::find($response->json('data.id'));
-    expect($claim->department_id)->toBe($this->otherDept->id)
-        ->and($claim->user_id)->toBe($this->employee->id);   // pengaju tetap dirinya
+    expect($claim->department_id)->toBe($this->ownDept)
+        ->and($claim->user_id)->toBe($this->employee->id);
 });
 
-test('an inactive department is rejected', function () {
-    $inactive = Department::factory()->create(['is_active' => false]);
-
-    $this->postJson('/api/reimbursements', claimPayload(['department_id' => $inactive->id]))
-        ->assertStatus(422)
-        ->assertJsonValidationErrors('department_id');
-});
-
-test('a user without a department must pick one', function () {
+test('a user without a department cannot submit at all', function () {
     $this->employee->update(['department_id' => null]);
 
     $this->postJson('/api/reimbursements', claimPayload())
         ->assertStatus(422)
         ->assertJsonValidationErrors('department_id');
 
+    // Menyertakan departemen sendiri pun tidak menolong — harus diatur Admin.
     $this->postJson('/api/reimbursements', claimPayload(['department_id' => $this->otherDept->id]))
-        ->assertCreated();
+        ->assertStatus(422)
+        ->assertJsonValidationErrors('department_id');
 });
 
-test('the department can be changed while the claim is still a draft', function () {
+test('the department stays put when a draft is edited', function () {
     $claim = Reimbursement::factory()->create([
         'user_id' => $this->employee->id,
         'department_id' => $this->ownDept,
@@ -72,9 +68,11 @@ test('the department can be changed while the claim is still a draft', function 
 
     $this->putJson("/api/reimbursements/{$claim->id}", [
         'department_id' => $this->otherDept->id,
+        'title' => 'Judul baru',
     ])->assertOk();
 
-    expect($claim->refresh()->department_id)->toBe($this->otherDept->id);
+    expect($claim->refresh()->department_id)->toBe($this->ownDept)
+        ->and($claim->title)->toBe('Judul baru');
 });
 
 test('the list can be filtered by department', function () {

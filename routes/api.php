@@ -46,6 +46,8 @@ Route::middleware('auth:sanctum')->group(function () {
         ->middleware('permission:payment.process');
     Route::get('options/project-managers', [OptionsController::class, 'projectManagers'])
         ->middleware('permission:project.manage');
+    Route::get('options/project-members', [OptionsController::class, 'projectMembers'])
+        ->middleware('permission:project.manage');
     Route::get('options/roles', [OptionsController::class, 'roles'])->middleware('permission:user.view');
     Route::get('options/permissions', [OptionsController::class, 'permissions'])->middleware('permission:role.manage');
 

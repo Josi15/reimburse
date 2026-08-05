@@ -24,6 +24,16 @@ class UserController extends Controller
     {
         $query = User::query()->with(['department', 'roles']);
 
+        // Admin dikhususkan per departemen: hanya mengelola orang di unitnya
+        // sendiri (plus dirinya). Direksi/Finance/Super Admin melihat semua.
+        if (! $request->user()->seesAllDepartments()) {
+            $departmentId = $request->user()->department_id;
+
+            $query->where(fn ($q) => $q
+                ->when($departmentId, fn ($sub) => $sub->where('department_id', $departmentId))
+                ->orWhere('id', $request->user()->id));
+        }
+
         // Filter berdasarkan role (slug) — join lewat relasi.
         if ($request->filled('role')) {
             $query->whereHas('roles', fn ($q) => $q->where('name', $request->query('role')));

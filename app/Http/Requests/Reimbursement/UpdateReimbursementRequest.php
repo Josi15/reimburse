@@ -4,6 +4,7 @@ namespace App\Http\Requests\Reimbursement;
 
 use App\Http\Requests\Reimbursement\Concerns\ChecksReimbursementLimits;
 use App\Http\Requests\Reimbursement\Concerns\HandlesClaimTypeInput;
+use App\Rules\AssignedProject;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -37,10 +38,10 @@ class UpdateReimbursementRequest extends FormRequest
             // Jenis pengajuan + field khusus jenisnya (fallback: jenis tersimpan).
             ...$this->claimTypeRules(required: false),
             'category_id' => ['sometimes', 'required', 'integer', Rule::exists('categories', 'id')->whereNull('deleted_at')],
-            'department_id' => ['nullable', 'integer',
-                Rule::exists('departments', 'id')->where('is_active', true)->whereNull('deleted_at')],
+            // Departemen mengikuti profil pengaju, tidak dikirim dari klien.
             'project_id' => ['nullable', 'integer',
-                Rule::exists('projects', 'id')->where('is_active', true)->whereNull('deleted_at')],
+                Rule::exists('projects', 'id')->where('is_active', true)->whereNull('deleted_at'),
+                new AssignedProject($this->user(), $this->route('reimbursement')?->project_id)],
             'title' => ['sometimes', 'required', 'string', 'max:150'],
             'description' => ['nullable', 'string'],
             'reason' => ['sometimes', 'required', 'string'],

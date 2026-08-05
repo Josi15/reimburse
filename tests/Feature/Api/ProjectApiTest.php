@@ -39,19 +39,68 @@ test('project code must be unique and end_date not before start_date', function 
     ])->assertUnprocessable()->assertJsonValidationErrors(['end_date']);
 });
 
-test('active projects are exposed via the options endpoint', function () {
-    Project::factory()->create(['name' => 'Alpha', 'is_active' => true]);
-    Project::factory()->inactive()->create(['name' => 'Beta']);
-    Sanctum::actingAs(userWithRole('employee'));
+test('the options endpoint only lists active projects the user is assigned to', function () {
+    $employee = employeeUser();
+    $assigned = Project::factory()->create(['name' => 'Alpha', 'is_active' => true]);
+    $assigned->members()->attach($employee);
+    Project::factory()->inactive()->create(['name' => 'Beta'])->members()->attach($employee);
+    Project::factory()->create(['name' => 'Gamma', 'is_active' => true]);   // tanpa penugasan
 
-    $data = $this->getJson('/api/options/projects')->assertOk()->json('data');
-    expect(collect($data)->pluck('name'))->toContain('Alpha')->not->toContain('Beta');
+    Sanctum::actingAs($employee);
+
+    $names = collect($this->getJson('/api/options/projects')->assertOk()->json('data'))->pluck('name');
+    expect($names)->toContain('Alpha')->not->toContain('Beta')->not->toContain('Gamma');
 });
 
-test('a reimbursement can be linked to a project', function () {
+test('an admin managing projects still sees every active project', function () {
+    Project::factory()->create(['name' => 'Alpha', 'is_active' => true]);
+    Sanctum::actingAs(userWithRole('admin'));
+
+    $names = collect($this->getJson('/api/options/projects')->assertOk()->json('data'))->pluck('name');
+    expect($names)->toContain('Alpha');
+});
+
+test('members can be assigned to a project and are returned with it', function () {
+    $employee = employeeUser();
+    $intern = userWithRole('intern');
+    Sanctum::actingAs(userWithRole('admin'));
+
+    $id = $this->postJson('/api/projects', [
+        'code' => 'PRJ-TEAM',
+        'name' => 'Tim Gabungan',
+        'member_ids' => [$employee->id, $intern->id],
+    ])->assertCreated()->json('data.id');
+
+    $this->assertDatabaseHas('project_user', ['project_id' => $id, 'user_id' => $employee->id]);
+    $this->assertDatabaseHas('project_user', ['project_id' => $id, 'user_id' => $intern->id]);
+
+    // Kirim ulang dengan satu anggota = daftar diganti, bukan ditambah.
+    $this->putJson("/api/projects/{$id}", ['member_ids' => [$intern->id]])
+        ->assertOk()->assertJsonPath('data.members_count', 1);
+
+    $this->assertDatabaseMissing('project_user', ['project_id' => $id, 'user_id' => $employee->id]);
+});
+
+test('a claim cannot be charged to a project the user is not assigned to', function () {
     $employee = employeeUser();
     $category = Category::factory()->create(['max_amount' => 5_000_000]);
     $project = Project::factory()->create();
+    Sanctum::actingAs($employee);
+
+    $this->postJson('/api/reimbursements', [
+        'category_id' => $category->id,
+        'project_id' => $project->id,
+        'title' => 'Tiket proyek',
+        'reason' => 'Perjalanan proyek',
+        'amount' => 800_000,
+    ])->assertUnprocessable()->assertJsonValidationErrors(['project_id']);
+});
+
+test('a reimbursement can be linked to a project the user is assigned to', function () {
+    $employee = employeeUser();
+    $category = Category::factory()->create(['max_amount' => 5_000_000]);
+    $project = Project::factory()->create();
+    $project->members()->attach($employee);
     Sanctum::actingAs($employee);
 
     $this->postJson('/api/reimbursements', [
@@ -67,6 +116,7 @@ test('a reimbursement rejects an inactive project', function () {
     $employee = employeeUser();
     $category = Category::factory()->create(['max_amount' => 5_000_000]);
     $project = Project::factory()->inactive()->create();
+    $project->members()->attach($employee);
     Sanctum::actingAs($employee);
 
     $this->postJson('/api/reimbursements', [

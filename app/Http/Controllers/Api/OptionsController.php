@@ -54,11 +54,46 @@ class OptionsController extends Controller
         ]);
     }
 
-    public function projects(): JsonResponse
+    /**
+     * Proyek yang boleh dipilih saat mengajukan. Karyawan/magang hanya melihat
+     * proyek tempat ia DITUGASKAN (pivot project_user) atau yang dipegangnya —
+     * sejalan dengan aturan App\Rules\AssignedProject. Pemegang project.manage
+     * melihat semuanya (daftar penuh ini yang di-cache).
+     */
+    public function projects(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($user->hasRole('super_admin') || $user->hasPermission('project.manage')) {
+            return response()->json([
+                'data' => Cache::remember('options.projects', self::CACHE_SECONDS,
+                    fn () => Project::active()->orderBy('name')->get(['id', 'name', 'code'])),
+            ]);
+        }
+
+        return response()->json([
+            'data' => Project::active()->assignedTo($user)->orderBy('name')->get(['id', 'name', 'code']),
+        ]);
+    }
+
+    /**
+     * Kandidat anggota proyek: seluruh user aktif (butuh project.manage —
+     * dijaga di route). Dipakai form Master Data > Project.
+     */
+    public function projectMembers(): JsonResponse
     {
         return response()->json([
-            'data' => Cache::remember('options.projects', self::CACHE_SECONDS,
-                fn () => Project::active()->orderBy('name')->get(['id', 'name', 'code'])),
+            'data' => User::query()
+                ->where('is_active', true)
+                ->with('department:id,name')
+                ->orderBy('name')
+                ->get(['id', 'name', 'email', 'department_id'])
+                ->map(fn (User $u) => [
+                    'id' => $u->id,
+                    'name' => $u->name,
+                    'email' => $u->email,
+                    'department' => $u->department?->name,
+                ]),
         ]);
     }
 

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -48,9 +49,30 @@ class Project extends Model
         return $this->belongsTo(User::class, 'manager_id');
     }
 
+    /**
+     * Anggota proyek: karyawan/magang yang ditugaskan mengerjakannya. Satu
+     * orang boleh berada di beberapa proyek sekaligus.
+     */
+    public function members(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class)->withTimestamps();
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
+    }
+
+    /**
+     * Proyek yang boleh DIPILIH $user saat mengajukan: proyek tempat ia
+     * ditugaskan, ditambah proyek yang dipegangnya sebagai Project Manager.
+     */
+    public function scopeAssignedTo(Builder $query, User $user): Builder
+    {
+        return $query->where(function (Builder $q) use ($user) {
+            $q->whereHas('members', fn (Builder $m) => $m->whereKey($user->id))
+                ->orWhere('projects.manager_id', $user->id);
+        });
     }
 
     /**
