@@ -31,8 +31,8 @@ export default function Logo({ className = '', showText = true }) {
                             Back
                         </span>
                     </span>
-                    <span className="text-[10px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                        Reimbursement
+                    <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-gray-500 dark:text-gray-400">
+                        Kelola Dana Perusahaan
                     </span>
                 </span>
             )}
