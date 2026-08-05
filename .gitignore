@@ -6,9 +6,14 @@
 /storage/*.key
 /storage/pail
 /vendor
+# Semua varian .env diabaikan, bukan cuma tiga nama yang kebetulan terpikirkan.
+# Salinan sementara (.env.bak, .env.local, "env - Copy") lahir tiap kali orang
+# mengutak-atik konfigurasi, dan satu "git add -A" sudah cukup untuk mengirim
+# kredensial database dan SMTP ke repo. Pengecualiannya hanya .env.example yang
+# memang harus ikut versi karena isinya cuma contoh tanpa nilai rahasia.
 .env
-.env.backup
-.env.production
+.env.*
+!.env.example
 .phpactor.json
 .phpunit.result.cache
 Homestead.json
