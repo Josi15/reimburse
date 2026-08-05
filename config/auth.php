@@ -96,7 +96,13 @@ return [
         'users' => [
             'provider' => 'users',
             'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
-            'expire' => 60,
+            // Masa berlaku tautan reset, dalam menit. Sengaja pendek: tautan ini
+            // setara password sementara, dan sekali bocor (email diteruskan,
+            // riwayat browser, inbox yang dipakai bersama) siapa pun yang
+            // memegangnya bisa mengambil alih akun. Umur pendek mempersempit
+            // jendela itu. Teks masa berlaku di email ikut membaca nilai ini,
+            // jadi cukup diubah di sini.
+            'expire' => env('AUTH_PASSWORD_RESET_EXPIRE', 2),
             'throttle' => 60,
         ],
     ],

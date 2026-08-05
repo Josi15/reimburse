@@ -3,6 +3,7 @@
 use App\Models\User;
 use App\Notifications\ResetPasswordNotification;
 use Illuminate\Contracts\Notifications\Dispatcher;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Symfony\Component\Mailer\Exception\TransportException;
 
@@ -94,6 +95,64 @@ test('password can be reset with valid token', function () {
         $response
             ->assertSessionHasNoErrors()
             ->assertRedirect(route('login'));
+
+        return true;
+    });
+});
+
+test('the reset link really dies after its 2 minute lifetime', function () {
+    // Menguji penolakan yang sebenarnya, bukan sekadar angka di teks email:
+    // tautan yang lewat masa berlaku harus ditolak broker, bukan cuma terlihat
+    // kedaluwarsa.
+    Notification::fake();
+
+    $user = User::factory()->create();
+    $passwordLama = $user->password;
+
+    $this->post('/forgot-password', ['email' => $user->email]);
+
+    Notification::assertSentTo($user, ResetPasswordNotification::class, function ($notification) use ($user) {
+        // Masih hidup di menit pertama.
+        $this->travel(1)->minutes();
+        $this->post('/reset-password', [
+            'token' => $notification->token,
+            'email' => $user->email,
+            'password' => 'Str0ng#Pass1',
+            'password_confirmation' => 'Str0ng#Pass1',
+        ])->assertSessionHasNoErrors();
+
+        // Tautan baru, lalu lewatkan masa berlakunya.
+        $this->post('/forgot-password', ['email' => $user->email]);
+        $this->travel(3)->minutes();
+
+        $this->post('/reset-password', [
+            'token' => $notification->token,
+            'email' => $user->email,
+            'password' => 'Laen#Pass987',
+            'password_confirmation' => 'Laen#Pass987',
+        ])->assertSessionHasErrors('email');
+
+        $this->travelBack();
+
+        return true;
+    });
+
+    // Password tetap berubah oleh percobaan pertama, tapi tidak oleh yang kedua.
+    expect($user->fresh()->password)->not->toBe($passwordLama)
+        ->and(Hash::check('Laen#Pass987', $user->fresh()->password))->toBeFalse();
+});
+
+test('the reset email states the real lifetime, not a hardcoded one', function () {
+    Notification::fake();
+
+    $user = User::factory()->create();
+
+    $this->post('/forgot-password', ['email' => $user->email]);
+
+    Notification::assertSentTo($user, ResetPasswordNotification::class, function ($notification) use ($user) {
+        $isi = $notification->toMail($user)->render()->toHtml();
+
+        expect($isi)->toContain('berlaku '.config('auth.passwords.users.expire').' menit');
 
         return true;
     });
