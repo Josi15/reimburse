@@ -25,9 +25,9 @@ export default function ForgotPassword({ status, expireMinutes }) {
             </h1>
 
             <p className="mb-4 mt-1 text-sm text-gray-600 dark:text-gray-400">
-                Masukkan email akun Anda. Kami kirimkan tautan untuk membuat
-                password baru — tautannya berlaku {expireMinutes} menit dan
-                hanya bisa dipakai sekali.
+                Masukkan email akun Anda. Kami kirimkan kode 6 digit untuk
+                membuat password baru — kodenya berlaku {expireMinutes} menit
+                dan hanya bisa dipakai sekali.
             </p>
 
             {status && (
@@ -61,7 +61,7 @@ export default function ForgotPassword({ status, expireMinutes }) {
                     </Link>
 
                     <PrimaryButton disabled={processing}>
-                        {processing ? 'Mengirim…' : 'Kirim Tautan Reset'}
+                        {processing ? 'Mengirim…' : 'Kirim Kode'}
                     </PrimaryButton>
                 </div>
             </form>

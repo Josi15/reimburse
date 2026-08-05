@@ -3,17 +3,17 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
+use App\Services\PasswordResetCode;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Password;
 
 /**
- * Cetak tautan reset password langsung ke terminal, tanpa lewat email.
+ * Cetak kode reset password langsung ke terminal, tanpa lewat email.
  *
  * Berguna saat SMTP belum siap (kredensial belum ada, port diblokir, jaringan
- * kantor menahan 587): alur reset tetap bisa diuji ujung ke ujung memakai token
- * asli dari password broker — sama persis dengan yang akan dikirim lewat email.
+ * kantor menahan 587): alur reset tetap bisa diuji ujung ke ujung memakai kode
+ * asli — sama persis dengan yang akan dikirim lewat email.
  *
- * Perintah ini MENOLAK jalan di produksi. Tautan yang dicetaknya setara password
+ * Perintah ini MENOLAK jalan di produksi. Kode yang dicetaknya setara password
  * sementara, dan mencetaknya ke terminal berarti ia mendarat di scrollback,
  * rekaman sesi, dan log CI. Di mesin dev itu risiko yang wajar; di produksi ia
  * berubah jadi cara mengambil alih akun mana pun tanpa jejak di kotak masuk
@@ -22,15 +22,15 @@ use Illuminate\Support\Facades\Password;
  */
 class ShowPasswordResetLink extends Command
 {
-    protected $signature = 'password:link {email : Email akun yang mau direset}';
+    protected $signature = 'password:code {email : Email akun yang mau direset}';
 
-    protected $description = 'Cetak tautan reset password ke terminal (hanya di luar produksi)';
+    protected $description = 'Cetak kode reset password ke terminal (hanya di luar produksi)';
 
-    public function handle(): int
+    public function handle(PasswordResetCode $codes): int
     {
         if (app()->environment('production')) {
             $this->error('Ditolak: perintah ini tidak boleh dipakai di produksi.');
-            $this->line('Tautan reset setara password sementara — di produksi kirimkan lewat email.');
+            $this->line('Kode reset setara password sementara — di produksi kirimkan lewat email.');
 
             return self::FAILURE;
         }
@@ -44,14 +44,14 @@ class ShowPasswordResetLink extends Command
             return self::FAILURE;
         }
 
-        $token = Password::broker()->createToken($user);
         $menit = config('auth.passwords.'.config('auth.defaults.passwords').'.expire');
 
         $this->newLine();
-        $this->line('Akun  : '.$user->name.' <'.$user->email.'>');
-        $this->line('Berlaku: '.$menit.' menit sejak sekarang');
+        $this->line('Akun    : '.$user->name.' <'.$user->email.'>');
+        $this->line('Berlaku : '.$menit.' menit sejak sekarang');
+        $this->line('Masukkan di: '.route('password.code'));
         $this->newLine();
-        $this->info(route('password.reset', ['token' => $token]).'?email='.urlencode($user->email));
+        $this->info('   KODE : '.$codes->issue($user));
         $this->newLine();
 
         return self::SUCCESS;

@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\Auth\PasswordResetCodeController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
@@ -31,7 +32,17 @@ Route::middleware('guest')->group(function () {
         ->middleware('throttle:password-reset')
         ->name('password.email');
 
-    Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
+    Route::get('forgot-password/verify', [PasswordResetCodeController::class, 'create'])
+        ->name('password.code');
+
+    // Throttle di sini menutup celah yang tidak bisa ditutup batas percobaan
+    // per-kode: penyerang yang menebak kode milik BANYAK akun sekaligus hanya
+    // menghabiskan sedikit jatah tiap akun, tapi tetap tertahan per IP.
+    Route::post('forgot-password/verify', [PasswordResetCodeController::class, 'store'])
+        ->middleware('throttle:password-reset')
+        ->name('password.code.store');
+
+    Route::get('reset-password', [NewPasswordController::class, 'create'])
         ->name('password.reset');
 
     Route::post('reset-password', [NewPasswordController::class, 'store'])

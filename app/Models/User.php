@@ -5,7 +5,6 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\ReimbursementStatus;
 use App\Models\Concerns\Auditable;
-use App\Notifications\ResetPasswordNotification;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -64,14 +63,6 @@ class User extends Authenticatable
             'locked_until' => 'datetime',
             'failed_login_attempts' => 'integer',
         ];
-    }
-
-    // ---- Notifications ---------------------------------------------------
-
-    /** Kirim email reset password versi FundBack (bahasa Indonesia). */
-    public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
-    {
-        $this->notify(new ResetPasswordNotification($token));
     }
 
     // ---- Relationships ---------------------------------------------------

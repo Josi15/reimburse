@@ -2,14 +2,15 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PasswordInput from '@/Components/PasswordInput';
 import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, useForm } from '@inertiajs/react';
 
-export default function ResetPassword({ token, email }) {
+export default function ResetPassword({ email }) {
+    // Email tidak ikut dikirim: akun yang diubah ditentukan server dari sesi
+    // yang sudah lolos verifikasi kode. Kalau alamatnya bisa diketik ulang di
+    // sini, kode yang dikirim ke alamat sendiri bisa dipakai mengganti password
+    // akun orang lain.
     const { data, setData, post, processing, errors, reset } = useForm({
-        token: token,
-        email: email,
         password: '',
         password_confirmation: '',
     });
@@ -31,28 +32,18 @@ export default function ResetPassword({ token, email }) {
             </h1>
 
             <p className="mb-4 mt-1 text-sm text-gray-600 dark:text-gray-400">
-                Gunakan minimal 8 karakter dengan kombinasi huruf besar, huruf
+                Untuk akun{' '}
+                <span className="font-medium text-gray-800 dark:text-gray-200">
+                    {email}
+                </span>
+                . Gunakan minimal 8 karakter dengan kombinasi huruf besar, huruf
                 kecil, angka, dan simbol.
             </p>
 
             <form onSubmit={submit}>
+                <InputError message={errors.email} className="mb-4" />
+
                 <div>
-                    <InputLabel htmlFor="email" value="Email" />
-
-                    <TextInput
-                        id="email"
-                        type="email"
-                        name="email"
-                        value={data.email}
-                        className="mt-1 block w-full"
-                        autoComplete="username"
-                        onChange={(e) => setData('email', e.target.value)}
-                    />
-
-                    <InputError message={errors.email} className="mt-2" />
-                </div>
-
-                <div className="mt-4">
                     <InputLabel htmlFor="password" value="Password Baru" />
 
                     <PasswordInput

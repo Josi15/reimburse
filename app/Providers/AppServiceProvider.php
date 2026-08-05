@@ -91,7 +91,7 @@ class AppServiceProvider extends ServiceProvider
             app(AuditLogger::class)->log(
                 AuditEvent::Update,
                 $user,
-                description: 'Password direset lewat tautan email',
+                description: 'Password direset lewat kode email',
                 userId: $user->id,
             );
         });
