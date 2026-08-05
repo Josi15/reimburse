@@ -190,11 +190,22 @@ export default function Sidebar({ navigation, user, isActive, onNavigate }) {
                         <div className="truncate text-xs text-gray-500 dark:text-gray-400">
                             {user.email}
                         </div>
-                        <RoleBadge
-                            role={user.role}
-                            label={user.role_label}
-                            className="mt-1.5"
-                        />
+                        {/* Role + departemen: keduanya menentukan apa yang
+                            boleh diajukan dan siapa yang menyetujuinya. */}
+                        <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1">
+                            <RoleBadge
+                                role={user.role}
+                                label={user.role_label}
+                            />
+                            {user.department_name && (
+                                <span
+                                    className="truncate text-[11px] text-gray-500 dark:text-gray-400"
+                                    title={`Departemen ${user.department_name}`}
+                                >
+                                    {user.department_name}
+                                </span>
+                            )}
+                        </div>
                     </div>
                     <ThemeToggle />
                     <Dropdown>

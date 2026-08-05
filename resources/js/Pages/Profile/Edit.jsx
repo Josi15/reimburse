@@ -3,8 +3,9 @@ import { Head } from '@inertiajs/react';
 import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
+import WorkIdentityCard from './Partials/WorkIdentityCard';
 
-export default function Edit({ mustVerifyEmail, status }) {
+export default function Edit({ mustVerifyEmail, status, workIdentity }) {
     return (
         <AuthenticatedLayout
             header={
@@ -17,6 +18,15 @@ export default function Edit({ mustVerifyEmail, status }) {
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
+                    {/* Identitas kerja lebih dulu: itu yang dicari orang saat
+                        membuka profil sebelum mengajukan reimbursement/lembur. */}
+                    <div className="bg-white p-4 shadow dark:bg-gray-800 sm:rounded-lg sm:p-8">
+                        <WorkIdentityCard
+                            workIdentity={workIdentity}
+                            className="max-w-3xl"
+                        />
+                    </div>
+
                     <div className="bg-white p-4 shadow dark:bg-gray-800 sm:rounded-lg sm:p-8">
                         <UpdateProfileInformationForm
                             mustVerifyEmail={mustVerifyEmail}

@@ -15,12 +15,40 @@ class ProfileController extends Controller
 {
     /**
      * Display the user's profile form.
+     *
+     * Selain form, halaman ini menampilkan identitas kerja pengguna —
+     * departemen, jabatan, atasan, plafon, dan tarif lembur — karena nilai
+     * itulah yang menentukan ke mana biaya reimbursement dibebankan, siapa
+     * yang menyetujuinya, dan berapa upah lembur yang dihitung.
      */
     public function edit(Request $request): Response
     {
+        $user = $request->user()->loadMissing('department', 'manager.roles', 'roles');
+
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
+            'workIdentity' => [
+                'department' => $user->department ? [
+                    'name' => $user->department->name,
+                    'code' => $user->department->code,
+                ] : null,
+                'roles' => $user->roles
+                    ->map(fn ($role) => [
+                        'name' => $role->name,
+                        'label' => $role->display_name ?? $role->name,
+                    ])->values(),
+                'manager' => $user->manager ? [
+                    'name' => $user->manager->name,
+                    'role_label' => $user->manager->roles
+                        ->pluck('display_name')->first()
+                        ?? $user->manager->roles->pluck('name')->first(),
+                ] : null,
+                'phone' => $user->phone,
+                'reimbursement_limit' => $user->reimbursementLimit(),
+                'overtime_rate' => $user->overtimeRate(),
+                'sees_all_departments' => $user->seesAllDepartments(),
+            ],
         ]);
     }
 
