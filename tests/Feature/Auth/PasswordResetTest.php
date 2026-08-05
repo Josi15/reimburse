@@ -8,6 +8,17 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Symfony\Component\Mailer\Exception\TransportException;
+use Tests\TestCase;
+
+/*
+| Anotasi "@var TestCase $this" di tiap test bukan hiasan: Pest mengikat $this
+| ke Tests\TestCase saat test dijalankan (lihat tests/Pest.php), tapi pengikatan
+| itu terjadi di runtime sehingga analisis statis dan editor tidak melihatnya —
+| tanpa anotasi ini mereka mengira $this adalah PHPUnit\Framework\TestCase polos
+| dan menandai setiap get()/post() sebagai method yang tidak ada. Menandainya di
+| sini lebih baik daripada mematikan peringatannya, yang juga akan menyembunyikan
+| kesalahan yang sungguhan.
+*/
 
 /**
  * Terbitkan kode untuk sebuah akun dan kembalikan versi mentahnya, lalu
@@ -23,10 +34,12 @@ function mintaKode(User $user): string
 }
 
 test('reset password request screen can be rendered', function () {
+    /** @var TestCase $this */
     $this->get('/forgot-password')->assertStatus(200);
 });
 
 test('the request page announces the real lifetime, not a hardcoded one', function () {
+    /** @var TestCase $this */
     // Halamannya dulu menulis "60 menit" sebagai teks biasa dan tetap begitu
     // setelah confignya dipendekkan — janji yang meleset bikin pengguna
     // menyalahkan sistem saat kodenya mati lebih cepat dari yang tertulis.
@@ -38,6 +51,7 @@ test('the request page announces the real lifetime, not a hardcoded one', functi
 });
 
 test('requesting a code emails one and moves on to the code screen', function () {
+    /** @var TestCase $this */
     Notification::fake();
 
     $user = User::factory()->create();
@@ -55,6 +69,7 @@ test('requesting a code emails one and moves on to the code screen', function ()
 });
 
 test('the emailed code is six digits and stored only as a hash', function () {
+    /** @var TestCase $this */
     Notification::fake();
 
     $user = User::factory()->create();
@@ -79,6 +94,7 @@ test('the emailed code is six digits and stored only as a hash', function () {
 });
 
 test('an unknown email is answered exactly like a known one', function () {
+    /** @var TestCase $this */
     // Kalau jawabannya berbeda, halaman ini jadi alat memeriksa email mana yang
     // punya akun di sini tanpa perlu login sama sekali.
     Notification::fake();
@@ -96,14 +112,26 @@ test('an unknown email is answered exactly like a known one', function () {
 });
 
 test('a dead SMTP server does not reveal that an email is registered', function () {
+    /** @var TestCase $this */
     // Kegagalan kirim hanya mungkin terjadi pada email terdaftar; kalau
     // exception-nya naik jadi HTTP 500, selisih 500-vs-302 itu saja sudah cukup
     // untuk memetakan seluruh daftar pengguna.
     $user = User::factory()->create();
 
-    $this->mock(Dispatcher::class)
-        ->shouldReceive('send')
-        ->andThrow(new TransportException('SMTP auth failed'));
+    // Pengirim notifikasi yang selalu gagal — meniru SMTP dengan kredensial
+    // salah, tanpa perlu menyentuh jaringan.
+    app()->instance(Dispatcher::class, new class implements Dispatcher
+    {
+        public function send($notifiables, $notification)
+        {
+            throw new TransportException('SMTP auth failed');
+        }
+
+        public function sendNow($notifiables, $notification, ?array $channels = null)
+        {
+            throw new TransportException('SMTP auth failed');
+        }
+    });
 
     $dikenal = $this->post('/forgot-password', ['email' => $user->email]);
     $asing = $this->post('/forgot-password', ['email' => 'bukan-pengguna@fundback.test']);
@@ -114,11 +142,13 @@ test('a dead SMTP server does not reveal that an email is registered', function 
 });
 
 test('the code screen is closed to anyone who has not asked for a code', function () {
+    /** @var TestCase $this */
     $this->get('/forgot-password/verify')->assertRedirect(route('password.request'));
     $this->get('/reset-password')->assertRedirect(route('password.request'));
 });
 
 test('the whole flow works: code, then a new password', function () {
+    /** @var TestCase $this */
     $user = User::factory()->create();
     $passwordLama = $user->password;
     $code = mintaKode($user);
@@ -144,6 +174,7 @@ test('the whole flow works: code, then a new password', function () {
 });
 
 test('a wrong code is refused', function () {
+    /** @var TestCase $this */
     $user = User::factory()->create();
     $code = mintaKode($user);
     $salah = str_pad((string) ((((int) $code) + 1) % 1000000), 6, '0', STR_PAD_LEFT);
@@ -155,6 +186,7 @@ test('a wrong code is refused', function () {
 });
 
 test('guessing stops after the attempt limit, even with the right code', function () {
+    /** @var TestCase $this */
     // Inti keamanan kode 6 digit. Tanpa batas ini, sejuta kemungkinan bisa
     // disapu skrip jauh lebih cepat daripada masa berlaku kodenya habis.
     $user = User::factory()->create();
@@ -173,6 +205,7 @@ test('guessing stops after the attempt limit, even with the right code', functio
 });
 
 test('an expired code is refused', function () {
+    /** @var TestCase $this */
     $user = User::factory()->create();
     $code = mintaKode($user);
 
@@ -185,6 +218,7 @@ test('an expired code is refused', function () {
 });
 
 test('asking for a new code kills the previous one', function () {
+    /** @var TestCase $this */
     // Dua kode hidup untuk satu akun berarti dua kali peluang tebakan.
     Notification::fake();
 
@@ -198,6 +232,7 @@ test('asking for a new code kills the previous one', function () {
 });
 
 test('a verified session cannot be pointed at somebody else account', function () {
+    /** @var TestCase $this */
     // Email diambil dari sesi, bukan dari form. Kalau form bisa menentukannya,
     // kode yang dikirim ke alamat sendiri bisa dipakai mengganti password akun
     // orang lain.
@@ -221,6 +256,7 @@ test('a verified session cannot be pointed at somebody else account', function (
 });
 
 test('the code session expires instead of lasting forever', function () {
+    /** @var TestCase $this */
     $user = User::factory()->create();
     $code = mintaKode($user);
 
@@ -237,6 +273,7 @@ test('the code session expires instead of lasting forever', function () {
 });
 
 test('a successful reset also unlocks an account locked out by failed logins', function () {
+    /** @var TestCase $this */
     $user = User::factory()->create([
         'failed_login_attempts' => 5,
         'locked_until' => now()->addMinutes(15),
