@@ -162,6 +162,11 @@ class UserSeeder extends Seeder
             ],
         );
 
+        // firstOrCreate tak menyentuh baris yang sudah ada, jadi posisi akun
+        // lama diselaraskan ulang di sini agar bagan organisasi di seeder ini
+        // selalu jadi acuan saat seed diulang.
+        $user->forceFill(['department_id' => $deptId, 'manager_id' => $managerId])->save();
+
         $role = Role::where('name', $roleSlug)->first();
         if ($role) {
             $user->roles()->syncWithoutDetaching([$role->id]);
