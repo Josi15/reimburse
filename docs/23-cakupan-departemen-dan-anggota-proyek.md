@@ -131,22 +131,52 @@ Alur bawaan Breeze sudah ada; yang ditambahkan:
 
 ### Mengaktifkan pengiriman email sungguhan
 
-Default `.env` memakai `MAIL_MAILER=log`: email **tidak** dikirim, isinya
-(termasuk tautan reset) ditulis ke `storage/logs/laravel.log`. Cukup untuk dev.
+`MAIL_MAILER=log` (default `.env.example`) berarti email **tidak dikirim ke mana
+pun** — isinya, termasuk tautan reset, ditulis ke `storage/logs/laravel.log`.
+Alurnya tetap jalan penuh, jadi gejalanya membingungkan: halaman bilang
+"tautan sudah dikirim", tapi inbox tidak pernah menerima apa-apa. Kalau ada
+laporan "lupa password tidak jalan padahal emailnya benar", periksa baris ini
+lebih dulu.
 
-Untuk mengirim betulan, ubah `.env`:
+Untuk mengirim betulan lewat Gmail:
 
 ```dotenv
 MAIL_MAILER=smtp
-MAIL_HOST=smtp.gmail.com     # atau sandbox.smtp.mailtrap.io / 127.0.0.1 (Mailpit)
-MAIL_PORT=587                # Mailtrap 2525, Mailpit 1025
-MAIL_SCHEME=tls
-MAIL_USERNAME=...
-MAIL_PASSWORD=...            # Gmail: App Password, bukan password akun
-MAIL_FROM_ADDRESS="no-reply@fundback.test"
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_SCHEME=null                       # 587 memakai STARTTLS otomatis
+MAIL_USERNAME=akun-anda@gmail.com
+MAIL_PASSWORD=xxxxxxxxxxxxxxxx         # App Password 16 karakter, tanpa spasi
+MAIL_FROM_ADDRESS="akun-anda@gmail.com"
 ```
 
-Lalu `php artisan config:clear`.
+Catatan penting:
+
+- `MAIL_PASSWORD` adalah **App Password** dari
+  <https://myaccount.google.com/apppasswords> (perlu 2FA aktif di akun Google),
+  bukan password akun. Password akun biasa selalu ditolak dengan
+  `535-5.7.8 Username and Password not accepted`.
+- `MAIL_FROM_ADDRESS` harus alamat Gmail yang sama dengan `MAIL_USERNAME` —
+  kalau berbeda, Gmail menimpanya dengan alamat yang terautentikasi.
+- Jika port 587 diblokir jaringan: `MAIL_PORT=465` + `MAIL_SCHEME=smtps`.
+- Gmail punya batas kirim harian; untuk produksi pakai layanan khusus
+  (Resend/Brevo/SES) dengan domain terverifikasi.
+
+Alternatif tanpa kredensial: **Mailpit** (`MAIL_HOST=127.0.0.1`,
+`MAIL_PORT=1025`) menahan semua email di kotak masuk lokal — cocok untuk
+memeriksa tampilan email tanpa mengirim ke alamat asli.
+
+### Memverifikasi konfigurasi
+
+```bash
+php artisan config:clear
+php artisan mail:test tujuan@example.com
+```
+
+`App\Console\Commands\SendTestMail` mencetak mailer/host/pengirim yang sedang
+dipakai, memperingatkan bila masih `log`, lalu menampilkan **penyebab kegagalan
+SMTP apa adanya di terminal**. Tanpa ini, error SMTP baru terlihat setelah
+pengguna menunggu di halaman lupa password, dan pesannya tenggelam di log.
 
 ## 7. Ikon mata pada password
 
