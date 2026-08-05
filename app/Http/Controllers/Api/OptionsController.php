@@ -12,6 +12,7 @@ use App\Models\Permission;
 use App\Models\Project;
 use App\Models\Role;
 use App\Models\User;
+use App\Support\ClaimSection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -40,10 +41,20 @@ class OptionsController extends Controller
      *
      * Disaring per user: Employee hanya menerima biaya & lembur, sedangkan
      * pengadaan barang/layanan butuh permission reimbursement.procurement.
+     *
+     * ?section= mempersempit lagi ke jenis milik satu menu saja, supaya form
+     * Pengadaan Barang tidak menawarkan jenis dari menu Reimbursement.
      */
     public function claimTypes(Request $request): JsonResponse
     {
-        return response()->json(['data' => ClaimType::options($request->user())]);
+        $user = $request->user();
+        $section = ClaimSection::tryFind($request->query('section'));
+
+        $types = $section ? $section->claimTypesFor($user) : ClaimType::casesFor($user);
+
+        return response()->json([
+            'data' => array_map(fn (ClaimType $type) => $type->toOption($user), $types),
+        ]);
     }
 
     public function departments(): JsonResponse

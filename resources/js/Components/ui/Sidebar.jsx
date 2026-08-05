@@ -99,7 +99,6 @@ function iconFor(href = '') {
     const h = href.toLowerCase();
     if (h.includes('dashboard')) return ICONS.dashboard;
     if (h.includes('project') || h.includes('proyek')) return ICONS.project;
-    // Cek sebelum 'reimburs': keduanya berada di bawah /reimbursements/*.
     if (h.includes('goods') || h.includes('barang')) return ICONS.box;
     if (h.includes('service') || h.includes('layanan')) return ICONS.server;
     if (h.includes('reimburs')) return ICONS.reimburs;

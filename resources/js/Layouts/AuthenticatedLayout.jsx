@@ -20,9 +20,8 @@ export default function AuthenticatedLayout({ header, children }) {
     const navigation = page.props.navigation ?? [];
     const currentUrl = page.url;
 
-    // Menu yang menyala = item paling SPESIFIK yang cocok dengan URL sekarang.
-    // Tanpa ini, "/reimbursements/goods" ikut menyalakan "Reimbursement" karena
-    // sama-sama berawalan sama.
+    // Menu yang menyala = item paling SPESIFIK yang cocok dengan URL sekarang,
+    // supaya submenu tidak ikut menyalakan menu lain yang berawalan sama.
     const activeHref = navigation
         .map((item) => item.href)
         .filter(

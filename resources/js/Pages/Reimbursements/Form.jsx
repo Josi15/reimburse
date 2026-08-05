@@ -14,6 +14,7 @@ import useAuth from '@/hooks/useAuth';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { api, handleApiError } from '@/lib/api';
 import { rupiah } from '@/lib/format';
+import { useSectionForClaimType } from '@/lib/sections';
 import { toast } from '@/lib/toast';
 import { Head, router } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
@@ -21,8 +22,23 @@ import { useEffect, useState } from 'react';
 // Selaras dengan config reimbursement.max_files_per_request (backend).
 const MAX_FILES = 10;
 
-export default function Form({ id = null, type = null }) {
+export default function Form({
+    section: routeSection,
+    id = null,
+    type = null,
+}) {
     const isEdit = id !== null;
+    const [loadedType, setLoadedType] = useState(null);
+
+    // Saat mengedit, bagian yang berlaku ditentukan JENIS pengajuannya, bukan
+    // alamat yang dipakai membukanya. Tanpa ini, membuka /reimbursements/5/edit
+    // untuk klaim pengadaan akan menampilkan pemilih jenis yang salah.
+    const typeSection = useSectionForClaimType(loadedType);
+    const section = isEdit && loadedType ? typeSection : routeSection;
+
+    // Bagian dengan satu jenis (Pengadaan Barang / Layanan) mengunci jenisnya;
+    // bagian Reimbursement tetap menawarkan pilihan biaya vs lembur.
+    const lockedType = section.locked_type ?? null;
     const { user } = useAuth();
     const [loading, setLoading] = useState(isEdit);
     const [busy, setBusy] = useState(false);
@@ -35,8 +51,7 @@ export default function Form({ id = null, type = null }) {
     const [existingFiles, setExistingFiles] = useState([]);
     const [deleteIds, setDeleteIds] = useState([]);
     const [form, setForm] = useState({
-        // ?type= dari menu Pengadaan Barang / Layanan & Server.
-        claim_type: type ?? 'expense',
+        claim_type: lockedType ?? type ?? 'expense',
         title: '',
         category_id: '',
         amount: '',
@@ -113,14 +128,12 @@ export default function Form({ id = null, type = null }) {
         api.get('/api/reimbursements/quota')
             .then((d) => setQuota(d))
             .catch(() => {});
-        api.get('/api/options/claim-types')
-            .then((d) => setClaimTypes(d.data))
-            .catch(() => {});
 
         if (isEdit) {
             api.get(`/api/reimbursements/${id}`)
                 .then((d) => {
                     const r = d.data;
+                    setLoadedType(r.claim_type?.value ?? null);
                     setForm((f) => ({
                         ...f,
                         claim_type: r.claim_type?.value ?? 'expense',
@@ -140,6 +153,14 @@ export default function Form({ id = null, type = null }) {
                 .finally(() => setLoading(false));
         }
     }, [id, isEdit]);
+
+    // Pilihan jenis mengikuti bagian yang berlaku — saat mengedit, bagian itu
+    // baru diketahui setelah pengajuannya termuat.
+    useEffect(() => {
+        api.get(`/api/options/claim-types?section=${section.key}`)
+            .then((d) => setClaimTypes(d.data))
+            .catch(() => {});
+    }, [section.key]);
 
     const selectedCategory = categories.find(
         (c) => String(c.id) === String(form.category_id),
@@ -231,11 +252,11 @@ export default function Form({ id = null, type = null }) {
                 fd.append('_method', 'PUT'); // method spoofing untuk multipart
                 await api.post(`/api/reimbursements/${id}`, fd);
                 toast('Draft berhasil diperbarui.');
-                router.visit(`/reimbursements/${id}`);
+                router.visit(`${section.path}/${id}`);
             } else {
                 const res = await api.post('/api/reimbursements', fd);
                 toast('Draft berhasil dibuat.');
-                router.visit(`/reimbursements/${res.data.id}`);
+                router.visit(`${section.path}/${res.data.id}`);
             }
         } catch (err) {
             setErrors(handleApiError(err, 'Gagal menyimpan.'));
@@ -251,17 +272,19 @@ export default function Form({ id = null, type = null }) {
                     <Breadcrumb
                         items={[
                             { label: 'Dashboard', href: '/dashboard' },
-                            { label: 'Reimbursement', href: '/reimbursements' },
+                            { label: section.label, href: section.path },
                             { label: isEdit ? 'Edit' : 'Buat' },
                         ]}
                     />
                     <h2 className="mt-1 text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                        {isEdit ? 'Edit Pengajuan' : 'Buat Pengajuan Baru'}
+                        {isEdit
+                            ? `Edit ${section.label}`
+                            : `Ajukan ${section.label}`}
                     </h2>
                 </div>
             }
         >
-            <Head title={isEdit ? 'Edit Pengajuan' : 'Buat Pengajuan'} />
+            <Head title={`${isEdit ? 'Edit' : 'Ajukan'} ${section.label}`} />
 
             <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
                 <Card className="p-6">
@@ -269,22 +292,24 @@ export default function Form({ id = null, type = null }) {
                         <Loading />
                     ) : (
                         <form onSubmit={submit} className="space-y-5">
-                            <div>
-                                <InputLabel value="Jenis Pengajuan *" />
-                                <p className="mb-2 mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                                    Pilih jenis dulu — kolom isian menyesuaikan
-                                    otomatis.
-                                </p>
-                                <ClaimTypePicker
-                                    types={claimTypes}
-                                    value={form.claim_type}
-                                    onChange={setClaimType}
-                                />
-                                <InputError
-                                    message={errors.claim_type?.[0]}
-                                    className="mt-1"
-                                />
-                            </div>
+                            {!lockedType && (
+                                <div>
+                                    <InputLabel value="Jenis Pengajuan *" />
+                                    <p className="mb-2 mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                                        Pilih jenis dulu — kolom isian
+                                        menyesuaikan otomatis.
+                                    </p>
+                                    <ClaimTypePicker
+                                        types={claimTypes}
+                                        value={form.claim_type}
+                                        onChange={setClaimType}
+                                    />
+                                    <InputError
+                                        message={errors.claim_type?.[0]}
+                                        className="mt-1"
+                                    />
+                                </div>
+                            )}
 
                             <div>
                                 <InputLabel htmlFor="title" value="Judul *" />

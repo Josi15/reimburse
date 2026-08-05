@@ -17,6 +17,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { api, handleApiError } from '@/lib/api';
 import { formatDate } from '@/lib/format';
 import { toast } from '@/lib/toast';
+import { useSectionForClaimType } from '@/lib/sections';
 import { Head, Link, router } from '@inertiajs/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -266,7 +267,7 @@ function PayModal({ show, claim, onClose, onDone }) {
     );
 }
 
-export default function Show({ id }) {
+export default function Show({ id, section = null }) {
     const { user, can } = useAuth();
     const [claim, setClaim] = useState(null);
     const [timeline, setTimeline] = useState([]);
@@ -297,6 +298,18 @@ export default function Show({ id }) {
 
     const isOwner = claim && user && claim.user?.id === user.id;
     const status = claim?.status?.value;
+
+    // Halaman ini bisa dibuka dari menunya sendiri, tapi juga dari antrean
+    // Persetujuan/Pembayaran dan tautan notifikasi yang tak tahu jenisnya.
+    // Karena itu bagiannya diturunkan dari jenis pengajuan yang termuat, dan
+    // prop `section` dari route hanya dipakai selama data belum datang.
+    const claimSection = useSectionForClaimType(claim?.claim_type?.value);
+    const activeSection = (claim
+        ? claimSection
+        : (section ?? claimSection)) ?? {
+        label: 'Reimbursement',
+        path: '/reimbursements',
+    };
 
     const canSubmit =
         isOwner && claim?.is_editable && can('reimbursement.submit');
@@ -332,7 +345,7 @@ export default function Show({ id }) {
         try {
             await api.delete(`/api/reimbursements/${id}`);
             toast('Draft dihapus.');
-            router.visit('/reimbursements');
+            router.visit(activeSection.path);
         } catch (e) {
             handleApiError(e, 'Gagal menghapus.');
             setBusy(false);
@@ -346,14 +359,17 @@ export default function Show({ id }) {
                     <Breadcrumb
                         items={[
                             { label: 'Dashboard', href: '/dashboard' },
-                            { label: 'Reimbursement', href: '/reimbursements' },
+                            {
+                                label: activeSection.label,
+                                href: activeSection.path,
+                            },
                             {
                                 label: claim?.reimbursement_number ?? 'Detail',
                             },
                         ]}
                     />
                     <h2 className="mt-1 text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                        Detail Reimbursement
+                        Detail {activeSection.label}
                     </h2>
                 </div>
             }
@@ -533,7 +549,7 @@ export default function Show({ id }) {
                                     )}
                                     {canEdit && (
                                         <Link
-                                            href={`/reimbursements/${id}/edit`}
+                                            href={`${activeSection.path}/${id}/edit`}
                                         >
                                             <SecondaryButton>
                                                 Edit

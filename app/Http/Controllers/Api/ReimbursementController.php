@@ -11,6 +11,7 @@ use App\Models\Attachment;
 use App\Models\Reimbursement;
 use App\Services\AttachmentService;
 use App\Services\ReimbursementService;
+use App\Support\ClaimSection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -46,6 +47,14 @@ class ReimbursementController extends Controller
         $query = Reimbursement::query()
             ->visibleTo($request->user())
             ->with(['category', 'user', 'project', 'department']);
+
+        // ?section=reimbursement|goods|services — memisahkan daftar per menu
+        // (lihat App\Support\ClaimSection). Tanpa parameter ini, seluruh jenis
+        // ikut terbawa; halaman Persetujuan & Pembayaran memang memakainya
+        // begitu karena antreannya lintas jenis.
+        if ($section = ClaimSection::tryFind($request->query('section'))) {
+            $query->whereIn('reimbursements.claim_type', $section->claimTypeValues());
+        }
 
         $items = $this->paginateResource($query, $request, [
             'searchable' => ['reimbursement_number', 'title'],

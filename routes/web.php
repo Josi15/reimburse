@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Support\ClaimSection;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -30,27 +31,37 @@ Route::middleware(['auth', 'active'])->group(function () {
  * via Sanctum SPA; route web hanya merender shell Inertia + proteksi RBAC.
  */
 Route::middleware(['auth', 'verified', 'active'])->group(function () {
-    // Reimbursement
-    Route::get('/reimbursements', fn () => Inertia::render('Reimbursements/Index'))
-        ->name('reimbursements.index');
-    // ?type=goods|service|overtime memilih jenis pengajuan di awal, dipakai
-    // tombol "Ajukan" pada menu Pengadaan Barang / Layanan & Server.
-    Route::get('/reimbursements/create', fn (Request $request) => Inertia::render('Reimbursements/Form', [
-        'type' => $request->query('type'),
-    ]))->name('reimbursements.create');
+    /*
+     * Tiga bagian pengajuan yang berdiri sendiri — Reimbursement, Pengadaan
+     * Barang, dan Layanan & Server — masing-masing dengan daftar, form, dan
+     * halaman detailnya sendiri. Pembagiannya didefinisikan sekali di
+     * App\Support\ClaimSection dan dipakai juga oleh menu sidebar.
+     */
+    foreach (ClaimSection::all() as $section) {
+        Route::middleware($section->permissions ? 'permission:'.implode(',', $section->permissions) : [])
+            ->group(function () use ($section) {
+                $payload = $section->toArray();
 
-    // Pintu masuk khusus per jenis pengadaan (menu sidebar tersendiri).
-    Route::get('/reimbursements/goods', fn () => Inertia::render('Reimbursements/Index', [
-        'claimType' => 'goods',
-    ]))->middleware('permission:reimbursement.procurement')->name('reimbursements.goods');
+                Route::get($section->path, fn () => Inertia::render('Reimbursements/Index', [
+                    'section' => $payload,
+                ]))->name("{$section->key}.index");
 
-    Route::get('/reimbursements/services', fn () => Inertia::render('Reimbursements/Index', [
-        'claimType' => 'service',
-    ]))->middleware('permission:reimbursement.procurement')->name('reimbursements.services');
-    Route::get('/reimbursements/{id}', fn (int $id) => Inertia::render('Reimbursements/Show', ['id' => $id]))
-        ->whereNumber('id')->name('reimbursements.show');
-    Route::get('/reimbursements/{id}/edit', fn (int $id) => Inertia::render('Reimbursements/Form', ['id' => $id]))
-        ->whereNumber('id')->name('reimbursements.edit');
+                Route::get("{$section->path}/create", fn (Request $request) => Inertia::render('Reimbursements/Form', [
+                    'section' => $payload,
+                    'type' => $request->query('type'),
+                ]))->name("{$section->key}.create");
+
+                Route::get("{$section->path}/{id}", fn (int $id) => Inertia::render('Reimbursements/Show', [
+                    'id' => $id,
+                    'section' => $payload,
+                ]))->whereNumber('id')->name("{$section->key}.show");
+
+                Route::get("{$section->path}/{id}/edit", fn (int $id) => Inertia::render('Reimbursements/Form', [
+                    'id' => $id,
+                    'section' => $payload,
+                ]))->whereNumber('id')->name("{$section->key}.edit");
+            });
+    }
 
     // Persetujuan (Manager/Finance)
     Route::get('/approvals', fn () => Inertia::render('Approvals/Index'))

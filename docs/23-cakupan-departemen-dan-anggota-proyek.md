@@ -57,21 +57,54 @@ diisi.
 > Catatan operasional: pastikan tiap departemen punya Manager/Supervisor. Kalau
 > tidak, pengajuan di departemen itu tidak punya penilai tingkat pertama.
 
-## 3. Menu Pengadaan Barang & Layanan
+## 3. Pengadaan berdiri sendiri, terpisah dari Reimbursement
 
-Dua item sidebar baru, dijaga permission `reimbursement.procurement`
-(Supervisor ke atas):
+Modul pengajuan dibagi menjadi **tiga bagian yang berdiri sendiri**, masing-
+masing dengan menu, alamat, daftar, form, dan halaman detailnya sendiri:
 
-- **Pengadaan Barang** → `/reimbursements/goods`
-- **Layanan & Server** → `/reimbursements/services`
+| Bagian | Alamat | Jenis pengajuan | Syarat |
+|---|---|---|---|
+| Reimbursement | `/reimbursements` | biaya, lembur | `reimbursement.view` / `.viewAny` |
+| Pengadaan Barang | `/goods` | barang | `reimbursement.procurement` |
+| Layanan & Server | `/services` | layanan | `reimbursement.procurement` |
 
-Keduanya merender `Reimbursements/Index` dengan prop `claimType` terkunci:
-filter jenis disembunyikan dan tombol buat langsung menuju
-`/reimbursements/create?type=goods|service`.
+Sumber tunggalnya `App\Support\ClaimSection` — dipakai menu sidebar
+(`Navigation`), route web, penyaringan daftar, dan pemilih jenis di form.
+Menambah bagian baru cukup dilakukan di kelas itu.
 
-Penanda menu aktif di `AuthenticatedLayout` diubah memakai **pencocokan
-terpanjang** — tanpa itu `/reimbursements/goods` ikut menyalakan menu
-"Reimbursement" karena berawalan sama.
+Tiap bagian punya empat route: `index`, `create`, `{id}`, `{id}/edit`.
+Halamannya tetap komponen React yang sama (`Reimbursements/Index|Form|Show`)
+karena isinya memang identik — yang berbeda hanya bagian yang sedang aktif,
+dikirim sebagai prop `section`. Menggandakan komponennya hanya akan
+menggandakan pekerjaan setiap kali daftar atau form berubah.
+
+Yang berubah secara nyata bagi pengguna:
+
+- **Daftar tidak lagi bercampur.** `GET /api/reimbursements?section=` menyaring
+  per bagian, jadi pengadaan tidak muncul di daftar Reimbursement dan
+  sebaliknya. Antrean lintas jenis (Persetujuan, Pembayaran) sengaja TIDAK
+  memakai parameter ini — approver memang perlu melihat semuanya.
+- **Bagian berjenis tunggal** menyembunyikan kolom & filter "Jenis" serta
+  pemilih jenis di formnya. `GET /api/options/claim-types?section=` memastikan
+  form Pengadaan tidak pernah menawarkan jenis dari menu lain.
+- **Judul, breadcrumb, dan tombol kembali** mengikuti bagiannya
+  ("Detail Pengadaan Barang", bukan "Detail Reimbursement").
+
+Halaman detail bisa dibuka dari tiga alamat sekaligus (`/goods/5`,
+`/services/5`, `/reimbursements/5`) karena tautan notifikasi, antrean
+persetujuan, dan pembayaran tidak tahu jenis klaimnya. Karena itu bagian yang
+ditampilkan **diturunkan dari `claim_type` pengajuan yang termuat**, bukan dari
+alamat yang dipakai membukanya — begitu juga halaman edit. Pembagiannya
+dibagikan ke frontend lewat prop Inertia `claimSections` (`lib/sections.js`),
+supaya label dan alamat di UI tidak pernah berbeda dari aturan backend.
+
+Dua penyesuaian pendukung:
+
+- Penanda menu aktif di `AuthenticatedLayout` memakai **pencocokan terpanjang**,
+  supaya submenu tidak ikut menyalakan menu lain yang berawalan sama.
+- Middleware `permission:` kini menerima beberapa permission dipisah koma dengan
+  arti **any-of**, sama seperti aturan menu di `Navigation`. Kalau kedua tempat
+  berbeda arti, menu bisa tampil tapi halamannya menolak.
 
 ## 4. Upah lembur tidak ditampilkan
 

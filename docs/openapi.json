@@ -2900,10 +2900,19 @@
         "/options/claim-types": {
             "get": {
                 "operationId": "options.claimTypes",
-                "description": "Disaring per user: Employee hanya menerima biaya & lembur, sedangkan\npengadaan barang/layanan butuh permission reimbursement.procurement.",
+                "description": "Disaring per user: Employee hanya menerima biaya & lembur, sedangkan\npengadaan barang/layanan butuh permission reimbursement.procurement.\n\n?section= mempersempit lagi ke jenis milik satu menu saja, supaya form\nPengadaan Barang tidak menawarkan jenis dari menu Reimbursement.",
                 "summary": "Jenis pengajuan + definisi field tambahannya (form dinamis di frontend).\nSumbernya enum ClaimType, jadi tidak perlu cache/DB",
                 "tags": [
                     "Options"
+                ],
+                "parameters": [
+                    {
+                        "name": "section",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
                 ],
                 "responses": {
                     "200": {
@@ -4182,6 +4191,15 @@
                 "operationId": "reimbursements.index",
                 "tags": [
                     "Reimbursement"
+                ],
+                "parameters": [
+                    {
+                        "name": "section",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
                 ],
                 "responses": {
                     "200": {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\ClaimSection;
 use App\Support\Navigation;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -63,6 +64,14 @@ class HandleInertiaRequests extends Middleware
             ],
             // Menu sidebar dinamis sesuai hak akses user.
             'navigation' => $user ? Navigation::for($user) : [],
+            // Pembagian modul pengajuan (Reimbursement / Pengadaan Barang /
+            // Layanan & Server). Dibagikan apa adanya — halaman detail perlu
+            // mengenali bagian sebuah pengajuan dari jenisnya, termasuk saat
+            // dibuka lewat tautan notifikasi atau antrean persetujuan.
+            'claimSections' => $user ? array_map(
+                fn (ClaimSection $section) => $section->toArray(),
+                ClaimSection::all(),
+            ) : [],
             // Flash message untuk Toast di frontend.
             'flash' => [
                 'success' => $request->session()->get('success'),

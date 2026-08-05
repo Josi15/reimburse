@@ -23,18 +23,20 @@ import { Head, Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
 /**
- * Daftar pengajuan. Bila `claimType` diisi (menu Pengadaan Barang / Layanan &
- * Server di sidebar), halaman terkunci pada jenis itu: filter jenis disembunyikan
- * dan tombol buat langsung membuka form dengan jenis tersebut.
+ * Daftar pengajuan untuk SATU bagian: Reimbursement, Pengadaan Barang, atau
+ * Layanan & Server (lihat App\Support\ClaimSection). Bagian yang hanya memuat
+ * satu jenis tidak menampilkan filter jenis, dan tombol buatnya langsung
+ * membuka form dengan jenis itu.
  */
-export default function Index({ claimType: lockedType = null }) {
+export default function Index({ section }) {
     const { can, user } = useAuth();
+    const lockedType = section.locked_type ?? null;
     const [rows, setRows] = useState(null);
     const [meta, setMeta] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [status, setStatus] = useState('');
-    const [claimType, setClaimType] = useState(lockedType ?? '');
+    const [claimType, setClaimType] = useState('');
     const [claimTypes, setClaimTypes] = useState([]);
     const [departmentId, setDepartmentId] = useState('');
     const [departments, setDepartments] = useState([]);
@@ -48,7 +50,7 @@ export default function Index({ claimType: lockedType = null }) {
     const showDepartmentFilter = !!user?.sees_all_departments;
 
     useEffect(() => {
-        api.get('/api/options/claim-types')
+        api.get(`/api/options/claim-types?section=${section.key}`)
             .then((d) => setClaimTypes(d.data))
             .catch(() => {});
         if (showDepartmentFilter) {
@@ -56,7 +58,7 @@ export default function Index({ claimType: lockedType = null }) {
                 .then((d) => setDepartments(d.data))
                 .catch(() => {});
         }
-    }, [showDepartmentFilter]);
+    }, [section.key, showDepartmentFilter]);
 
     useEffect(() => {
         let active = true;
@@ -64,6 +66,7 @@ export default function Index({ claimType: lockedType = null }) {
         setError(null);
         const params = new URLSearchParams({
             page,
+            section: section.key,
             ...(status && { status }),
             ...(claimType && { claim_type: claimType }),
             ...(departmentId && { department_id: departmentId }),
@@ -84,26 +87,21 @@ export default function Index({ claimType: lockedType = null }) {
         return () => {
             active = false;
         };
-    }, [page, status, claimType, departmentId, dq, nonce]);
+    }, [section.key, page, status, claimType, departmentId, dq, nonce]);
 
     const reload = () => setNonce((n) => n + 1);
 
-    const lockedTypeMeta = lockedType
-        ? claimTypes.find((t) => t.value === lockedType)
-        : null;
-    const pageTitle =
-        lockedTypeMeta?.label ?? (lockedType ? '…' : 'Reimbursement');
-    const createHref = lockedType
-        ? `/reimbursements/create?type=${lockedType}`
-        : '/reimbursements/create';
+    const createHref = `${section.path}/create`;
     const createLabel = lockedType ? 'Ajukan' : 'Buat Pengajuan';
+    // Kolom & filter "Jenis" tak berarti di bagian yang isinya cuma satu jenis.
+    const showTypeColumn = section.claim_types.length > 1;
 
     return (
         <AuthenticatedLayout
             header={
                 <div className="flex items-center justify-between">
                     <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                        {pageTitle}
+                        {section.label}
                     </h2>
                     {can('reimbursement.create') && (
                         <Link href={createHref}>
@@ -113,7 +111,7 @@ export default function Index({ claimType: lockedType = null }) {
                 </div>
             }
         >
-            <Head title={pageTitle} />
+            <Head title={section.label} />
 
             <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <Card>
@@ -142,7 +140,7 @@ export default function Index({ claimType: lockedType = null }) {
                                 </option>
                             ))}
                         </SelectInput>
-                        {!lockedType && (
+                        {showTypeColumn && (
                             <SelectInput
                                 className="text-sm"
                                 aria-label="Filter jenis pengajuan"
@@ -181,16 +179,13 @@ export default function Index({ claimType: lockedType = null }) {
                     </div>
 
                     {loading ? (
-                        <TableSkeleton rows={6} cols={9} />
+                        <TableSkeleton rows={6} cols={showTypeColumn ? 9 : 8} />
                     ) : error ? (
                         <ErrorState onRetry={reload} />
                     ) : rows?.length === 0 ? (
                         <EmptyState
                             title="Belum ada pengajuan"
-                            description={
-                                lockedTypeMeta?.description ??
-                                'Buat pengajuan reimbursement pertama Anda.'
-                            }
+                            description={section.description}
                         />
                     ) : (
                         <>
@@ -199,7 +194,7 @@ export default function Index({ claimType: lockedType = null }) {
                                     <THead>
                                         <TR>
                                             <TH>Nomor</TH>
-                                            <TH>Jenis</TH>
+                                            {showTypeColumn && <TH>Jenis</TH>}
                                             <TH>Judul</TH>
                                             <TH>Kategori</TH>
                                             <TH>Departemen</TH>
@@ -217,20 +212,29 @@ export default function Index({ claimType: lockedType = null }) {
                                                     number={
                                                         r.reimbursement_number
                                                     }
+                                                    basePath={section.path}
                                                 />
-                                                <TD>
-                                                    {r.claim_type && (
-                                                        <Badge
-                                                            color={
-                                                                r.claim_type
-                                                                    .color
-                                                            }
-                                                        >
-                                                            {r.claim_type.icon}{' '}
-                                                            {r.claim_type.label}
-                                                        </Badge>
-                                                    )}
-                                                </TD>
+                                                {showTypeColumn && (
+                                                    <TD>
+                                                        {r.claim_type && (
+                                                            <Badge
+                                                                color={
+                                                                    r.claim_type
+                                                                        .color
+                                                                }
+                                                            >
+                                                                {
+                                                                    r.claim_type
+                                                                        .icon
+                                                                }{' '}
+                                                                {
+                                                                    r.claim_type
+                                                                        .label
+                                                                }
+                                                            </Badge>
+                                                        )}
+                                                    </TD>
+                                                )}
                                                 <TD>{r.title}</TD>
                                                 <TD>
                                                     {r.category?.name ?? '-'}
@@ -255,7 +259,7 @@ export default function Index({ claimType: lockedType = null }) {
                                     <MobileListItem key={r.id}>
                                         <div className="flex items-center justify-between gap-3">
                                             <Link
-                                                href={`/reimbursements/${r.id}`}
+                                                href={`${section.path}/${r.id}`}
                                                 className="inline-flex min-h-[44px] items-center font-medium text-indigo-600 hover:underline"
                                             >
                                                 {r.reimbursement_number}
@@ -268,7 +272,7 @@ export default function Index({ claimType: lockedType = null }) {
                                             {r.title}
                                         </p>
                                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                            {r.claim_type
+                                            {showTypeColumn && r.claim_type
                                                 ? `${r.claim_type.icon} ${r.claim_type.label} · `
                                                 : ''}
                                             {r.department?.name
